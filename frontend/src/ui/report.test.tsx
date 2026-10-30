@@ -19,7 +19,7 @@ describe("ScoreReport (real backend report)", () => {
     render(<ScoreReport report={reportRisky} />);
     const region = screen.getByRole("region", { name: "Scores by category" });
     expect(within(region).getAllByRole("meter")).toHaveLength(8);
-    for (const name of ["Staff safety & risk management", "Inventory & evidence reliability", "Financial discipline", "Recovery speed",
+    for (const name of ["Staff safety & risk management", "Cargo records & evidence reliability", "Financial discipline", "Recovery speed",
       "Delivery prioritization", "Stakeholder coordination", "Communication quality", "Adaptability to new information"]) {
       expect(within(region).getByRole("meter", { name })).toBeInTheDocument();
     }
@@ -33,12 +33,12 @@ describe("ScoreReport (real backend report)", () => {
     const review = screen.getByRole("region", { name: /Every decision, judged by what you knew then/ });
     const items = within(review).getAllByRole("listitem").filter((li) => li.getAttribute("data-rating"));
     expect(items).toHaveLength(10);
-    expect(items[0]).toHaveTextContent("Warned by Arjun, Nisha");
+    expect(items[0]).toHaveTextContent("Warned by IT Lead, Operations Manager");
     expect(items[0]).toHaveTextContent("Feasible, but Arjun and Nisha warned against it");
-    expect(items[0]).toHaveTextContent("Isolate affected systems and preserve evidence");
+    expect(items[0]).toHaveTextContent("Cut the affected connections and keep the evidence");
     expect(items[0]).toHaveTextContent("recommended by Arjun");
     expect(items[9]).toHaveAttribute("data-rating", "questionable");
-    expect(items[9]).toHaveTextContent("Final physical sweep, then dispatch");
+    expect(items[9]).toHaveTextContent("One last physical check, then reopen");
   });
 
   it("separates avoidable losses (with the decision that enabled them) from chance, and lists missed opportunities", () => {
@@ -46,15 +46,15 @@ describe("ScoreReport (real backend report)", () => {
     const avoid = screen.getByRole("region", { name: "Avoidable losses" });
     expect(avoid).toHaveTextContent("Systems fail again");
     expect(avoid).toHaveTextContent("Traced to decision 1");
-    expect(avoid).toHaveTextContent("Avoidable by choosing “Isolate affected systems and preserve evidence”");
+    expect(avoid).toHaveTextContent("Avoidable by choosing “Cut the affected connections and keep the evidence”");
     const missed = screen.getByRole("region", { name: "Missed opportunities" });
     expect(missed).toHaveTextContent("insurer advance");
-    expect(missed).toHaveTextContent("binding limit was verified stock");
+    expect(missed).toHaveTextContent("binding limit was verified cargo");
   });
 
   it("shows strongest and most damaging decisions, alternatives and what to focus on", () => {
     render(<ScoreReport report={reportRisky} />);
-    expect(screen.getByRole("region", { name: "Most damaging decisions" })).toHaveTextContent("Prioritize immediate restoration");
+    expect(screen.getByRole("region", { name: "Most damaging decisions" })).toHaveTextContent("Bring everything back online as fast as possible");
     expect(screen.getByRole("region", { name: "Strongest decisions" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Alternative strategies worth trying" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Where to focus next" })).toHaveTextContent("Financial discipline");
@@ -62,8 +62,8 @@ describe("ScoreReport (real backend report)", () => {
 
   it("reveals the real stock only here, at the end", () => {
     render(<ScoreReport report={reportRisky} />);
-    const reveal = screen.getByRole("region", { name: "What was really in the warehouse" });
-    expect(reveal).toHaveTextContent(`Your records said ${reportRisky.reveal.recorded_units} units. There were ${reportRisky.reveal.true_units}`);
+    const reveal = screen.getByRole("region", { name: "What was really in the yard" });
+    expect(reveal).toHaveTextContent(`Your records said ${reportRisky.reveal.recorded_units} cargo lots. There were ${reportRisky.reveal.true_units}`);
     expect(reveal).toHaveTextContent("Revealed only now");
   });
 
@@ -104,16 +104,16 @@ describe("ComparisonView (real backend comparison)", () => {
   it("shows both outcomes, every required measure and which side is better", () => {
     render(<ComparisonView c={comparison} />);
     const table = screen.getByRole("table", { name: "Outcome measures for both attempts" });
-    for (const m of ["Delivery completion", "Remaining budget", "Staff safety", "System recovery", "Inventory confidence (verified share)",
+    for (const m of ["Delivery completion", "Recovery effort left", "Staff safety", "System recovery", "Cargo confidence (verified share)",
       "Public trust", "Time remaining", "Critical events triggered", "Ending achieved", "Overall score"]) {
       expect(within(table).getByRole("rowheader", { name: m })).toBeInTheDocument();
     }
-    const delivery = within(table).getByRole("row", { name: /Hospital units shipped/ });
+    const delivery = within(table).getByRole("row", { name: /Urgent cargo lots moved/ });
     expect(delivery).toHaveTextContent("170");
     expect(delivery).toHaveTextContent("220");
     expect(within(delivery).getByText(/\(better\)/)).toBeInTheDocument();
     expect(within(table).getByRole("row", { name: /Time remaining/ })).toHaveTextContent("−30 min");
-    expect(within(table).getByRole("row", { name: /Ending achieved/ })).toHaveTextContent("HOSPITALS SERVED");
+    expect(within(table).getByRole("row", { name: /Ending achieved/ })).toHaveTextContent("URGENT CUSTOMERS SERVED");
   });
 
   it("says where the timelines diverge and shows both decisions side by side", () => {
@@ -122,8 +122,8 @@ describe("ComparisonView (real backend comparison)", () => {
     expect(screen.getByText(/Same seed and same starting conditions/)).toBeInTheDocument();
     const rows = container.querySelectorAll("ol.cmp-timeline > li");
     expect(rows).toHaveLength(10);
-    expect(rows[9]).toHaveTextContent("Dispatch verified stock only");
-    expect(rows[9]).toHaveTextContent("Final physical sweep, then dispatch");
+    expect(rows[9]).toHaveTextContent("Reopen on verified cargo only");
+    expect(rows[9]).toHaveTextContent("One last physical check, then reopen");
     expect(rows[0]).toHaveTextContent("Same decision");
     expect(rows[9]).not.toHaveTextContent("Same decision");
   });

@@ -66,16 +66,16 @@ describe("DecisionList", () => {
 
   it("renders the real round-1 choices from the backend with cost and time chips", () => {
     render(<DecisionList choices={roundViews[0].scene.choices!} onCommit={vi.fn()} />);
-    expect(screen.getByText("₹0.5 lakh")).toBeInTheDocument();
+    expect(screen.getByText("0.5 points")).toBeInTheDocument();
     expect(screen.getByText("40 min")).toBeInTheDocument();
   });
 });
 
 describe("SimulationHUD", () => {
   it("exposes each meter with an accessible value and marks the hospital need", () => {
-    render(<SimulationHUD state={roundViews[0].state} clock="8:40 PM" round={1} />);
-    expect(screen.getByRole("meter", { name: "Emergency budget" })).toHaveAttribute("aria-valuetext", "₹12.0 lakh");
-    expect(screen.getByRole("meter", { name: "Time slack" })).toHaveAttribute("aria-valuenow", "300");
+    render(<SimulationHUD state={roundViews[0].state} clock="Day 1 · 27 Jun" round={1} />);
+    expect(screen.getByRole("meter", { name: "Recovery effort" })).toHaveAttribute("aria-valuetext", "12.0 points");
+    expect(screen.getByRole("meter", { name: "Time left" })).toHaveAttribute("aria-valuenow", "300");
     expect(screen.getByText("Round 1 of 10")).toBeInTheDocument();
     expect(screen.getAllByTitle("Required")).toHaveLength(2);
   });
@@ -92,9 +92,9 @@ describe("StakeholderCard", () => {
   it("shows name, role, trust and an optional advice button", async () => {
     const onAsk = vi.fn();
     render(<StakeholderCard id="kavya" trust={72} onAsk={onAsk} quote="Evacuate first." />);
-    expect(screen.getByRole("article", { name: "Kavya Rao, Safety Chief" })).toBeInTheDocument();
-    expect(screen.getByRole("meter", { name: "Kavya Rao trust" })).toHaveAttribute("aria-valuenow", "72");
-    await userEvent.click(screen.getByRole("button", { name: "Ask Kavya Rao for advice" }));
+    expect(screen.getByRole("article", { name: "Terminal Supervisor, Site safety and terminal operations" })).toBeInTheDocument();
+    expect(screen.getByRole("meter", { name: "Terminal Supervisor trust" })).toHaveAttribute("aria-valuenow", "72");
+    await userEvent.click(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" }));
     expect(onAsk).toHaveBeenCalled();
     expect(screen.getByText("Evacuate first.")).toBeInTheDocument();
   });
@@ -119,10 +119,10 @@ describe("DeadEndScreen", () => {
 
   it("explains the causal chain from recorded data, including what was known at the time", () => {
     render(<DeadEndScreen analysis={deadEndSoft.analysis!} rewindsLeft={2} actions={actions} />);
-    expect(screen.getByRole("region", { name: /Why it is unrecoverable/ })).toHaveTextContent("170 units");
+    expect(screen.getByRole("region", { name: /Why it is unrecoverable/ })).toHaveTextContent("170 cargo lots");
     const critical = screen.getByRole("region", { name: /The critical point/ });
     expect(critical).toHaveTextContent("What you knew then");
-    expect(critical).toHaveTextContent("The hospitals together need 220 units");
+    expect(critical).toHaveTextContent("Time-critical customers need 220 lots");
     expect(critical).toHaveTextContent("Options that still kept recovery possible");
     expect(screen.getByLabelText("Decision timeline")).toBeInTheDocument();
   });
@@ -167,15 +167,15 @@ describe("OutcomeReport", () => {
   it("reports what shipped against need for a full recovery", () => {
     render(<OutcomeReport final={completedGood.scene.final!} state={completedGood.state} />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("FULL RECOVERY");
-    expect(screen.getByRole("meter", { name: "Hospitals" })).toHaveAttribute("aria-valuenow", "220");
+    expect(screen.getByRole("meter", { name: "Urgent customers" })).toHaveAttribute("aria-valuenow", "220");
     expect(screen.getAllByText("Need met")).toHaveLength(2);
   });
 
   it("shows shortfalls honestly for a partial dispatch and offers only the supplied actions", () => {
     const onRestart = vi.fn();
     render(<OutcomeReport final={completedPartial.scene.final!} state={completedPartial.state} onRestart={onRestart} />);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("PARTIAL DISPATCH");
-    expect(screen.getAllByText(/units short/).length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("PARTIAL REOPENING");
+    expect(screen.getAllByText(/lots short/).length).toBeGreaterThan(0);
     expect(screen.queryByRole("button", { name: /different decision/i })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Restart entire simulation" }));
     expect(onRestart).toHaveBeenCalled();

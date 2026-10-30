@@ -76,8 +76,8 @@ describe("ComicPage", () => {
   it("describes each panel for assistive technology and labels speakers", () => {
     render(<ComicPage page={roundViews[1].scene.page} title="Smoke" />);
     const figs = screen.getAllByRole("figure");
-    expect(figs[1]).toHaveAccessibleName(/Kavya Rao looks angry/);
-    expect(screen.getByRole("group", { name: /Kavya Rao says/ })).toBeInTheDocument();
+    expect(figs[1]).toHaveAccessibleName(/Terminal Supervisor looks angry/);
+    expect(screen.getByRole("group", { name: /Terminal Supervisor says/ })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Smoke" })).toBeInTheDocument();
   });
 
@@ -108,7 +108,7 @@ describe("ComicPage", () => {
     fireEvent.error(container.querySelector(".char img")!);
     expect(container.querySelector('[data-fallback="environment"]')).toBeInTheDocument();
     expect(container.querySelector('[data-fallback="character"]')).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /Nisha Sen \(image unavailable\)/ })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /Operations Manager \(image unavailable\)/ })).toBeInTheDocument();
   });
 
   it("treats dialogue as plain text: markup in data is shown literally, never executed", () => {
@@ -171,6 +171,6 @@ describe("within helper sanity", () => {
   it("renders narration inside its panel", () => {
     render(<ComicPage page={roundViews[0].scene.page} />);
     const first = screen.getAllByRole("figure")[0];
-    expect(within(first).getByRole("note")).toHaveTextContent("8:40 PM");
+    expect(within(first).getByRole("note")).toHaveTextContent("Tuesday 27 June 2017");
   });
 });

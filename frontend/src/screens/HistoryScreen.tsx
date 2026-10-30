@@ -111,7 +111,7 @@ export function HistoryScreen({ api, simId, activeRunId, rewindsLeft, onClose, o
                   ))}
                 </ol>
                 <p className="metrics">
-                  Budget ₹{r.metrics.budget?.toFixed(1)} lakh · Safety {r.metrics.staff_safety}% · Trust {r.metrics.public_trust}% · Evidence {r.metrics.evidence_quality}%
+                  Effort {r.metrics.budget?.toFixed(1)} points · Safety {r.metrics.staff_safety}% · Trust {r.metrics.public_trust}% · Evidence {r.metrics.evidence_quality}%
                 </p>
                 <button type="button" className="ghost small" onClick={() => { setRunId(r.run_id); setTab("log"); }}>
                   Review this attempt

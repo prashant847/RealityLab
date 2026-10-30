@@ -21,7 +21,7 @@ export function DecisionCard({ choice, selected, onSelect, index, endorsements =
         <strong>{choice.label}</strong>
         <span className="decision-summary">{choice.summary}</span>
         <span className="chips">
-          <span className="chip">{choice.cost > 0 ? `₹${choice.cost.toFixed(1)} lakh` : "No cost"}</span>
+          <span className="chip">{choice.cost > 0 ? `${choice.cost.toFixed(1)} points` : "No cost"}</span>
           <span className="chip">{choice.time_cost > 0 ? `${choice.time_cost} min` : "No delay"}</span>
           {choice.confirm && <span className="chip chip--warn">Needs confirmation</span>}
         </span>
@@ -29,7 +29,7 @@ export function DecisionCard({ choice, selected, onSelect, index, endorsements =
           <span className="endorse" aria-label="Advisors' views">
             {endorsements.map((e) => (
               <span key={e.id} className={`endorse-chip endorse-chip--${e.verdict}`} title={`${e.name} ${WORD[e.verdict]}`}>
-                <span aria-hidden="true">{MARK[e.verdict]}</span> {e.name.split(" ")[0]}<span className="sr-only"> {WORD[e.verdict]}</span>
+                <span aria-hidden="true">{MARK[e.verdict]}</span> {e.name}<span className="sr-only"> {WORD[e.verdict]}</span>
               </span>
             ))}
           </span>

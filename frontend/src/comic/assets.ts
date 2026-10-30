@@ -24,9 +24,18 @@ export function characterUrl(id: CharacterId, expression: Expression): string | 
   return path ? assetUrl(path) : undefined;
 }
 
+/** On screen the six characters are fictional roles (the backend ids stay as they are). */
+const ROLES: Record<string, { name: string; role: string }> = {
+  player: { name: "Recovery Team Lead", role: "Leads the recovery effort" },
+  arjun: { name: "IT Lead", role: "IT systems and incident analysis" },
+  kavya: { name: "Terminal Supervisor", role: "Site safety and terminal operations" },
+  nisha: { name: "Operations Manager", role: "Operations and recovery planning" },
+  raghav: { name: "Network Administrator", role: "Networks, connections and routes" },
+  isha: { name: "Customer Representative", role: "Customers and communication" },
+};
 export function characterInfo(id: CharacterId): { name: string; role: string } {
   const c = manifest.characters[id];
-  return { name: c?.name ?? id, role: c?.role ?? "" };
+  return ROLES[id] ?? { name: c?.name ?? id, role: c?.role ?? "" };
 }
 
 export const uiUrl = (id: string) => (manifest.ui[id] ? assetUrl(manifest.ui[id].path) : undefined);

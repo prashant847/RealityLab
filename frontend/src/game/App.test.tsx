@@ -63,10 +63,10 @@ describe("starting and playing", () => {
     render(<App api={api} />);
     expect(await screen.findByRole("heading", { name: "BLACKOUT" })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Begin the simulation" }));
-    expect(await screen.findByRole("heading", { name: "THE BLACKOUT" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "THE SCREENS GO DARK" })).toBeInTheDocument();
     expect(calls).toEqual(["create"]);
     expect(localStorage.getItem(KEY)).toBe(roundViews[0].simulation.id);
-    expect(screen.getByRole("meter", { name: "Emergency budget" })).toHaveAttribute("aria-valuetext", "₹12.0 lakh");
+    expect(screen.getByRole("meter", { name: "Recovery effort" })).toHaveAttribute("aria-valuetext", "12.0 points");
     expect(screen.getAllByRole("radio")).toHaveLength(3);
   });
 
@@ -87,18 +87,18 @@ describe("starting and playing", () => {
     const { api, calls } = fakeApi();
     localStorage.setItem(KEY, roundViews[0].simulation.id);
     render(<App api={api} />);
-    await screen.findByRole("heading", { name: "THE BLACKOUT" });
+    await screen.findByRole("heading", { name: "THE SCREENS GO DARK" });
     for (let r = 0; r < 10; r++) {
       await userEvent.click(firstAvailable());
       await userEvent.click(screen.getByRole("button", { name: /Commit decision|Confirm decision/ }));
-      const cont = await screen.findByRole("button", { name: /Continue to the next event|See the final dispatch/ });
+      const cont = await screen.findByRole("button", { name: /Continue to the next event|See the final reopening/ });
       expect(screen.getByRole("heading", { name: "You decided" })).toBeInTheDocument();
       expect(screen.getByRole("region", { name: "Consequences" })).toBeInTheDocument();
       await userEvent.click(cont);
     }
     expect(await screen.findByRole("heading", { level: 1, name: "FULL RECOVERY" })).toBeInTheDocument();
     expect(calls.filter((c) => c.startsWith("decide:"))).toHaveLength(10);
-    expect(screen.getByRole("meter", { name: "Hospitals" })).toHaveAttribute("aria-valuenow", "220");
+    expect(screen.getByRole("meter", { name: "Urgent customers" })).toHaveAttribute("aria-valuenow", "220");
   }, 20_000);   // ten rounds of drawn comic pages in jsdom; the drawings made this slower than the old 5 s default allowed
 
   it("shows consequences/events returned by the server on the result screen", async () => {
@@ -107,7 +107,7 @@ describe("starting and playing", () => {
     const { api } = fakeApi([...Array(idx).fill(roundViews[1]), withEvent]);
     localStorage.setItem(KEY, "x");
     render(<App api={api} />);
-    await screen.findByRole("heading", { name: "THE BLACKOUT" });
+    await screen.findByRole("heading", { name: "THE SCREENS GO DARK" });
     for (let k = 0; k <= idx; k++) {
       await userEvent.click(firstAvailable());
       await userEvent.click(screen.getByRole("button", { name: /Commit decision|Confirm decision/ }));
@@ -149,17 +149,17 @@ describe("persistence and errors", () => {
     expect(localStorage.getItem(KEY)).toBe("keep-me");
     fail = false;
     await userEvent.click(within(alert).getByRole("button", { name: "Try again" }));
-    expect(await screen.findByRole("heading", { name: "THE BLACKOUT" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "THE SCREENS GO DARK" })).toBeInTheDocument();
   });
 
   it("shows a server rejection without changing what is on screen", async () => {
     const { api } = fakeApi([], { decide: vi.fn(async () => { throw new ApiError("Needs ₹6.0 lakh; only ₹1.0 lakh remains.", 422, "invalid_request"); }) });
     localStorage.setItem(KEY, "x");
     render(<App api={api} />);
-    await screen.findByRole("heading", { name: "THE BLACKOUT" });
-    await choose(/Isolate/);
+    await screen.findByRole("heading", { name: "THE SCREENS GO DARK" });
+    await choose(/Cut the affected/);
     expect(await screen.findByRole("alert")).toHaveTextContent("only ₹1.0 lakh remains");
-    expect(screen.getByRole("heading", { name: "THE BLACKOUT" })).toBeInTheDocument();      // still round 1
+    expect(screen.getByRole("heading", { name: "THE SCREENS GO DARK" })).toBeInTheDocument();      // still round 1
     await userEvent.click(screen.getByRole("button", { name: "Dismiss" }));
     expect(screen.queryByRole("alert")).toBeNull();
   });
@@ -170,7 +170,7 @@ describe("persistence and errors", () => {
     const { api } = fakeApi([], { decide: vi.fn(() => pending) });
     localStorage.setItem(KEY, "x");
     render(<App api={api} />);
-    await screen.findByRole("heading", { name: "THE BLACKOUT" });
+    await screen.findByRole("heading", { name: "THE SCREENS GO DARK" });
     await userEvent.click(screen.getAllByRole("radio")[0]);
     await userEvent.click(screen.getByRole("button", { name: "Commit decision" }));
     expect((await screen.findAllByText("Applying decision…")).length).toBeGreaterThan(0);
@@ -186,7 +186,7 @@ describe("dead end and rewind", () => {
     const { api, calls } = fakeApi([view]);
     localStorage.setItem(KEY, "x");
     render(<App api={api} />);
-    await screen.findByRole("heading", { name: "THE BLACKOUT" });
+    await screen.findByRole("heading", { name: "THE SCREENS GO DARK" });
     await userEvent.click(screen.getAllByRole("radio")[0]);
     await userEvent.click(screen.getByRole("button", { name: "Commit decision" }));
     await userEvent.click(await screen.findByRole("button", { name: "See what happened" }));
@@ -225,7 +225,7 @@ describe("dead end and rewind", () => {
   it("restarts the whole simulation from the dead-end screen", async () => {
     const { api } = await toDeadEnd(deadEndHard);
     await userEvent.click(await screen.findByRole("button", { name: "Restart entire simulation" }));
-    expect(await screen.findByRole("heading", { name: "THE BLACKOUT" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "THE SCREENS GO DARK" })).toBeInTheDocument();
     expect(api.restart).toHaveBeenCalled();
   });
 });
@@ -235,7 +235,7 @@ describe("pause and history", () => {
     const { api } = fakeApi();
     localStorage.setItem(KEY, "x");
     render(<App api={api} />);
-    await screen.findByRole("heading", { name: "THE BLACKOUT" });
+    await screen.findByRole("heading", { name: "THE SCREENS GO DARK" });
     await userEvent.click(screen.getByRole("button", { name: "Pause" }));
     expect(screen.getByRole("dialog", { name: "Simulation paused" })).toBeInTheDocument();
     expect(screen.queryByRole("radio")).toBeNull();
@@ -305,34 +305,34 @@ describe("stakeholder advice", () => {
 
   it("lets the player ask a stakeholder, shows their view, and does not alter the world", async () => {
     const { api, calls } = await open();
-    const hudBefore = screen.getByRole("meter", { name: "Emergency budget" }).getAttribute("aria-valuetext");
-    await userEvent.click(screen.getByRole("button", { name: "Ask Kavya Rao for advice" }));
-    const card = await screen.findByRole("article", { name: "Advice from Kavya Rao" });
-    expect(card).toHaveTextContent("Evacuate the affected area");
+    const hudBefore = screen.getByRole("meter", { name: "Recovery effort" }).getAttribute("aria-valuetext");
+    await userEvent.click(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" }));
+    const card = await screen.findByRole("article", { name: "Advice from Terminal Supervisor" });
+    expect(card).toHaveTextContent("Clear the affected area");
     expect(within(card).getByText("Rule-based")).toBeInTheDocument();
-    expect(within(card).getByRole("meter", { name: "Kavya Rao confidence" })).toBeInTheDocument();
+    expect(within(card).getByRole("meter", { name: "Terminal Supervisor confidence" })).toBeInTheDocument();
     expect(calls).toContain("advice:kavya");
-    expect(screen.getByRole("meter", { name: "Emergency budget" }).getAttribute("aria-valuetext")).toBe(hudBefore);
+    expect(screen.getByRole("meter", { name: "Recovery effort" }).getAttribute("aria-valuetext")).toBe(hudBefore);
     expect(api.decide).not.toHaveBeenCalled();
-    expect(screen.queryByRole("button", { name: "Ask Kavya Rao for advice" })).toBeNull();     // already asked
+    expect(screen.queryByRole("button", { name: "Ask Terminal Supervisor for advice" })).toBeNull();     // already asked
     expect(screen.getByText("Advice given — see below")).toBeInTheDocument();
   });
 
   it("marks each option with who recommends or opposes it, accessibly", async () => {
     await open();
-    await userEvent.click(screen.getByRole("button", { name: "Ask Kavya Rao for advice" }));
-    await screen.findByRole("article", { name: "Advice from Kavya Rao" });
-    const maintain = screen.getByRole("radio", { name: /Keep operating elsewhere/ });
-    expect(within(maintain).getByText(/Kavya/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" }));
+    await screen.findByRole("article", { name: "Advice from Terminal Supervisor" });
+    const maintain = screen.getByRole("radio", { name: /Keep working manually/ });
+    expect(within(maintain).getByText(/Terminal Supervisor/)).toBeInTheDocument();
     expect(within(maintain).getByText(/advises against this/)).toBeInTheDocument();
-    const evacuate = screen.getByRole("radio", { name: /Evacuate the affected area/ });
+    const evacuate = screen.getByRole("radio", { name: /Clear the affected area/ });
     expect(within(evacuate).getByText(/recommends this/)).toBeInTheDocument();
   });
 
   it("shows several advisors, and they are allowed to disagree", async () => {
     await open();
-    for (const who of ["Kavya Rao", "Nisha Sen"]) await userEvent.click(screen.getByRole("button", { name: `Ask ${who} for advice` }));
-    await screen.findByRole("article", { name: "Advice from Nisha Sen" });
+    for (const who of ["Terminal Supervisor", "Operations Manager"]) await userEvent.click(screen.getByRole("button", { name: `Ask ${who} for advice` }));
+    await screen.findByRole("article", { name: "Advice from Operations Manager" });
     const kavya = adviceSamples.find((a) => a.stakeholder === "kavya")!, nisha = adviceSamples.find((a) => a.stakeholder === "nisha")!;
     expect(kavya.recommendation).not.toBe(nisha.recommendation);
     expect(screen.getAllByRole("article", { name: /^Advice from/ })).toHaveLength(2);
@@ -340,8 +340,8 @@ describe("stakeholder advice", () => {
 
   it("warns when an advisor's own information is unverified", async () => {
     const f = await open(roundViews[3], { advice: vi.fn(async () => adviceUnverified) });
-    await userEvent.click(screen.getByRole("button", { name: "Ask Raghav Verma for advice" }));
-    const card = await screen.findByRole("article", { name: "Advice from Raghav Verma" });
+    await userEvent.click(screen.getByRole("button", { name: "Ask Network Administrator for advice" }));
+    const card = await screen.findByRole("article", { name: "Advice from Network Administrator" });
     expect(within(card).getByRole("note")).toHaveTextContent("Unverified: check this before relying on it");
     expect(f.api.advice).toHaveBeenCalled();
   });
@@ -350,28 +350,28 @@ describe("stakeholder advice", () => {
     const f = fakeApi(undefined, { adviceSoFar: vi.fn(async () => [adviceSamples[0], adviceSamples[2]]) }, roundViews[1]);
     localStorage.setItem(KEY, "x");
     render(<App api={f.api} />);
-    expect(await screen.findByRole("article", { name: "Advice from Kavya Rao" })).toBeInTheDocument();
-    expect(screen.getByRole("article", { name: "Advice from Nisha Sen" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Ask Kavya Rao for advice" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Ask Arjun Mehta for advice" })).toBeEnabled();
+    expect(await screen.findByRole("article", { name: "Advice from Terminal Supervisor" })).toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "Advice from Operations Manager" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Ask Terminal Supervisor for advice" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Ask IT Lead for advice" })).toBeEnabled();
   });
 
   it("reports a failed request without losing the scene and allows retrying", async () => {
     let fail = true;
     await open(roundViews[1], { advice: vi.fn(async (_i: string, who: StakeholderKey) => { if (fail) throw new ApiError("Cannot reach the simulation server.", 0, "network", true); return adviceSamples.find((a) => a.stakeholder === who)!; }) });
-    await userEvent.click(screen.getByRole("button", { name: "Ask Kavya Rao for advice" }));
+    await userEvent.click(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Cannot reach");
     expect(screen.getAllByRole("radio").length).toBeGreaterThan(0);
     fail = false;
-    await userEvent.click(screen.getByRole("button", { name: "Ask Kavya Rao for advice" }));
-    expect(await screen.findByRole("article", { name: "Advice from Kavya Rao" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" }));
+    expect(await screen.findByRole("article", { name: "Advice from Terminal Supervisor" })).toBeInTheDocument();
   });
 
   it("labels AI-phrased advice differently from rule-based advice", async () => {
     const llm: Advice = { ...adviceSamples[0], source: "llm" };
     await open(roundViews[1], { advice: vi.fn(async () => llm) });
-    await userEvent.click(screen.getByRole("button", { name: "Ask Kavya Rao for advice" }));
-    const card = await screen.findByRole("article", { name: "Advice from Kavya Rao" });
+    await userEvent.click(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" }));
+    const card = await screen.findByRole("article", { name: "Advice from Terminal Supervisor" });
     expect(within(card).getByText("AI-phrased")).toHaveAttribute("title", expect.stringContaining("fixed rules"));
   });
 
@@ -380,15 +380,15 @@ describe("stakeholder advice", () => {
     localStorage.setItem(KEY, "x");
     render(<App api={f.api} />);
     await screen.findByRole("heading", { name: roundViews[1].scene.title! });
-    await userEvent.click(screen.getByRole("button", { name: "Ask Kavya Rao for advice" }));
-    await screen.findByRole("article", { name: "Advice from Kavya Rao" });
+    await userEvent.click(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" }));
+    await screen.findByRole("article", { name: "Advice from Terminal Supervisor" });
     f.given.clear();
     await userEvent.click(screen.getAllByRole("radio").find((r) => r.getAttribute("aria-disabled") !== "true")!);
     await userEvent.click(screen.getByRole("button", { name: /Commit decision|Confirm decision/ }));
     await userEvent.click(await screen.findByRole("button", { name: /Continue/ }));
     await screen.findAllByRole("radio");
     expect(screen.queryByRole("article", { name: /^Advice from/ })).toBeNull();
-    expect(screen.getByRole("button", { name: "Ask Kavya Rao for advice" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" })).toBeEnabled();
   });
 });
 

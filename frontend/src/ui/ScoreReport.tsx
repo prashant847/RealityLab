@@ -1,3 +1,5 @@
+import { characterInfo } from "../comic/assets";
+import type { CharacterId } from "../comic/types";
 import type { Loss, Report, ReportDecision } from "../api/types";
 
 const RATING: Record<string, string> = { sound: "Sound", questionable: "Questionable", poor: "Poor" };
@@ -11,7 +13,7 @@ function Chips({ d }: { d: ReportDecision }) {
       <span className={`rating rating--${d.rating}`}>{RATING[d.rating]}</span>
       {d.outcome === "unlucky" && <span className="rating rating--unlucky">Unlucky</span>}
       {d.outcome === "lucky" && <span className="rating rating--lucky">Got away with it</span>}
-      {d.warned_by.length > 0 && <span className="chip chip--warn">Warned by {d.warned_by.map((w) => w.stakeholder[0].toUpperCase() + w.stakeholder.slice(1)).join(", ")}</span>}
+      {d.warned_by.length > 0 && <span className="chip chip--warn">Warned by {d.warned_by.map((w) => characterInfo(w.stakeholder as CharacterId).name).join(", ")}</span>}
       <span className="chip" aria-label={`Effect on readiness ${sign(d.impact.score_delta)} points`}>Impact {sign(d.impact.score_delta)}</span>
     </p>
   );
@@ -94,7 +96,7 @@ export function ScoreReport({ report }: { report: Report }) {
               <h4>{d.clock} · {d.label}</h4>
               <Chips d={d} />
               <p>{d.verdict}</p>
-              {d.warned_by.map((w) => <p key={w.stakeholder} className="muted">{w.stakeholder[0].toUpperCase() + w.stakeholder.slice(1)} warned: {w.why}.</p>)}
+              {d.warned_by.map((w) => <p key={w.stakeholder} className="muted">{characterInfo(w.stakeholder as CharacterId).name} warned: {w.why}.</p>)}
               {d.alternative && (
                 <p className="alt"><b>Consider instead:</b> “{d.alternative.label}”{d.alternative.recommended_by.length > 0 && <> (recommended by {d.alternative.recommended_by.join(", ")} at the time)</>}.
                   {d.alternative.differences.length > 0 && <span className="muted"> Immediate differences: {d.alternative.differences.join("; ")}.</span>}</p>
@@ -151,9 +153,9 @@ export function ScoreReport({ report }: { report: Report }) {
       )}
 
       <section className="card reveal" aria-labelledby="rev-h">
-        <h3 id="rev-h">What was really in the warehouse</h3>
-        <p>Your records said {report.reveal.recorded_units} units. There were {report.reveal.true_units}: the records overstated stock by {report.reveal.records_overstated_by}.
-          You verified {report.reveal.verified_units}, so {report.reveal.existing_but_unverified} units that did exist were never confirmed and could not ship safely.</p>
+        <h3 id="rev-h">What was really in the yard</h3>
+        <p>Your records said {report.reveal.recorded_units} cargo lots. There were {report.reveal.true_units}: the records overstated stock by {report.reveal.records_overstated_by}.
+          You verified {report.reveal.verified_units}, so {report.reveal.existing_but_unverified} lots that did exist were never confirmed and could not ship safely.</p>
         <p className="muted">{report.reveal.note}</p>
       </section>
     </section>

@@ -23,10 +23,10 @@ describe("homography", () => {
 
 describe("failed system screen", () => {
   it("takes its words from the scene's own known facts and invents none", () => {
-    const lines = screenLines(round1.info ?? []);
+    const lines = screenLines(["Inventory dashboard offline; barcode scanners are not responding.", "Arjun: unusual authentication attempts appear in the access logs. Cause unknown.", "Emergency response budget: ₹12.0 lakh. Every action costs time before the 6:00 AM dispatch."]);
     expect(lines.join(" ")).toMatch(/Inventory dashboard offline/);
     expect(lines.join(" ")).toMatch(/barcode scanners are not responding/);
-    const { container } = render(<FailedSystemScreen facts={round1.info ?? []} />);
+    const { container } = render(<FailedSystemScreen facts={["Inventory dashboard offline; barcode scanners are not responding.", "Arjun: unusual authentication attempts appear in the access logs. Cause unknown.", "Emergency response budget: ₹12.0 lakh. Every action costs time before the 6:00 AM dispatch."]} />);
     for (const l of lines) expect(container).toHaveTextContent(l);
     expect(container.textContent!.length).toBeLessThan((round1.info ?? [""])[0].length + 40);     // nothing beyond the fact, plus the "!" mark
   });
@@ -38,7 +38,7 @@ describe("failed system screen", () => {
   });
 
   it("sits on the Arjun panel's background and is hidden from assistive technology", () => {
-    const { container } = render(<IllustratedPage page={round1.page} script={ART_SCENES[1]} facts={round1.info ?? []} />);
+    const { container } = render(<IllustratedPage page={round1.page} script={ART_SCENES[1]} facts={["Inventory dashboard offline; barcode scanners are not responding.", "Arjun: unusual authentication attempts appear in the access logs. Cause unknown.", "Emergency response budget: ₹12.0 lakh. Every action costs time before the 6:00 AM dispatch."]} />);
     const arjun = container.querySelector('[data-panel="arjun"]')!;
     const overlay = arjun.querySelector(".art--overlay")!;
     expect(overlay).toHaveAttribute("aria-hidden", "true");

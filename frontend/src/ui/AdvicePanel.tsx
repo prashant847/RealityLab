@@ -33,13 +33,13 @@ export function AdviceCard({ advice }: { advice: Advice }) {
           <p key={i} className="unverified" role="note"><b>Unverified:</b> check this before relying on it ({Math.round(p.reliability * 100)}% sure themselves).</p>
         ))}
         <details>
-          <summary>What {advice.name.split(" ")[0]} is basing this on</summary>
+          <summary>What {advice.name} is basing this on</summary>
           <ul>{advice.facts.map((f, i) => <li key={`f${i}`}>{f}</li>)}{advice.private.map((p, i) => <li key={`p${i}`}>{p.text}{p.verified ? "" : " (unverified)"}</li>)}</ul>
           <h4>View of each option</h4>
           <ul className="stances">
             {advice.stances.map((s) => (
               <li key={s.choice_id} data-verdict={s.verdict}>
-                <strong>{s.verdict === "neutral" ? "No strong view on" : `${advice.name.split(" ")[0]} ${VERDICT_LABEL[s.verdict]}`}</strong> {s.label}
+                <strong>{s.verdict === "neutral" ? "No strong view on" : `${advice.name} ${VERDICT_LABEL[s.verdict]}`}</strong> {s.label}
                 {s.reasons[0] && <span className="muted"> — {s.reasons[0]}</span>}
               </li>
             ))}

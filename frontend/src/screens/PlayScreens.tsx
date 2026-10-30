@@ -119,7 +119,7 @@ export function SceneScreen({ api, view, busy, onDecide }: { api: GameApi; view:
 }
 
 export function ResultScreen({ view, outcome, onContinue }: { view: SimulationView; outcome: Outcome; onContinue: () => void }) {
-  const next = view.run.status === "dead_end" ? "See what happened" : outcome.completed ? "See the final dispatch" : "Continue to the next event";
+  const next = view.run.status === "dead_end" ? "See what happened" : outcome.completed ? "See the final reopening" : "Continue to the next event";
   const btn = useRef<HTMLButtonElement>(null);
   useEffect(() => { btn.current?.focus(); }, []);
   const flat = FIRST_PAGE_STYLE === "flat";

@@ -7,7 +7,7 @@ import { Terminal, evidenceRows } from "./Terminal";
 import { VECTOR_SCENES, VectorScene } from "./VectorScene";
 
 const round1 = roundViews[0].scene;
-const facts = round1.info ?? [];
+const facts = ["Inventory dashboard offline; barcode scanners are not responding.", "Arjun: unusual authentication attempts appear in the access logs. Cause unknown.", "Emergency response budget: ₹12.0 lakh. Every action costs time before the 6:00 AM dispatch."]; // the original (pre-NotPetya) opening facts: these tests cover the evidence-terminal parser
 
 describe("evidence is understandable and uses only the scene's own words", () => {
   it("turns the opening facts into plain rows with a clear status", () => {

@@ -1,9 +1,9 @@
 import type { Comparison, RunSummary } from "../api/types";
 
 const LABELS: Record<string, [string, string]> = {
-  delivery_completion: ["Delivery completion", "%"], hospital_shipped: ["Hospital units shipped", ""], contract_shipped: ["Contract units shipped", ""],
-  budget_left: ["Remaining budget", " lakh"], staff_safety: ["Staff safety", "%"], system_integrity: ["System integrity", "%"],
-  recovery_progress: ["System recovery", "%"], verified_share: ["Inventory confidence (verified share)", "%"], evidence_quality: ["Evidence quality", "%"],
+  delivery_completion: ["Delivery completion", "%"], hospital_shipped: ["Urgent cargo lots moved", ""], contract_shipped: ["Key account cargo lots moved", ""],
+  budget_left: ["Recovery effort left", " points"], staff_safety: ["Staff safety", "%"], system_integrity: ["System integrity", "%"],
+  recovery_progress: ["System recovery", "%"], verified_share: ["Cargo confidence (verified share)", "%"], evidence_quality: ["Evidence quality", "%"],
   public_trust: ["Public trust", "%"], time_left: ["Time remaining", " min"], overall_score: ["Overall score", ""],
 };
 const fmt = (v: number | null, unit: string) => (v === null ? "—" : `${v}${unit}`);
