@@ -449,3 +449,19 @@ select { background: var(--panel); color: var(--text); border: 1px solid var(--s
   .panel--art .overlay .narration, .panel--art .overlay .bubble { max-width: 100%; font-size: 14px; align-self: stretch; }
   .panel--art .overlay .bubble::after, .panel--art .overlay .bubble::before { display: none; }
 }
+
+/* Simpler screens: the main story and the decision first; everything else one click away */
+.plain-problem { margin: 0 0 .5rem; font-size: 1.12rem; line-height: 1.5; }
+.plain-job { margin: 0 0 .6rem; font-size: 1.12rem; line-height: 1.5; color: #fff; }
+.plain-more, .facts, .hud-more, .report-more { margin-top: .8rem; }
+.plain-more summary, .facts summary, .hud-more summary, .report-more summary { cursor: pointer; color: var(--steel-l); font-size: .95rem; }
+.plain-more dl { margin: .7rem 0 0; display: grid; gap: .7rem; }
+.plain-more dt { font: 700 .72rem/1 var(--font-head); letter-spacing: .12em; text-transform: uppercase; color: var(--amber); margin-bottom: .25rem; }
+.plain-more dd { margin: 0; line-height: 1.45; } .plain-more ol { margin: .2rem 0 0; padding-left: 1.2rem; }
+.facts { padding: .7rem 1rem; } .facts ul { margin: .7rem 0 0; }
+.glossary-list { margin: .8rem 0 0; display: grid; gap: .4rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.glossary-list dt { font-weight: 700; } .glossary-list dd { margin: 0; color: var(--steel-l); }
+.hud-hint { margin: 0 0 .5rem; font-size: .8rem; color: var(--steel-l); }
+.report-more > summary { font-size: 1.05rem; font-weight: 700; padding: .6rem 0; color: var(--amber); }
+.stakeholder .stakeholder-body .ask-hint { display: none; }
+.outcome-grid > details.card { align-self: start; }

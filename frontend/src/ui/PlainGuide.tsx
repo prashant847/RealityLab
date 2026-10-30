@@ -1,6 +1,6 @@
 import { CHOICE_PLAIN, GLOSSARY, plainRound } from "../story/plain";
 
-/** The round in three short lines: where we are, what is wrong, and what the player has to decide; plus what they have done so far. */
+/** The round in two short lines (what is wrong, what you must decide); everything else about it is one click away. */
 export function PlainBrief({ round, trail, original }: { round: number | undefined; trail: string[]; original?: string }) {
   const p = plainRound(round);
   if (!p) return original ? <p className="lede-sm">{original}</p> : null;
@@ -8,19 +8,17 @@ export function PlainBrief({ round, trail, original }: { round: number | undefin
   return (
     <section className="plain-brief" aria-label="What is going on">
       <p className="plain-label" data-evidence={p.label}>{p.label === "documented" ? "Documented history" : p.label === "reconstructed" ? "Reconstructed scene" : "Simulation"}</p>
-      <dl>
-        <div><dt>Where we are</dt><dd>{p.where}</dd></div>
-        <div><dt>The problem</dt><dd>{p.problem}</dd></div>
-        <div className="plain-brief-job"><dt>Your job now</dt><dd>{p.job}</dd></div>
-      </dl>
-      {done.length > 0 && (
-        <details className="plain-sofar">
-          <summary>The story so far ({done.length} decision{done.length === 1 ? "" : "s"})</summary>
-          <ol>{done.map((d, i) => <li key={i}>You {d}.</li>)}</ol>
-        </details>
-      )}
-      {p.record && <p className="plain-record"><b>What the record says.</b> {p.record}</p>}
-      {original && <details className="plain-original"><summary>Read the original briefing</summary><p>{original}</p></details>}
+      <p className="plain-problem">{p.problem}</p>
+      <p className="plain-job"><b>Your job:</b> {p.job.replace(/^Decide /, "decide ")}</p>
+      <details className="plain-more">
+        <summary>More about this round</summary>
+        <dl>
+          <div><dt>Where we are</dt><dd>{p.where}</dd></div>
+          {p.record && <div><dt>What the record says</dt><dd>{p.record}</dd></div>}
+          {done.length > 0 && <div><dt>Your decisions so far ({done.length})</dt><dd><ol>{done.map((d, i) => <li key={i}>You {d}.</li>)}</ol></dd></div>}
+          {original && <div><dt>Original briefing</dt><dd>{original}</dd></div>}
+        </dl>
+      </details>
     </section>
   );
 }
@@ -34,6 +32,19 @@ export function Glossary({ texts }: { texts: string[] }) {
     <details className="glossary">
       <summary>Words explained ({used.length})</summary>
       <dl>{used.map((g) => <div key={g.term}><dt>{g.term}</dt><dd>{g.means}</dd></div>)}</dl>
+    </details>
+  );
+}
+
+/** What the player knows, and the hard words, in one fold under the comic. */
+export function Facts({ info, texts }: { info: string[]; texts: string[] }) {
+  const all = texts.join(" \n ");
+  const used = GLOSSARY.filter((x) => x.match.test(all));
+  return (
+    <details className="card known facts" aria-labelledby="known-h">
+      <summary id="known-h">What you know{used.length > 0 ? ` and ${used.length} word${used.length === 1 ? "" : "s"} explained` : ""}</summary>
+      <ul className="scene-info">{info.map((t, i) => <li key={i}>{t}</li>)}</ul>
+      {used.length > 0 && <dl className="glossary-list">{used.map((x) => <div key={x.term}><dt>{x.term}</dt><dd>{x.means}</dd></div>)}</dl>}
     </details>
   );
 }

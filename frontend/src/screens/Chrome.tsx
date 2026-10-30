@@ -10,7 +10,7 @@ export function Topbar({ clock, round, attempt, kind, rewindsLeft, paused, onPau
     <header className="topbar">
       <img src={uiUrl("logo_mark")} alt="" />
       <strong>BLACKOUT</strong>
-      <span className="pill" aria-label="Current time and round">{clock ?? "6:00 AM"}{round ? ` · Round ${round}/10` : ""}</span>
+      <span className="pill" aria-label="Current time and round">{clock ?? "About Day 10"}{round ? ` · Round ${round}/10` : ""}</span>
       {attempt > 1 && <span className="pill pill--branch">Attempt {attempt}{kind === "rewind" ? " (rewound)" : ""}</span>}
       <span className="pill" title="Rewinds left in this simulation">{rewindsLeft} rewind{rewindsLeft === 1 ? "" : "s"} left</span>
       <span className="spacer" />

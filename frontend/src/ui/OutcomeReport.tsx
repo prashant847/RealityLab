@@ -34,8 +34,8 @@ export function OutcomeReport({ final, state, children, onRewind, onReplay, onRe
           {!final.deadline_met && <p className="alert" role="alert">The reopening deadline passed before the cargo could move.</p>}
           {final.provisional_shortfall > 0 && <p className="alert" role="alert">{final.provisional_shortfall} cargo lots on provisional records did not exist; customers saw a shortfall.</p>}
         </section>
-        <section className="card" aria-labelledby="oc-state">
-          <h2 id="oc-state">Where things stand</h2>
+        <details className="card" aria-labelledby="oc-state">
+          <summary id="oc-state">Where things stand (details)</summary>
           <dl className="facts">
             <div><dt>Recovery effort left</dt><dd>{state.budget.toFixed(1)} points</dd></div>
             <div><dt>Time left</dt><dd>{state.window_min} min</dd></div>
@@ -46,7 +46,7 @@ export function OutcomeReport({ final, state, children, onRewind, onReplay, onRe
             <div><dt>Verified cargo</dt><dd>{state.verified_units} cargo lots</dd></div>
             <div><dt>Recovery</dt><dd>{state.recovery_progress}%</dd></div>
           </dl>
-        </section>
+        </details>
       </div>
       {children}
       <div className="actions">

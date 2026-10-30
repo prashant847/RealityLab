@@ -16,7 +16,7 @@ import { DecisionList } from "../ui/DecisionCard";
 import { EventPanel } from "../ui/EventPanel";
 import { SimulationHUD } from "../ui/SimulationHUD";
 import { StakeholderCard } from "../ui/StakeholderCard";
-import { Glossary, PlainBrief } from "../ui/PlainGuide";
+import { Facts, PlainBrief } from "../ui/PlainGuide";
 import { plainPage } from "../story/plain";
 
 const STAFF_NAMES = { kavya: "Terminal Supervisor", arjun: "IT Lead", nisha: "Operations Manager", raghav: "Network Administrator", isha: "Customer Representative" } as const;
@@ -32,7 +32,7 @@ export function SidePanel({ view, onAsk, asking, asked }: {
   const { state, scene, risks } = view;
   return (
     <aside className="side" aria-label="Status and stakeholders">
-      <SimulationHUD state={state} clock={scene.clock ?? "6:00 AM"} round={scene.round ?? 10} />
+      <SimulationHUD compact state={state} clock={scene.clock ?? "About Day 10"} round={scene.round ?? 10} />
       {risks.length > 0 && (
         <section className="card risks" aria-labelledby="risks-h">
           <h2 id="risks-h">Active risks</h2>
@@ -40,9 +40,9 @@ export function SidePanel({ view, onAsk, asking, asked }: {
         </section>
       )}
       <section aria-labelledby="stake-h" className="stakeholders">
-        <h2 id="stake-h">Your team</h2>
+        <h2 id="stake-h">{onAsk ? "Ask your team" : "Your team"}</h2>
         {(["kavya", "arjun", "nisha", "raghav", "isha"] as const).map((id) => (
-          <StakeholderCard key={id} id={id} trust={state.trust[id] ?? 0} asked={asked?.has(id)}
+          <StakeholderCard key={id} id={id} compact trust={state.trust[id] ?? 0} asked={asked?.has(id)}
             onAsk={onAsk ? () => onAsk(id) : undefined} disabled={Boolean(asking)} />
         ))}
       </section>
@@ -99,12 +99,12 @@ export function SceneScreen({ api, view, busy, onDecide }: { api: GameApi; view:
           </section>
         )}
         {artScript ? <IllustratedPage page={flatStory ? plainPage(scene.page) : scene.page} script={artScript} title={scene.title} facts={scene.info ?? []} evidence={flatStory ? evidence : undefined} /> : <ComicPage page={scene.page} title={scene.title} />}
-        {flatStory && !analystCard && <p className="evidence-hint">Inspect the evidence above and have the {STAFF_NAMES[analystId]} analyse it: their view of each option will be marked on the choices below.</p>}
-        <section className="card known" aria-labelledby="known-h">
-          <h2 id="known-h">What you know</h2>
-          <ul className="scene-info">{scene.info?.map((t, i) => <li key={i}>{t}</li>)}</ul>
-        </section>
-        {flatStory && <Glossary texts={[scene.brief ?? "", ...(scene.info ?? []), ...(scene.choices ?? []).flatMap((c) => [c.label, c.summary])]} />}
+        {flatStory ? <Facts info={scene.info ?? []} texts={[scene.brief ?? "", ...(scene.info ?? []), ...(scene.choices ?? []).flatMap((c) => [c.label, c.summary])]} /> : (
+          <section className="card known" aria-labelledby="known-h">
+            <h2 id="known-h">What you know</h2>
+            <ul className="scene-info">{scene.info?.map((t, i) => <li key={i}>{t}</li>)}</ul>
+          </section>
+        )}
         <AdvicePanel advice={advice} />
         {asking && <p role="status" className="muted">Asking for advice…</p>}
         {adviceError && <p className="alert" role="alert">{adviceError}</p>}

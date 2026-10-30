@@ -52,6 +52,30 @@ export function ScoreReport({ report }: { report: Report }) {
         </div>
       </div>
 
+      <div className="two-col">
+        <section className="card" aria-labelledby="best-h">
+          <h3 id="best-h">Strongest decisions</h3>
+          {pick(report.strongest_decisions).length === 0 ? <p className="muted">No single decision stood out as improving things.</p> :
+            <ul>{pick(report.strongest_decisions).map((d) => <li key={d.index}><strong>{d.clock}</strong> {d.label} <span className="muted">({sign(d.impact.score_delta)})</span></li>)}</ul>}
+          {pick(report.recovery_improvers).length > 0 && (<><h4>Decisions that improved recovery</h4>
+            <ul>{pick(report.recovery_improvers).map((d) => <li key={d.index}>{d.clock} {d.label} <span className="muted">(systems {sign(d.impact.recovery_gain)})</span></li>)}</ul></>)}
+        </section>
+        <section className="card card--accent" aria-labelledby="worst-h">
+          <h3 id="worst-h">Most damaging decisions</h3>
+          {pick(report.most_damaging_decisions).length === 0 ? <p className="muted">None: no decision cost you points.</p> :
+            <ul>{pick(report.most_damaging_decisions).map((d) => <li key={d.index}><strong>{d.clock}</strong> {d.label} <span className="muted">({sign(d.impact.score_delta)}, {RATING[d.rating].toLowerCase()})</span></li>)}</ul>}
+        </section>
+      </div>
+
+      {report.focus_next.length > 0 && (
+        <section className="card" aria-labelledby="focus-h">
+          <h3 id="focus-h">Where to focus next</h3>
+          <ul>{report.focus_next.map((f) => <li key={f.category}><strong>{f.category} ({Math.round(f.score)}).</strong> {f.advice}</li>)}</ul>
+        </section>
+      )}
+
+      <details className="report-more">
+        <summary>Full report: score breakdown, every decision, losses and alternatives</summary>
       <div className="card" role="region" aria-labelledby="cat-h">
         <h3 id="cat-h">Scores by category</h3>
         {report.categories.map((c) => (
@@ -70,21 +94,6 @@ export function ScoreReport({ report }: { report: Report }) {
             </details>
           </div>
         ))}
-      </div>
-
-      <div className="two-col">
-        <section className="card" aria-labelledby="best-h">
-          <h3 id="best-h">Strongest decisions</h3>
-          {pick(report.strongest_decisions).length === 0 ? <p className="muted">No single decision stood out as improving things.</p> :
-            <ul>{pick(report.strongest_decisions).map((d) => <li key={d.index}><strong>{d.clock}</strong> {d.label} <span className="muted">({sign(d.impact.score_delta)})</span></li>)}</ul>}
-          {pick(report.recovery_improvers).length > 0 && (<><h4>Decisions that improved recovery</h4>
-            <ul>{pick(report.recovery_improvers).map((d) => <li key={d.index}>{d.clock} {d.label} <span className="muted">(systems {sign(d.impact.recovery_gain)})</span></li>)}</ul></>)}
-        </section>
-        <section className="card card--accent" aria-labelledby="worst-h">
-          <h3 id="worst-h">Most damaging decisions</h3>
-          {pick(report.most_damaging_decisions).length === 0 ? <p className="muted">None: no decision cost you points.</p> :
-            <ul>{pick(report.most_damaging_decisions).map((d) => <li key={d.index}><strong>{d.clock}</strong> {d.label} <span className="muted">({sign(d.impact.score_delta)}, {RATING[d.rating].toLowerCase()})</span></li>)}</ul>}
-        </section>
       </div>
 
       <section className="card" aria-labelledby="dec-h">
@@ -129,13 +138,6 @@ export function ScoreReport({ report }: { report: Report }) {
               {a.recommended_by.length > 0 && <span className="muted"> {a.recommended_by.join(" and ")} recommended it.</span>}</li>))}</ul>
         </section>
       )}
-      {report.focus_next.length > 0 && (
-        <section className="card" aria-labelledby="focus-h">
-          <h3 id="focus-h">Where to focus next</h3>
-          <ul>{report.focus_next.map((f) => <li key={f.category}><strong>{f.category} ({Math.round(f.score)}).</strong> {f.advice}</li>)}</ul>
-        </section>
-      )}
-
       {report.attempts.length > 1 && (
         <section className="card" aria-labelledby="att-h">
           <h3 id="att-h">Progress across attempts</h3>
@@ -158,6 +160,7 @@ export function ScoreReport({ report }: { report: Report }) {
           You verified {report.reveal.verified_units}, so {report.reveal.existing_but_unverified} lots that did exist were never confirmed and could not ship safely.</p>
         <p className="muted">{report.reveal.note}</p>
       </section>
+      </details>
     </section>
   );
 }

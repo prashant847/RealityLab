@@ -19,18 +19,20 @@ function Meter({ label, value, max, text, tone, marker }: {
 }
 const hi = (v: number, ok = 60, warn = 35): Tone => (v >= ok ? "good" : v >= warn ? "warn" : "bad");
 
-export function SimulationHUD({ state, clock, round }: { state: WorldView; clock?: string; round?: number }) {
+export function SimulationHUD({ state, clock, round, compact = false }: { state: WorldView; clock?: string; round?: number; compact?: boolean }) {
   const hospitalMet = state.transport_capacity >= state.hospital_need;
-  return (
-    <aside className="hud" aria-label="Operational status">
-      <div className="hud-clock">
-        <span className="hud-time">{clock ?? "—"}</span>
-        <span className="hud-round">Round {round ?? state.round} of 10</span>
-      </div>
+  const key = (
+    <>
       <Meter label="Time left" value={state.window_min} max={300} text={`${state.window_min} min`}
         tone={state.window_min >= 90 ? "good" : state.window_min >= 30 ? "warn" : "bad"} />
       <Meter label="Recovery effort" value={state.budget} max={12} text={`${state.budget.toFixed(1)} points`}
         tone={state.budget >= 4 ? "good" : state.budget >= 1.5 ? "warn" : "bad"} />
+      <Meter label="Staff safety" value={state.staff_safety} max={100} text={`${state.staff_safety}%`} tone={hi(state.staff_safety, 80, 55)} />
+      <Meter label="Public trust" value={state.public_trust} max={100} text={`${state.public_trust}%`} tone={hi(state.public_trust)} />
+    </>
+  );
+  const rest = (
+    <>
       <Meter label="Verified cargo" value={state.verified_units} max={state.recorded_units}
         text={`${state.verified_units} / ${state.recorded_units} recorded`} tone={hi((state.verified_units / state.recorded_units) * 100, 55, 30)} marker={state.hospital_need} />
       <Meter label="Transport capacity" value={state.transport_capacity} max={450}
@@ -38,8 +40,16 @@ export function SimulationHUD({ state, clock, round }: { state: WorldView; clock
       <Meter label="System integrity" value={state.system_integrity} max={100} text={`${state.system_integrity}%`} tone={hi(state.system_integrity)} />
       <Meter label="Recovery" value={state.recovery_progress} max={100} text={`${state.recovery_progress}%`} tone={hi(state.recovery_progress, 50, 20)} />
       <Meter label="Evidence quality" value={state.evidence_quality} max={100} text={`${state.evidence_quality}%`} tone={hi(state.evidence_quality)} />
-      <Meter label="Staff safety" value={state.staff_safety} max={100} text={`${state.staff_safety}%`} tone={hi(state.staff_safety, 80, 55)} />
-      <Meter label="Public trust" value={state.public_trust} max={100} text={`${state.public_trust}%`} tone={hi(state.public_trust)} />
+    </>
+  );
+  return (
+    <aside className="hud" aria-label="Operational status">
+      <div className="hud-clock">
+        <span className="hud-time">{clock ?? "—"}</span>
+        <span className="hud-round">Round {round ?? state.round} of 10</span>
+      </div>
+      {key}
+      {compact ? <details className="hud-more"><summary>More status</summary>{rest}</details> : rest}
     </aside>
   );
 }
