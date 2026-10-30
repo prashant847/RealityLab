@@ -1,22 +1,31 @@
 {
   "server": "http://127.0.0.1:8188",
   "checkpoint": "v1-5-pruned-emaonly.safetensors",
-  "defaults": { "width": 768, "height": 448, "steps": 24, "cfg": 7.0, "sampler": "euler_ancestral", "scheduler": "normal" },
+  "defaults": {
+    "width": 768,
+    "height": 448,
+    "steps": 24,
+    "cfg": 7.0,
+    "sampler": "euler_ancestral",
+    "scheduler": "normal",
+    "denoise": 0.9
+  },
   "staging_dir": "frontend/art-staging",
   "production_dir": "frontend/public/assets/generated",
   "style": {
-    "positive": "flat 2D vector illustration, infographic comic style, clean simple shapes, solid flat colours, restrained shading, clear foreground middle-ground and background, dark navy and slate palette with amber accents, cinematic composition, empty room, no people",
-    "negative": "photograph, photorealistic, 3d render, glossy, plastic, anime, gradient, noise, blurry, people, person, human, face, hands, text, letters, words, numbers, watermark, logo, signature, frame, border, deformed, cluttered"
+    "positive": "flat 2D vector illustration, dark charcoal slate walls, desaturated muted palette, soft translucent cones of light, pale blue-grey floor, solid colour shapes without outlines, minimal shading, calm professional infographic style, clean simple shapes, no people",
+    "negative": "photograph, photorealistic, 3d render, glossy, plastic, anime, outline, thick black lines, noise, grain, blurry, bright saturated colours, people, person, human, face, hands, text, letters, words, numbers, watermark, logo, signature, frame, border, deformed, cluttered, messy"
   },
   "environments": {
-    "warehouse_floor": "open-plan office floor at night, rows of desks with dark computer monitors, ceiling lights, glass partitions",
-    "control_room": "professional IT server room during a major cyber incident, tall server racks with red and amber warning lights, dim blue room, cables on the floor",
-    "electrical_area": "container terminal quay, orange gantry crane standing still, stacked shipping containers, tarmac, dusk sky",
-    "loading_dock": "shipping terminal gate, closed barrier arm, small gatehouse, stacked containers behind, empty road lanes",
-    "ops_office": "operations centre with large wall screens, a long meeting table and a whiteboard",
-    "hospital_corridor": "customer service floor, rows of desks with headsets and desk phones, partition panels, wall clock",
-    "flooded_highway": "access road leading to a shipping terminal, closed barrier, containers in the distance, empty lanes at dusk",
-    "alt_depot": "dim recovery room with a long table of laptops, a wall map of sites, emergency lighting",
-    "press_scene": "communications room with a podium and microphone, a wall screen, desk phones"
-  }
+    "warehouse_floor": "large open-plan office at night, long rows of desks each with a computer monitor, ceiling track lights, glass partition wall",
+    "control_room": "server room, tall black server racks in a row with small red and amber indicator lights, cables on the floor, one workstation desk",
+    "electrical_area": "container shipping terminal quay at dusk, orange gantry crane, stacked colourful shipping containers, concrete ground, harbour sky",
+    "loading_dock": "shipping terminal entrance gate, red and white barrier arm, small white gatehouse, stacked containers behind, empty asphalt lanes",
+    "ops_office": "operations centre, three large wall screens, long meeting table with chairs, whiteboard on the wall",
+    "hospital_corridor": "customer service call centre floor, rows of desks with headsets and desk phones, low partition panels, large wall clock",
+    "flooded_highway": "empty access road with lane markings leading to a shipping terminal, closed barrier, stacked containers in the distance, evening sky",
+    "alt_depot": "dim recovery room, long table with many open laptops, wall map with pins, amber emergency lights",
+    "press_scene": "small communications room with a podium and microphone, large wall screen, two desk phones, tidy backdrop"
+  },
+  "style_reference": "img1.jpeg"
 }
