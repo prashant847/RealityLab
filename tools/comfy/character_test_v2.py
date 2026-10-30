@@ -119,7 +119,7 @@ def gen(a) -> None:
     G.check()
     face_path = Path(a.face) if a.face else OUT / "master_face_crop.png"
     face = G.upload(face_path)
-    posename = G.upload(OUT / f"pose_{a.pose}.png")
+    posename = G.upload(Path(a.pose_file) if a.pose_file else OUT / f"pose_{a.pose}.png")
     prompt = f"flat illustration, {a.scene}"
     neg = NEGATIVE + (", " + a.neg_extra if a.neg_extra else "")
     peak = [0]; stop = threading.Event()
@@ -144,7 +144,7 @@ def gen(a) -> None:
     rows = json.loads(rp.read_text(encoding="utf-8")) if rp.exists() else []
     rows.append({"file": out.name, "checkpoint": G.CONFIG["checkpoint"], "lora": LORA, "lora_weight": 1.0, "ipadapter": "ip-adapter-plus-face_sd15.safetensors (preset PLUS FACE)",
                  "ipadapter_weight": a.ipa_weight, "clip_vision": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors", "identity_reference": str(face_path.name),
-                 "controlnet": CONTROLNET, "controlnet_strength": a.cn_strength, "pose_image": f"pose_{a.pose}.png", "seed": a.seed, "size": [W, H], "steps": a.steps, "cfg": a.cfg,
+                 "controlnet": CONTROLNET, "controlnet_strength": a.cn_strength, "pose_image": Path(a.pose_file).name if a.pose_file else f"pose_{a.pose}.png", "seed": a.seed, "size": [W, H], "steps": a.steps, "cfg": a.cfg,
                  "positive": prompt, "negative": neg, "seconds": round(time.time() - t0, 1), "peak_vram_mib": peak[0], "comfyui": "v0.3.50", "ipadapter_plus_commit": "a0f451a",
                  "created": datetime.now(timezone.utc).isoformat(timespec="seconds")})
     rp.write_text(json.dumps(rows, indent=2), encoding="utf-8")
@@ -154,14 +154,18 @@ def gen(a) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("mode", choices=["prepare", "gen"])
-    ap.add_argument("--name"); ap.add_argument("--seed", type=int); ap.add_argument("--pose", choices=sorted(POSES)); ap.add_argument("--scene", default="")
+    ap.add_argument("--name"); ap.add_argument("--seed", type=int); ap.add_argument("--pose", choices=sorted(POSES), default=None); ap.add_argument("--scene", default="")
     ap.add_argument("--out", default=None, help="output folder name under frontend/art-staging (default character-consistency-test-v2)")
     ap.add_argument("--face", default=None, help="identity reference image (path); default master_face_crop.png in the output folder")
     ap.add_argument("--neg-extra", default="", help="extra negative-prompt words, e.g. smile, grin")
+    ap.add_argument("--size", default=None, help="WxH of the picture, e.g. 640x512")
+    ap.add_argument("--pose-file", default=None, help="a ready-made OpenPose skeleton image to use instead of --pose")
     ap.add_argument("--ipa-weight", type=float, default=0.5); ap.add_argument("--cn-strength", type=float, default=0.9)
     ap.add_argument("--steps", type=int, default=28); ap.add_argument("--cfg", type=float, default=7.0)
     a = ap.parse_args()
-    global OUT
+    global OUT, W, H
+    if a.size:
+        W, H = (int(v) for v in a.size.lower().split("x"))
     if a.out:
         OUT = G.ROOT / "frontend" / "art-staging" / a.out
     prepare() if a.mode == "prepare" else gen(a)
