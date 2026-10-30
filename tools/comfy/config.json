@@ -1,0 +1,22 @@
+{
+  "server": "http://127.0.0.1:8188",
+  "checkpoint": "v1-5-pruned-emaonly.safetensors",
+  "defaults": { "width": 768, "height": 448, "steps": 24, "cfg": 7.0, "sampler": "euler_ancestral", "scheduler": "normal" },
+  "staging_dir": "frontend/art-staging",
+  "production_dir": "frontend/public/assets/generated",
+  "style": {
+    "positive": "flat 2D vector illustration, infographic comic style, clean simple shapes, solid flat colours, restrained shading, clear foreground middle-ground and background, dark navy and slate palette with amber accents, cinematic composition, empty room, no people",
+    "negative": "photograph, photorealistic, 3d render, glossy, plastic, anime, gradient, noise, blurry, people, person, human, face, hands, text, letters, words, numbers, watermark, logo, signature, frame, border, deformed, cluttered"
+  },
+  "environments": {
+    "warehouse_floor": "open-plan office floor at night, rows of desks with dark computer monitors, ceiling lights, glass partitions",
+    "control_room": "professional IT server room during a major cyber incident, tall server racks with red and amber warning lights, dim blue room, cables on the floor",
+    "electrical_area": "container terminal quay, orange gantry crane standing still, stacked shipping containers, tarmac, dusk sky",
+    "loading_dock": "shipping terminal gate, closed barrier arm, small gatehouse, stacked containers behind, empty road lanes",
+    "ops_office": "operations centre with large wall screens, a long meeting table and a whiteboard",
+    "hospital_corridor": "customer service floor, rows of desks with headsets and desk phones, partition panels, wall clock",
+    "flooded_highway": "access road leading to a shipping terminal, closed barrier, containers in the distance, empty lanes at dusk",
+    "alt_depot": "dim recovery room with a long table of laptops, a wall map of sites, emergency lighting",
+    "press_scene": "communications room with a podium and microphone, a wall screen, desk phones"
+  }
+}
