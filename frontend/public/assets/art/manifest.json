@@ -1,0 +1,172 @@
+{
+  "version": 1,
+  "note": "Stable asset ids -> image files. status: real = genuine third-party artwork with a verified licence and a credit record (see docs/ART_ASSETS.md); placeholder = labelled stand-in PNG, NOT final art; needed = no file yet. The 'fit' note says how closely a real asset matches its brief.",
+  "assets": {
+    "env.warehouse.wide_dark": {
+      "kind": "environment",
+      "path": "env/warehouse_wide_dark.png",
+      "width": 1600,
+      "height": 900,
+      "status": "real",
+      "alt": "Wide view down a dark warehouse aisle after the power fails.",
+      "brief": "Wide cinematic ink-and-wash illustration: tall racking receding in perspective, strip lights dead, a few torch beams and distant silhouettes of staff, emergency amber glow at the far end, cold navy shadows, concrete floor with wet reflections.",
+      "fit": "Closest match. A real black-and-white photograph of a large empty industrial hall with overhead strip lights, not racking and not an ink illustration. Cropped to 16:9 and resized.",
+      "credit": {
+        "title": "VR Warehouse interior in Helsinki, Finland, 1999.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:VR_Warehouse_interior_in_Helsinki%2C_Finland%2C_1999.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/9/94/VR_Warehouse_interior_in_Helsinki%2C_Finland%2C_1999.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "author": "Kari Hakli",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+        "attributionRequired": true,
+        "changes": "Cropped and resized to 1600x900; converted to PNG.",
+        "evidence": "Commons file page carries {{cc-by-4.0}}; source recorded as a Finnish Heritage Agency (Finna) record, author Kari Hakli."
+      }
+    },
+    "env.warehouse.aisle_depth": {
+      "kind": "environment",
+      "path": "env/warehouse_aisle_depth.png",
+      "width": 1600,
+      "height": 900,
+      "status": "real",
+      "alt": "Out-of-focus warehouse aisle used behind close-ups.",
+      "brief": "Same warehouse as the wide shot from a lower, closer angle, racking and boxes softly out of focus, one torch beam crossing the frame, heavy shadow on the left.",
+      "fit": "Close match in content (tall racking aisle with pallets). A colour photograph, not an ink illustration. Cropped to 16:9 and resized; no brand names visible.",
+      "credit": {
+        "title": "Interior of an Warehouses.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:Interior_of_an_Warehouses.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/2/2d/Interior_of_an_Warehouses.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "author": "Encik Tekateki",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+        "attributionRequired": true,
+        "changes": "Cropped and resized to 1600x900; converted to PNG."
+      }
+    },
+    "env.control_room.terminals": {
+      "kind": "environment",
+      "path": "env/control_room_terminals.png",
+      "width": 1600,
+      "height": 900,
+      "status": "real",
+      "alt": "Control room terminals after the system failure.",
+      "brief": "Bank of terminals and monitors, most black or showing frozen error screens, one with scrolling login records, steel-blue light on desks, a red status LED, cables and chairs left in a hurry.",
+      "fit": "Partial match. A real control room with a wall of monitors and operator desks, but bright and working, not failed or dark. A photograph. Cropped to 16:9 and resized.",
+      "credit": {
+        "title": "Control room of BESSY II, 2025-06-28.jpeg",
+        "source": "https://commons.wikimedia.org/wiki/File:Control_room_of_BESSY_II%2C_2025-06-28.jpeg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/4/47/Control_room_of_BESSY_II%2C_2025-06-28.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "author": "Nylki",
+        "license": "CC0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "attributionRequired": false,
+        "changes": "Cropped and resized to 1600x900; converted to PNG.",
+        "evidence": "Commons file page carries {{cc0}}; {{own}} work of the uploader Nylki."
+      }
+    },
+    "env.ops_office.night": {
+      "kind": "environment",
+      "path": "env/ops_office_night.png",
+      "width": 1600,
+      "height": 900,
+      "status": "real",
+      "alt": "Operations office at night, used behind the reaction shot.",
+      "brief": "Operations office after midnight, rain on the window, whiteboard of the shipment timeline, one desk lamp, laptop glow; soft focus so a character can stand in front.",
+      "fit": "Partial match. An empty open-plan office with lights on; there is no rain, whiteboard or desk lamp. A photograph. Cropped to 16:9 and resized.",
+      "credit": {
+        "title": "Cubicle land.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:Cubicle_land.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Cubicle_land.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "author": "Larsinio at English Wikipedia",
+        "license": "Public domain",
+        "licenseUrl": "https://commons.wikimedia.org/wiki/Template:PD-user-en",
+        "attributionRequired": false,
+        "changes": "Cropped and resized to 1600x900; converted to PNG."
+      }
+    },
+    "env.ops_office.decision": {
+      "kind": "environment",
+      "path": "env/ops_office_decision.png",
+      "width": 1600,
+      "height": 500,
+      "status": "real",
+      "alt": "Wide dim backdrop behind the decision panel.",
+      "brief": "Very wide, low-contrast version of the operations office, mostly dark navy, leaving the centre quiet for text.",
+      "fit": "Partial match. A dim, empty open-plan office, cropped to a wide strip. A photograph.",
+      "credit": {
+        "title": "Cube Farm.jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:Cube_Farm.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Cube_Farm.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "author": "Dan4th Nicholas from Cambridge, MA, USA",
+        "license": "CC BY 2.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "attributionRequired": true,
+        "changes": "Cropped and resized to 1600x500; converted to PNG.",
+        "evidence": "Commons file page carries {{cc-by-2.0}}; source is the author's Flickr photo 'cube farm' (dan4th)."
+      }
+    },
+    "fg.terminal.failed_evidence": {
+      "kind": "foreground",
+      "path": "foreground/terminal_failed_evidence.png",
+      "width": 1200,
+      "height": 800,
+      "status": "real",
+      "alt": "Close-up of a failed terminal showing suspicious logins.",
+      "brief": "Transparent PNG, tight on a monitor: frozen scanner software, a dead inventory dashboard and a list of login records with one entry highlighted. No readable story text; abstract lines only. Fingerprints on the glass, reflection of a face.",
+      "fit": "Good match for a failed terminal. A real photo of a crashed Windows stop screen on a public terminal, cropped to the error text. Opaque photo rather than a transparent cut-out, so it appears as a framed insert.",
+      "credit": {
+        "title": "Blue Screen of Death on Internet Terminal.JPG",
+        "source": "https://commons.wikimedia.org/wiki/File:Blue_Screen_of_Death_on_Internet_Terminal.JPG",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Blue_Screen_of_Death_on_Internet_Terminal.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "author": "Ente75",
+        "license": "CC0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "attributionRequired": false,
+        "changes": "Cropped and resized to 1200x800; converted to PNG.",
+        "evidence": "Commons file page carries {{self|cc-zero}}; {{own}} work of the uploader Ente75."
+      }
+    },
+    "env.arjun.hands_keyboard": {
+      "kind": "environment",
+      "path": "env/arjun_hands_keyboard.png",
+      "width": 1600,
+      "height": 860,
+      "status": "real",
+      "alt": "Hands typing at a laptop in front of a second screen.",
+      "brief": "Stand-in for Arjun working at the failed system, shown without a face: hands on a keyboard, screens glowing.",
+      "fit": "Stand-in photograph of an unnamed person's hands, not Arjun. It shows hands and a laptop only; the screen is not a failed system. Cropped to 1600x860.",
+      "credit": {
+        "title": "Keyboard Warrior (Unsplash).jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:Keyboard_Warrior_%28Unsplash%29.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/9/99/Keyboard_Warrior_%28Unsplash%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "author": "Glenn Carstens-Peters glenncarstenspeters",
+        "license": "CC0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "attributionRequired": false,
+        "changes": "Cropped to 1600x860 and converted to PNG.",
+        "evidence": "Commons file page carries {{Unsplash}}; the Unsplash upload is dated 2017-02-05, before 5 June 2017 when Unsplash photos were CC0, and Wayback copies are linked on the page. Category 'Images from Unsplash (review needed)': no Commons reviewer has confirmed it yet."
+      }
+    },
+    "env.director.skyline_silhouette": {
+      "kind": "environment",
+      "path": "env/director_skyline_silhouette.png",
+      "width": 1600,
+      "height": 667,
+      "status": "real",
+      "alt": "A person seen only as a dark silhouette from behind, looking out of a tall office window at a city skyline.",
+      "brief": "Stand-in for the Operations Director's reaction, shown without a face or any identifying features: a silhouette against a window.",
+      "fit": "Stand-in photograph of an unnamed person, not the director. A pure silhouette seen from behind, so no face, gender or clothing is shown. It is lit as dusk or daytime, while the story is set at night. Cropped to 1600x667.",
+      "credit": {
+        "title": "Staring out building windows (Unsplash).jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:Staring_out_building_windows_%28Unsplash%29.jpg",
+        "original": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Staring_out_building_windows_%28Unsplash%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "author": "Alex Knight agkdesign",
+        "license": "CC0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "attributionRequired": false,
+        "changes": "Cropped to 1600x667 and converted to PNG.",
+        "evidence": "Commons file page carries {{Unsplash}}; the Unsplash upload is dated 2016-12-29, before 5 June 2017 when Unsplash photos were CC0, and Wayback copies are linked on the page. Category 'Images from Unsplash (review needed)': no Commons reviewer has confirmed it yet."
+      }
+    }
+  }
+}

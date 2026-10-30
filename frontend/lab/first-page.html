@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BLACKOUT first page: character method comparison</title>
+<link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main>
+<h1>First page: character methods compared on the same scene</h1>
+<p class="muted">Isolated prototype (not part of the game). Same backgrounds, same grade and framing for every method: a close-up of Arjun worried by the failed system, and a wider shot of Arjun and the Operations Director with the failed terminal. Dialogue is the first page's own line. Nothing here is integrated.</p>
+
+<h2>Close-up: Arjun, concerned</h2>
+<div class="grid">
+  <div class="cell"><div class="shot"><div class="none">Method A: no suitable openly licensed illustrated character found (anime, flat cartoon, AI-generated, female-only or unlicensed).</div></div>
+    <p><b>A. Open character artwork</b>Searched twice; see docs/ART_FEASIBILITY.md section 8.</p><div class="score"><span class="bad">no asset</span></div></div>
+
+  <div class="cell"><div class="shot"><img class="bg" src="../public/assets/art/env/warehouse_aisle_depth.png" alt="">
+    <div class="who" style="--u:14px;right:8%;bottom:-12%;"><div class="cssfig concern"><div class="torso"></div><div class="neck"></div><div class="head"><div class="ear l"></div><div class="ear r"></div><div class="face"><div class="eye l"><i></i></div><div class="eye r"><i></i></div><div class="brow l"></div><div class="brow r"></div><div class="nose"></div><div class="stubble"></div><div class="mouth"></div><div class="glasses"><b class="l"></b><b class="r"></b><u></u></div></div><div class="hair messy"></div></div></div></div>
+    <div class="bubble"><b style="font-size:.6rem;letter-spacing:.1em;color:#2f4560">ARJUN MEHTA</b><br>Scanners are dead. And these logins — none of them are ours.</div></div>
+    <p><b>B. HTML/CSS construction</b>Divs, gradients, clip-path only. No SVG.</p><div class="score"><span class="bad">face reads as a toy</span><span class="mid">expression controllable</span><span class="good">licence: own work</span></div></div>
+
+  <div class="cell"><div class="shot"><img class="bg" src="../public/assets/art/env/warehouse_aisle_depth.png" alt="">
+    <img class="who" src="img/c_arjun_concern.png" alt="DiceBear Lorelei avatar" style="right:2%;height:80%;bottom:2%;">
+    <div class="bubble"><b style="font-size:.6rem;letter-spacing:.1em;color:#2f4560">ARJUN MEHTA</b><br>Scanners are dead. And these logins — none of them are ours.</div></div>
+    <p><b>C. Character library (DiceBear Lorelei, CC0 art)</b>Ink-line avatar with glasses; mouth and brow variants.</p><div class="score"><span class="bad">generic avatar, bust only</span><span class="mid">limited expressions</span><span class="good">CC0 art</span></div></div>
+
+  <div class="cell"><div class="shot"><img class="bg" src="../public/assets/art/env/warehouse_aisle_depth.png" alt="">
+    <div class="who layered" style="right:0;bottom:-6%;"><img src="img/d_arjun.png" alt="layered CC0 face parts"></div>
+    <div class="bubble"><b style="font-size:.6rem;letter-spacing:.1em;color:#2f4560">ARJUN MEHTA</b><br>Scanners are dead. And these logins — none of them are ours.</div></div>
+    <p><b>D. Layered raster (FabinhoSC face parts, CC0)</b>Bald stylised head with big cartoon eyes; no hair, mouths or clothes.</p><div class="score"><span class="bad">cartoon, incomplete</span><span class="bad">no expression set</span><span class="good">CC0</span></div></div>
+</div>
+
+<div class="grid" style="margin-top:.8rem">
+  <div class="cell"><div class="shot"><img class="bg" src="../public/assets/art/env/warehouse_aisle_depth.png" alt="">
+    <img class="who" src="img/e_arjun_concern.png" alt="Blender render, cel-processed" style="right:-2%;height:112%;bottom:-18%;">
+    <div class="bubble"><b style="font-size:.6rem;letter-spacing:.1em;color:#2f4560">ARJUN MEHTA</b><br>Scanners are dead. And these logins — none of them are ours.</div></div>
+    <p><b>E. 3D render + cel/ink post-process</b>CC0 MakeHuman assets rendered in Blender, then posterised with inked edges (<code>tools/art</code>).</p><div class="score"><span class="mid">closest to inked comic</span><span class="bad">weak expression, artifacts</span><span class="bad">no glasses available</span><span class="good">CC0 assets</span></div></div>
+  <div class="cell"><div class="shot"><img class="bg" src="../public/assets/art/env/warehouse_aisle_depth.png" alt=""><img class="who" src="img/e_first_attempt.png" alt="first attempt" style="right:-2%;height:112%;bottom:-18%;background:none;mix-blend-mode:normal"></div>
+    <p><b>E, first attempt (raw render)</b>Before the cel/ink pass: plastic CG look.</p><div class="score"><span class="bad">plastic</span></div></div>
+</div>
+
+<h2>Wider shot: Arjun and the Operations Director with the failed terminal</h2>
+<div class="grid">
+  <div class="cell"><div class="shot shot--wide"><div class="none">No asset (Method A)</div></div><p><b>A</b></p></div>
+
+  <div class="cell"><div class="shot shot--wide"><img class="bg" src="../public/assets/art/env/control_room_terminals.png" alt="">
+    <div class="who" style="--u:8px;left:4%;bottom:-16%;"><div class="cssfig suspicion"><div class="torso"></div><div class="neck"></div><div class="head"><div class="ear l"></div><div class="ear r"></div><div class="face"><div class="eye l"><i></i></div><div class="eye r"><i></i></div><div class="brow l"></div><div class="brow r"></div><div class="nose"></div><div class="stubble"></div><div class="mouth"></div><div class="glasses"><b class="l"></b><b class="r"></b><u></u></div></div><div class="hair messy"></div></div></div></div>
+    <div class="who" style="--u:8px;left:30%;bottom:-16%;"><div class="cssfig director tense"><div class="torso"></div><div class="neck"></div><div class="head"><div class="ear l"></div><div class="ear r"></div><div class="face"><div class="eye l"><i></i></div><div class="eye r"><i></i></div><div class="brow l"></div><div class="brow r"></div><div class="nose"></div><div class="mouth"></div></div><div class="hair temples"></div></div><div class="jacket-l"></div><div class="jacket-r"></div><div class="lanyard"></div></div></div>
+    <img class="who" src="../public/assets/art/foreground/terminal_failed_evidence.png" alt="" style="right:3%;bottom:6%;width:34%;height:auto;"></div>
+    <p><b>B</b>Both figures from the same CSS, different looks.</p></div>
+
+  <div class="cell"><div class="shot shot--wide"><img class="bg" src="../public/assets/art/env/control_room_terminals.png" alt="">
+    <img class="who" src="img/c_arjun_suspicion.png" alt="" style="left:4%;height:66%;bottom:4%;"><img class="who" src="img/c_director.png" alt="" style="left:30%;height:66%;bottom:4%;">
+    <img class="who" src="../public/assets/art/foreground/terminal_failed_evidence.png" alt="" style="right:3%;bottom:6%;width:34%;height:auto;"></div><p><b>C</b>Two avatars from the same library.</p></div>
+
+  <div class="cell"><div class="shot shot--wide"><img class="bg" src="../public/assets/art/env/control_room_terminals.png" alt="">
+    <img class="who" src="img/d_arjun.png" alt="" style="left:0%;height:78%;bottom:-4%;"><img class="who" src="img/d_director.png" alt="" style="left:24%;height:78%;bottom:-4%;">
+    <img class="who" src="../public/assets/art/foreground/terminal_failed_evidence.png" alt="" style="right:3%;bottom:6%;width:34%;height:auto;"></div><p><b>D</b>Two skin variants of the same head: identical faces, no clothes, no hair.</p></div>
+</div>
+<div class="grid" style="margin-top:.8rem">
+  <div class="cell"><div class="shot shot--wide"><img class="bg" src="../public/assets/art/env/control_room_terminals.png" alt="">
+    <img class="who" src="img/e_arjun_calm.png" alt="" style="left:-4%;height:100%;bottom:-18%;"><img class="who" src="img/e_director.png" alt="" style="left:24%;height:100%;bottom:-18%;">
+    <img class="who" src="../public/assets/art/foreground/terminal_failed_evidence.png" alt="" style="right:3%;bottom:6%;width:34%;height:auto;"></div><p><b>E</b>Rendered figures share one camera, lighting and post-process, so the pair reads as one cast.</p></div>
+</div>
+</main>
+</body>
+</html>

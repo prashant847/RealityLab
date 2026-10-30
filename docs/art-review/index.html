@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BLACKOUT art candidates for review</title>
+<style>
+  :root { color-scheme: dark; --bg:#0b111c; --panel:#121b2b; --line:#26354d; --text:#e6ebf2; --muted:#98a5b6; --amber:#e8a33d; --good:#6fb3a0; --bad:#e0614a; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 "Segoe UI",system-ui,sans-serif; }
+  main { max-width:1180px; margin:0 auto; padding:1.2rem 1rem 4rem; }
+  h1 { font-size:1.7rem; margin:0 0 .3rem; } h2 { color:var(--amber); font-size:1.1rem; text-transform:uppercase; letter-spacing:.08em; margin:2.2rem 0 .4rem; border-top:1px solid var(--line); padding-top:1rem; }
+  p, li { max-width:75ch; } .muted { color:var(--muted); font-size:.88rem; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:.9rem; }
+  figure { margin:0; background:var(--panel); border:1px solid var(--line); } figure img { display:block; width:100%; height:auto; background:#fff2; }
+  figcaption { padding:.5rem .7rem .7rem; font-size:.82rem; color:var(--muted); } figcaption b { color:var(--text); display:block; font-size:.9rem; }
+  .tag { display:inline-block; font-size:.7rem; padding:0 .45rem; border:1px solid; margin-right:.3rem; letter-spacing:.05em; }
+  .ok { color:var(--good); border-color:var(--good); } .conv { color:var(--amber); border-color:var(--amber); } .no { color:var(--bad); border-color:var(--bad); }
+  table { border-collapse:collapse; width:100%; font-size:.85rem; } th,td { border:1px solid var(--line); padding:.4rem .55rem; text-align:left; vertical-align:top; } th { color:var(--muted); font-weight:600; }
+  a { color:#8fb0d4; }
+  .banner { background:#2a1a10; border:1px solid var(--amber); padding:.7rem 1rem; margin:1rem 0; }
+</style>
+</head>
+<body>
+<main>
+<h1>BLACKOUT: candidate artwork for review</h1>
+<div class="banner"><b>Nothing here is approved.</b> These are candidates and feasibility evidence only. No candidate has been integrated into the game or marked <code>real</code> because of this page, and the story is unchanged. Full findings: <code>docs/ART_FEASIBILITY.md</code>. All pictures are existing third-party assets (no AI generation, no drawn-in-code art); the "flat views" below are my perspective crops of the CC0 Poly Haven panoramas.</div>
+
+<h2>A. Environments: Poly Haven (CC0) panoramas, flat views</h2>
+<p class="muted">Photographed real spaces. The tag says how each could serve the story. Poly Haven licence: CC0 (<a href="https://polyhaven.com/license">polyhaven.com/license</a>).</p>
+<div class="grid">
+  <figure><img src="img/ph_empty_warehouse_01_0.jpg" alt="Empty warehouse, view 0"><figcaption><b>Empty Warehouse 01 (view 0°)</b><span class="tag conv">needs props</span>Sergej Majboroda, CC0. A real warehouse hall with strip lights but no racking or stock.</figcaption></figure>
+  <figure><img src="img/ph_empty_warehouse_01_90.jpg" alt="Empty warehouse, view 90"><figcaption><b>Empty Warehouse 01 (view 90°)</b><span class="tag conv">needs props</span>Same hall. Racking, pallets and medical cartons could be added from Poly Haven CC0 props via Blender.</figcaption></figure>
+  <figure><img src="img/ph_distribution_board_90.jpg" alt="Distribution board"><figcaption><b>Distribution Board (90°)</b><span class="tag ok">suitable</span>Sergej Majboroda, CC0. Genuine electrical switchboard: fits the "smoke near electrical panel" chapter (not the opening scene).</figcaption></figure>
+  <figure><img src="img/ph_boiler_room_0.jpg" alt="Boiler room control panel"><figcaption><b>Boiler Room (0°)</b><span class="tag ok">suitable (control panel)</span>Oliksiy Yakovlyev, CC0. Analogue control panel; could stand in for plant/control scenes. Not a computer terminal.</figcaption></figure>
+  <figure><img src="img/ph_boiler_room_90.jpg" alt="Boiler room pipes"><figcaption><b>Boiler Room (90°)</b><span class="tag conv">plant/utility</span>Bright industrial interior. Not part of the opening scene.</figcaption></figure>
+  <figure><img src="img/ph_unfinished_office_night_0.jpg" alt="Unfinished office at night"><figcaption><b>Unfinished Office Night (0°)</b><span class="tag no">not an operations office</span>Sergej Majboroda, CC0. Bare walls, no desks: only usable with many added props.</figcaption></figure>
+  <figure><img src="img/ph_hospital_room_0.jpg" alt="Hospital room"><figcaption><b>Hospital Room (0°)</b><span class="tag conv">later chapters</span>Oliksiy Yakovlyev, CC0. Clinical wall with IV stand; for the hospital-liaison chapters.</figcaption></figure>
+</div>
+
+<h2>B. Props: Poly Haven (CC0) 3D models, usable only through Blender renders</h2>
+<p class="muted">These are 3D models (.blend/glTF). They cannot be shown in the current image renderer directly; they would have to be placed in a Blender scene and rendered to PNG. Blender is not installed on this machine.</p>
+<div class="grid">
+  <figure><img src="img/phprop_metal_office_desk.png" alt=""><figcaption><b>Metal Office Desk</b>Ulan Cabanilla, CC0</figcaption></figure>
+  <figure><img src="img/phprop_classic_laptop.png" alt=""><figcaption><b>Classic Laptop</b>Arrangemonk, CC0</figcaption></figure>
+  <figure><img src="img/phprop_clipboard.png" alt=""><figcaption><b>Clipboard</b>ProgrammerOnCoffee, CC0</figcaption></figure>
+  <figure><img src="img/phprop_medical_box.png" alt=""><figcaption><b>Medical Box</b>Ulan Cabanilla, CC0</figcaption></figure>
+  <figure><img src="img/phprop_industrial_storage_cart.png" alt=""><figcaption><b>Industrial Storage Cart</b>Jule Bielitz, CC0</figcaption></figure>
+  <figure><img src="img/phprop_hand_truck.png" alt=""><figcaption><b>Hand Truck</b>Mutanzom3D, CC0</figcaption></figure>
+  <figure><img src="img/phprop_cardboard_box_01.png" alt=""><figcaption><b>Cardboard Box 01</b>Rahul Chaudhary, CC0</figcaption></figure>
+  <figure><img src="img/phprop_caged_hanging_light.png" alt=""><figcaption><b>Caged Hanging Light</b>Ulan Cabanilla, CC0</figcaption></figure>
+  <figure><img src="img/phprop_korean_fire_extinguisher_01.png" alt=""><figcaption><b>Fire Extinguisher</b>UM JOORIN, CC0</figcaption></figure>
+  <figure><img src="img/phprop_industrial_pastic_container.png" alt=""><figcaption><b>Industrial Plastic Container</b>Galo Benivegna, CC0</figcaption></figure>
+</div>
+<p class="muted">Poly Haven has no computer monitor, terminal or server-rack model, and no tall warehouse racking model; the nearest items are a laptop, a storage cart, a hand truck and boxes.</p>
+
+<h2>C. Characters: what exists</h2>
+<h3>Blender Studio Human Base Meshes v1.4.1 (CC0)</h3>
+<p class="muted">Bundle downloaded and inspected (<a href="https://www.blender.org/download/demo-files/">blender.org/download/demo-files</a>; 49 MB; needs Blender 4.2+). These are bare, colour-coded sculpting base meshes: no hair, clothing, skin textures, rig poses or facial expressions.</p>
+<div class="grid">
+  <figure><img src="img/hbm_realistic_body_male.png" alt=""><figcaption><b>Realistic male body</b><span class="tag no">not a finished character</span></figcaption></figure>
+  <figure><img src="img/hbm_realistic_body_female.png" alt=""><figcaption><b>Realistic female body</b><span class="tag no">not a finished character</span></figcaption></figure>
+  <figure><img src="img/hbm_realistic_head_anim.png" alt=""><figcaption><b>Realistic head (animation topology)</b><span class="tag no">no skin, hair or expressions</span></figcaption></figure>
+</div>
+<h3>MakeHuman community assets (CC0) via MakeHuman or the MPFB2 Blender add-on</h3>
+<p class="muted">Licence text read from the MakeHuman repository (<code>LICENSE.md</code>, <code>LICENSE.ASSETS.md</code>): bundled assets are CC0 and the project claims nothing over renderings. The asset packs include natural skins (including Indian female and male), hair, eyebrows, eyes, casual/elegant/work suits, shoes, sitting and other poses, and ARKit-style face units for expressions. The images below are the pack thumbnails of clothing and hair only: they are not finished characters, and I have not generated any.</p>
+<div class="grid">
+  <figure><img src="img/mh_male_casualsuit01.png" alt=""><figcaption><b>male_casualsuit01</b>CC0, system assets</figcaption></figure>
+  <figure><img src="img/mh_male_elegantsuit01.png" alt=""><figcaption><b>male_elegantsuit01</b>CC0, system assets</figcaption></figure>
+  <figure><img src="img/mh_male_worksuit01.png" alt=""><figcaption><b>male_worksuit01</b>CC0, system assets</figcaption></figure>
+  <figure><img src="img/mh_female_elegantsuit01.png" alt=""><figcaption><b>female_elegantsuit01</b>CC0, system assets</figcaption></figure>
+  <figure><img src="img/mh_short02.png" alt=""><figcaption><b>short02 (hair)</b>CC0, system assets</figcaption></figure>
+</div>
+<p><b>Verdict:</b> a consistent cast is <i>technically possible</i> (MakeHuman + MPFB2 + Blender, rendering six fixed characters with one camera and lighting setup), but it needs software that is not installed and a sizeable new pipeline. No ready-made image of any recurring character exists.</p>
+
+<h2>F. Pilot: one character rendered from CC0 MakeHuman assets in Blender</h2>
+<p class="muted">Arjun, concerned expression: CC0 MakeHuman body, skin, hair, eyebrows and shirt, expression from the CC0 ARKit face-unit targets, rendered in Blender 4.5 with an inverted-hull ink outline (<code>frontend/tools/art/render_character.py</code>). No AI, no drawing. <b>Not approved and not used in the game.</b></p>
+<div class="grid"><figure><img src="img/pilot_arjun_makehuman.png" alt="Pilot render of Arjun"><figcaption><b>Pilot render (rejected on quality)</b><span class="tag no">uncanny / plastic</span>Red patches round the eyes and nostrils, barely visible brows, helmet-like hair, no glasses (no CC0 glasses exist in the packs). The expression reads weakly. This is the plastic CG look the brief rules out.</figcaption></figure></div>
+
+<h2>D. Current stand-ins already in the project (for comparison)</h2>
+<p class="muted">Six Wikimedia Commons photographs integrated earlier (cropped/resized) with credits in <code>docs/ART_ASSETS.md</code>. They are listed here so you can compare them with the candidates above; their status is unchanged.</p>
+<div class="grid">
+  <figure><img src="img/cur_wide_dark.jpg" alt=""><figcaption><b>env.warehouse.wide_dark</b>Kari Hakli, CC BY 4.0. B&amp;W empty hall.</figcaption></figure>
+  <figure><img src="img/cur_aisle_depth.jpg" alt=""><figcaption><b>env.warehouse.aisle_depth</b>Encik Tekateki, CC BY 4.0. Racking aisle.</figcaption></figure>
+  <figure><img src="img/cur_terminals.jpg" alt=""><figcaption><b>env.control_room.terminals</b>Nylki, CC0. Working control room.</figcaption></figure>
+  <figure><img src="img/cur_office_night.jpg" alt=""><figcaption><b>env.ops_office.night</b>Larsinio, public domain. Empty open-plan office.</figcaption></figure>
+  <figure><img src="img/cur_office_decision.jpg" alt=""><figcaption><b>env.ops_office.decision</b>Dan4th Nicholas, CC BY 2.0.</figcaption></figure>
+  <figure><img src="img/cur_failed_terminal.jpg" alt=""><figcaption><b>fg.terminal.failed_evidence</b>Ente75, CC0. Crashed public terminal.</figcaption></figure>
+</div>
+
+<h2>E. Slot-by-slot classification</h2>
+<table>
+<tr><th>Slot</th><th>Best candidate</th><th>Class</th><th>Notes</th></tr>
+<tr><td>Wide warehouse (blackout)</td><td>Commons "VR Warehouse interior" (CC BY) or Poly Haven Empty Warehouse 01 (CC0)</td><td>Suitable existing asset found (empty hall); better with props via render</td><td>Neither shows medical stock. A dark grade or a rendered "lights out" version would need Blender.</td></tr>
+<tr><td>Warehouse aisle / racking depth</td><td>Commons "Interior of an Warehouses" (CC BY)</td><td>Suitable existing asset found</td><td>Brand-free racking aisle.</td></tr>
+<tr><td>Control room / terminals</td><td>Commons BESSY II control room (CC0)</td><td>Suitable (partial): bright and working</td><td>No failed-state version exists; Poly Haven Boiler Room has an analogue panel only.</td></tr>
+<tr><td>Failed terminal / evidence</td><td>Commons "Blue Screen of Death on Internet Terminal" (CC0)</td><td>Suitable existing asset found</td><td>Real crashed screen, cropped to text.</td></tr>
+<tr><td>Operations office (2 slots)</td><td>Commons "Cubicle land" (PD), "Cube Farm" (CC BY)</td><td>Suitable (partial)</td><td>Poly Haven office HDRIs are empty rooms; they would need furniture and monitors from a Blender scene.</td></tr>
+<tr><td>Arjun close-up</td><td>none</td><td><b>No suitable asset found</b></td><td>Would require MakeHuman character + Blender render (approval needed).</td></tr>
+<tr><td>Director reaction</td><td>none</td><td><b>No suitable asset found</b></td><td>Same.</td></tr>
+<tr><td>Kavya, Nisha, Raghav, Isha (later chapters)</td><td>none</td><td><b>No suitable asset found</b></td><td>Same pipeline would serve all six if approved.</td></tr>
+</table>
+</main>
+</body>
+</html>

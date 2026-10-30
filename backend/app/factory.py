@@ -1,0 +1,53 @@
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
+from .api.errors import install_error_handlers
+from .api.routes import router
+from .db.session import make_engine, make_session_factory
+from .services.simulations import SimulationService
+from .stakeholders.llm import Voice, provider_from_env
+
+DESCRIPTION = """
+Stateful crisis-simulation API for **BLACKOUT: The Last 24 Hours**. The backend is authoritative:
+the frontend never computes outcomes. All characters and events are fictional.
+"""
+
+DEFAULT_FRONTEND = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+
+
+def find_frontend(frontend_dir: Path | str | None) -> Path | None:
+    """`None` disables serving. "auto" serves frontend/dist if it has been built (override with
+    REALITYLAB_FRONTEND=<dir>, or REALITYLAB_FRONTEND=off to disable)."""
+    if frontend_dir is None:
+        return None
+    if frontend_dir == "auto":
+        env = os.environ.get("REALITYLAB_FRONTEND")
+        if env and env.lower() in ("off", "0", "false", "none"):
+            return None
+        frontend_dir = Path(env) if env else DEFAULT_FRONTEND
+    path = Path(frontend_dir)
+    return path if (path / "index.html").is_file() else None
+
+
+def create_app(db_url: str | None = None, voice: Voice | None = None,
+               frontend_dir: Path | str | None = None) -> FastAPI:
+    """Build the application. `db_url=None` uses the SQLite file (or $REALITYLAB_DB);
+    pass "sqlite://" for a throwaway in-memory database. `voice=None` reads the optional LLM settings
+    from the environment (no key = deterministic dialogue); tests pass an explicit Voice.
+    `frontend_dir` serves a built frontend at "/" (see find_frontend); off unless asked for."""
+    app = FastAPI(title="RealityLab AI", version="0.1.0", description=DESCRIPTION)
+    app.state.service = SimulationService(make_session_factory(make_engine(db_url)), voice or Voice(provider_from_env()))
+    app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+                       allow_methods=["*"], allow_headers=["*"])
+    install_error_handlers(app)
+    app.include_router(router)
+    dist = find_frontend(frontend_dir)
+    if dist is not None:                         # mounted last, so every /api route wins
+        app.mount("/", StaticFiles(directory=dist, html=True), name="frontend")
+    return app

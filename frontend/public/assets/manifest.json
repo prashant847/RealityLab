@@ -1,0 +1,232 @@
+{
+  "version": 1,
+  "generator": "tools/generate-assets.mjs",
+  "environments": {
+    "warehouse_floor": {
+      "path": "environments/warehouse_floor.svg",
+      "width": 1600,
+      "height": 900,
+      "description": "Rows of storage racks receding under overhead strip lights.",
+      "status": "placeholder"
+    },
+    "control_room": {
+      "path": "environments/control_room.svg",
+      "width": 1600,
+      "height": 900,
+      "description": "Monitor wall with trend lines and a few amber alerts.",
+      "status": "placeholder"
+    },
+    "electrical_area": {
+      "path": "environments/electrical_area.svg",
+      "width": 1600,
+      "height": 900,
+      "description": "Switchgear cabinets, cable trays and hazard striping.",
+      "status": "placeholder"
+    },
+    "loading_dock": {
+      "path": "environments/loading_dock.svg",
+      "width": 1600,
+      "height": 900,
+      "description": "Roller doors, one open onto a truck, wet concrete.",
+      "status": "placeholder"
+    },
+    "ops_office": {
+      "path": "environments/ops_office.svg",
+      "width": 1600,
+      "height": 900,
+      "description": "Night skyline through floor-to-ceiling glass, ops desk.",
+      "status": "placeholder"
+    },
+    "hospital_corridor": {
+      "path": "environments/hospital_corridor.svg",
+      "width": 1600,
+      "height": 900,
+      "description": "Cool one-point-perspective hospital corridor.",
+      "status": "placeholder"
+    },
+    "flooded_highway": {
+      "path": "environments/flooded_highway.svg",
+      "width": 1600,
+      "height": 900,
+      "description": "Highway disappearing under floodwater, rain and lamplight.",
+      "status": "placeholder"
+    },
+    "alt_depot": {
+      "path": "environments/alt_depot.svg",
+      "width": 1600,
+      "height": 900,
+      "description": "Alternate depot yard with floodlights and stacked containers.",
+      "status": "placeholder"
+    },
+    "press_scene": {
+      "path": "environments/press_scene.svg",
+      "width": 1600,
+      "height": 900,
+      "description": "Night entrance ringed with camera lights and microphones.",
+      "status": "placeholder"
+    }
+  },
+  "characters": {
+    "player": {
+      "name": "Operations Director",
+      "role": "You",
+      "width": 600,
+      "height": 800,
+      "expressions": {
+        "calm": "characters/player_calm.svg",
+        "worried": "characters/player_worried.svg",
+        "angry": "characters/player_angry.svg",
+        "surprised": "characters/player_surprised.svg",
+        "determined": "characters/player_determined.svg",
+        "exhausted": "characters/player_exhausted.svg",
+        "speaking": "characters/player_speaking.svg",
+        "pointing": "characters/player_pointing.svg"
+      },
+      "description": "Operations Director, You. Bust portrait, transparent background.",
+      "status": "placeholder"
+    },
+    "kavya": {
+      "name": "Kavya Rao",
+      "role": "Safety Chief",
+      "width": 600,
+      "height": 800,
+      "expressions": {
+        "calm": "characters/kavya_calm.svg",
+        "worried": "characters/kavya_worried.svg",
+        "angry": "characters/kavya_angry.svg",
+        "surprised": "characters/kavya_surprised.svg",
+        "determined": "characters/kavya_determined.svg",
+        "exhausted": "characters/kavya_exhausted.svg",
+        "speaking": "characters/kavya_speaking.svg",
+        "pointing": "characters/kavya_pointing.svg"
+      },
+      "description": "Kavya Rao, Safety Chief. Bust portrait, transparent background.",
+      "status": "placeholder"
+    },
+    "arjun": {
+      "name": "Arjun Mehta",
+      "role": "IT & Systems Lead",
+      "width": 600,
+      "height": 800,
+      "expressions": {
+        "calm": "characters/arjun_calm.svg",
+        "worried": "characters/arjun_worried.svg",
+        "angry": "characters/arjun_angry.svg",
+        "surprised": "characters/arjun_surprised.svg",
+        "determined": "characters/arjun_determined.svg",
+        "exhausted": "characters/arjun_exhausted.svg",
+        "speaking": "characters/arjun_speaking.svg",
+        "pointing": "characters/arjun_pointing.svg"
+      },
+      "description": "Arjun Mehta, IT & Systems Lead. Bust portrait, transparent background.",
+      "status": "placeholder"
+    },
+    "nisha": {
+      "name": "Nisha Sen",
+      "role": "Finance Director",
+      "width": 600,
+      "height": 800,
+      "expressions": {
+        "calm": "characters/nisha_calm.svg",
+        "worried": "characters/nisha_worried.svg",
+        "angry": "characters/nisha_angry.svg",
+        "surprised": "characters/nisha_surprised.svg",
+        "determined": "characters/nisha_determined.svg",
+        "exhausted": "characters/nisha_exhausted.svg",
+        "speaking": "characters/nisha_speaking.svg",
+        "pointing": "characters/nisha_pointing.svg"
+      },
+      "description": "Nisha Sen, Finance Director. Bust portrait, transparent background.",
+      "status": "placeholder"
+    },
+    "raghav": {
+      "name": "Raghav Verma",
+      "role": "Logistics Manager",
+      "width": 600,
+      "height": 800,
+      "expressions": {
+        "calm": "characters/raghav_calm.svg",
+        "worried": "characters/raghav_worried.svg",
+        "angry": "characters/raghav_angry.svg",
+        "surprised": "characters/raghav_surprised.svg",
+        "determined": "characters/raghav_determined.svg",
+        "exhausted": "characters/raghav_exhausted.svg",
+        "speaking": "characters/raghav_speaking.svg",
+        "pointing": "characters/raghav_pointing.svg"
+      },
+      "description": "Raghav Verma, Logistics Manager. Bust portrait, transparent background.",
+      "status": "placeholder"
+    },
+    "isha": {
+      "name": "Dr. Isha Kapoor",
+      "role": "Hospital Liaison",
+      "width": 600,
+      "height": 800,
+      "expressions": {
+        "calm": "characters/isha_calm.svg",
+        "worried": "characters/isha_worried.svg",
+        "angry": "characters/isha_angry.svg",
+        "surprised": "characters/isha_surprised.svg",
+        "determined": "characters/isha_determined.svg",
+        "exhausted": "characters/isha_exhausted.svg",
+        "speaking": "characters/isha_speaking.svg",
+        "pointing": "characters/isha_pointing.svg"
+      },
+      "description": "Dr. Isha Kapoor, Hospital Liaison. Bust portrait, transparent background.",
+      "status": "placeholder"
+    }
+  },
+  "effects": {
+    "smoke": {
+      "kind": "component",
+      "component": "EffectOverlay",
+      "description": "Drifting smoke plumes rising from the lower panel."
+    },
+    "sparks": {
+      "kind": "component",
+      "component": "EffectOverlay",
+      "description": "Short-lived orange sparks and a flash."
+    },
+    "warning_lights": {
+      "kind": "component",
+      "component": "EffectOverlay",
+      "description": "Pulsing amber warning glow at the panel edges."
+    },
+    "rain": {
+      "kind": "component",
+      "component": "EffectOverlay",
+      "description": "Diagonal rain streaks."
+    },
+    "power_failure": {
+      "kind": "component",
+      "component": "EffectOverlay",
+      "description": "Dark overlay with a flickering dropout."
+    },
+    "damaged_inventory": {
+      "kind": "component",
+      "component": "EffectOverlay",
+      "description": "Torn crate and scattered box silhouettes along the lower edge."
+    },
+    "system_alert": {
+      "kind": "component",
+      "component": "EffectOverlay",
+      "description": "Scan lines and an alert triangle."
+    },
+    "emergency_lighting": {
+      "kind": "component",
+      "component": "EffectOverlay",
+      "description": "Red-amber emergency tint with pulsing corner lamps."
+    }
+  },
+  "ui": {
+    "logo_mark": {
+      "path": "ui/logo-mark.svg"
+    },
+    "grain": {
+      "path": "ui/grain.svg"
+    },
+    "halftone": {
+      "path": "ui/halftone.svg"
+    }
+  }
+}

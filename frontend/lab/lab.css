@@ -1,0 +1,62 @@
+/* First-page character lab. Isolated prototype: not imported by the app. Method B characters are built only from
+   HTML elements and CSS (gradients, clip-path, border-radius, pseudo-elements); there is no SVG, canvas or image in them. */
+:root { color-scheme: dark; --bg: #070b14; --panel: #0e1626; --line: #243349; --text: #e6ebf2; --muted: #98a5b6; --amber: #e8a33d; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 "Segoe UI", system-ui, sans-serif; }
+main { max-width: 1500px; margin: 0 auto; padding: 1rem 1rem 4rem; }
+h1 { font-size: 1.5rem; margin: 0 0 0.2rem; } h2 { color: var(--amber); text-transform: uppercase; letter-spacing: 0.08em; font-size: 1rem; margin: 1.6rem 0 0.3rem; }
+.muted { color: var(--muted); font-size: 0.85rem; max-width: 90ch; }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; align-items: start; }
+@media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+.cell { background: var(--panel); border: 1px solid var(--line); } .cell > p { margin: 0; padding: 0.5rem 0.7rem 0.7rem; font-size: 0.8rem; color: var(--muted); } .cell > p b { color: var(--text); display: block; }
+.shot { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: #05080f; isolation: isolate; }
+.shot > .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(0.7) contrast(1.12) brightness(0.8); z-index: -2; }
+.shot::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(165deg, rgba(16, 28, 48, 0.5), rgba(5, 8, 15, 0.38) 60%, rgba(5, 8, 15, 0.55)); }
+.shot--wide { aspect-ratio: 16 / 9; }
+.shot .who { position: absolute; z-index: 2; }
+.shot img.who { height: 92%; width: auto; bottom: -4%; filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.6)); }
+.none { display: grid; place-items: center; height: 100%; text-align: center; padding: 1rem; color: var(--muted); font-size: 0.85rem; background: repeating-linear-gradient(135deg, #16202f 0 14px, #1a2638 14px 28px); }
+.bubble { position: absolute; z-index: 5; top: 5%; left: 5%; max-width: 62%; background: #eef2f7; color: #0b1220; border: 2px solid #05080f; border-radius: 12px; padding: 0.35em 0.7em; font-size: 0.72rem; line-height: 1.3; box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.5); }
+.score { padding: 0 0.7rem 0.6rem; font-size: 0.78rem; } .score span { display: inline-block; margin: 0 0.4rem 0.2rem 0; padding: 0 0.4rem; border: 1px solid var(--line); } .score .bad { color: #e0614a; border-color: #e0614a; } .score .mid { color: var(--amber); border-color: var(--amber); } .score .good { color: #6fb3a0; border-color: #6fb3a0; }
+
+/* ======================================================================= Method B: CSS-built people */
+.cssfig { --skin: #a8714f; --skin-d: #6c432d; --skin-l: #c58c66; --hair: #0c0b0f; --cloth: #3a526f; --cloth-d: #1f3248; --brow-tilt: 0deg; --brow-lift: 0em; --brow-asym: 0em; --lid: 0.25; --gx: 0; --gy: 0; --mouth-w: 1.5em; --mouth-curve: 0; --head-tilt: 0deg; --squint: 0;
+  position: relative; width: 14em; height: 17em; font-size: var(--u, 10px); }
+.cssfig * { position: absolute; box-sizing: border-box; }
+.cssfig .torso { left: 0; right: 0; bottom: 0; height: 7.5em; background: radial-gradient(ellipse at 70% 0%, var(--cloth), var(--cloth-d) 80%); clip-path: polygon(8% 100%, 0 38%, 12% 18%, 36% 4%, 64% 4%, 88% 18%, 100% 38%, 92% 100%); box-shadow: inset 0 0.6em 0.8em rgba(0, 0, 0, 0.4); }
+.cssfig .torso::after { content: ""; left: 38%; width: 24%; top: 0; height: 36%; background: var(--skin-d); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.cssfig .neck { left: 4.8em; width: 4.4em; top: 8.6em; height: 4em; background: linear-gradient(90deg, var(--skin-d), var(--skin) 45%, var(--skin-d)); border-radius: 0 0 1.6em 1.6em; }
+.cssfig .head { left: 2.8em; top: 0.6em; width: 8.4em; height: 10.4em; transform: rotate(var(--head-tilt)); transform-origin: 50% 90%; }
+.cssfig .ear { top: 4.4em; width: 1.1em; height: 2em; background: var(--skin-d); border-radius: 50%; box-shadow: inset 0.15em 0 0.2em rgba(0, 0, 0, 0.4); } .cssfig .ear.l { left: -0.5em; } .cssfig .ear.r { right: -0.5em; }
+.cssfig .face { inset: 0; background: radial-gradient(ellipse at 66% 34%, var(--skin-l) 0%, var(--skin) 42%, var(--skin-d) 100%); clip-path: polygon(50% 0, 82% 3%, 96% 22%, 98% 48%, 92% 70%, 78% 88%, 62% 99%, 50% 100%, 38% 99%, 22% 88%, 8% 70%, 2% 48%, 4% 22%, 18% 3%); box-shadow: inset -1.2em 0 1.4em rgba(0, 0, 0, 0.28); }
+.cssfig .face::before { content: ""; inset: 0; background: linear-gradient(90deg, rgba(8, 10, 18, 0.5), transparent 38%); }
+.cssfig .stubble { left: 1.2em; right: 1.2em; bottom: 0.4em; height: 4.6em; background: radial-gradient(ellipse at 50% 20%, transparent 40%, rgba(10, 8, 12, 0.35) 75%); border-radius: 0 0 50% 50%; }
+.cssfig .eye { top: 4.6em; width: 2em; height: 0.95em; background: radial-gradient(ellipse at 50% 40%, #f1ece2, #cfc8bb); border-radius: 50% / 65%; overflow: hidden; box-shadow: 0 0 0 0.12em #130d0a, inset 0 0.25em 0.3em rgba(0, 0, 0, 0.35); }
+.cssfig .eye.l { left: 1.6em; } .cssfig .eye.r { right: 1.6em; }
+.cssfig .eye i { left: calc(50% - 0.45em + var(--gx) * 0.45em); top: calc(50% - 0.45em + var(--gy) * 0.25em); width: 0.9em; height: 0.9em; border-radius: 50%; background: radial-gradient(circle at 50% 50%, #05060a 0 28%, #3b2616 30% 62%, #130c07 64%); }
+.cssfig .eye::before { content: ""; z-index: 2; left: -5%; right: -5%; top: -2%; height: calc(var(--lid) * 100% + 0.1em); background: var(--skin-d); border-bottom: 0.14em solid #130d0a; border-radius: 0 0 50% 50% / 0 0 40% 40%; }
+.cssfig .eye::after { content: ""; z-index: 2; left: -5%; right: -5%; bottom: -2%; height: calc(var(--squint) * 45%); background: var(--skin-d); border-top: 0.08em solid rgba(19, 13, 10, 0.6); border-radius: 50% 50% 0 0; }
+.cssfig .brow { top: calc(3.4em - var(--brow-lift)); width: 2.5em; height: 0.42em; background: linear-gradient(90deg, var(--hair), #17151c); border-radius: 0.3em 0.1em 0.3em 0.1em; transform-origin: 50% 50%; }
+.cssfig .brow.l { left: 1.2em; transform: translateY(var(--brow-asym)) rotate(var(--brow-tilt)); } .cssfig .brow.r { right: 1.2em; transform: translateY(calc(var(--brow-asym) * -1)) rotate(calc(var(--brow-tilt) * -1)); }
+.cssfig .nose { left: 3.7em; top: 5.2em; width: 1em; height: 2.2em; border-radius: 40% 40% 50% 50%; background: linear-gradient(90deg, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.22)); box-shadow: 0.2em 0.9em 0.3em -0.1em rgba(0, 0, 0, 0.35); }
+.cssfig .nose::after { content: ""; left: -0.3em; right: -0.3em; bottom: -0.1em; height: 0.5em; border-bottom: 0.14em solid rgba(20, 10, 8, 0.7); border-radius: 0 0 60% 60%; }
+.cssfig .mouth { left: calc(50% - var(--mouth-w) / 2); top: 8em; width: var(--mouth-w); height: 0.9em; border-bottom: 0.15em solid #2a1210; border-radius: 0 0 50% 50% / 0 0 120% 120%; transform: scaleY(var(--mouth-curve)); transform-origin: 50% 0; }
+.cssfig .mouth::before { content: ""; left: 10%; right: 10%; top: 0.55em; height: 0.35em; background: linear-gradient(rgba(140, 70, 60, 0.55), transparent); border-radius: 50%; }
+.cssfig .glasses { inset: 0; pointer-events: none; }
+.cssfig .glasses b { top: 4.1em; width: 2.9em; height: 1.9em; border: 0.2em solid #10151d; border-radius: 0.5em; background: linear-gradient(135deg, rgba(159, 208, 255, 0.18), rgba(159, 208, 255, 0.04)); } .cssfig .glasses b.l { left: 1.1em; } .cssfig .glasses b.r { right: 1.1em; }
+.cssfig .glasses u { left: 3.9em; right: 3.9em; top: 4.7em; height: 0.2em; background: #10151d; }
+.cssfig .hair { left: -0.2em; right: -0.2em; top: -0.6em; height: 5.2em; background: radial-gradient(ellipse at 62% 10%, #2c2a36, var(--hair) 55%); clip-path: polygon(0 62%, 3% 36%, 14% 14%, 30% 3%, 50% 0, 70% 3%, 86% 14%, 97% 36%, 100% 62%, 92% 46%, 84% 36%, 70% 38%, 55% 30%, 40% 38%, 24% 36%, 14% 44%, 6% 56%); }
+.cssfig .hair.messy { clip-path: polygon(0 62%, 2% 30%, 10% 12%, 18% 0, 26% 14%, 36% 0, 46% 12%, 58% 0, 66% 14%, 78% 2%, 86% 14%, 97% 34%, 100% 62%, 92% 46%, 84% 38%, 70% 40%, 55% 32%, 40% 40%, 24% 38%, 14% 46%, 6% 56%); }
+.cssfig .hair.temples::after { content: ""; left: 0; top: 1.6em; width: 100%; height: 2.4em; background: linear-gradient(90deg, #8d9199 0 7%, transparent 8% 92%, #8d9199 93%); opacity: 0.8; clip-path: inherit; }
+.cssfig .lanyard { left: 5.4em; top: 10.6em; width: 0.5em; height: 5.2em; background: #e8a33d; transform: skewX(-6deg); z-index: 3; } .cssfig .lanyard + .lanyard { left: 8em; transform: skewX(6deg); }
+.cssfig .jacket-l, .cssfig .jacket-r { top: 10.3em; width: 3.6em; height: 6.4em; background: #0f1c31; z-index: 2; } .cssfig .jacket-l { left: 3em; clip-path: polygon(0 0, 100% 0, 100% 100%, 40% 100%); } .cssfig .jacket-r { right: 3em; clip-path: polygon(0 0, 100% 0, 60% 100%, 0 100%); }
+/* expressions */
+.cssfig.concern { --brow-tilt: -16deg; --brow-lift: 0.35em; --lid: 0.3; --gx: -0.7; --gy: 0.9; --mouth-curve: -0.9; --head-tilt: -5deg; --squint: 0.25; }
+.cssfig.suspicion { --brow-tilt: 12deg; --brow-asym: 0.45em; --lid: 0.42; --gx: 0.8; --gy: 0.5; --mouth-curve: -0.4; --mouth-w: 1.2em; --head-tilt: 6deg; --squint: 0.5; }
+.cssfig.calm { --brow-tilt: 4deg; --lid: 0.28; --gx: 0.3; --mouth-curve: 0; --mouth-w: 1.6em; --squint: 0.1; }
+.cssfig.tense { --brow-tilt: -8deg; --brow-lift: 0.15em; --lid: 0.18; --gx: -0.6; --mouth-curve: -0.35; --mouth-w: 1.7em; --squint: 0.15; --head-tilt: 3deg; }
+.cssfig.director { --skin: #b58762; --skin-d: #80583f; --skin-l: #cfa07b; --hair: #1b1a1e; --cloth: #1c2c47; --cloth-d: #101c31; }
+.cssfig.director .torso::after { background: #c9d1dc; }
+/* Method D (layered raster composited with CSS) */
+.layered { position: relative; height: 92%; aspect-ratio: 1 / 1.1; }
+.layered img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }

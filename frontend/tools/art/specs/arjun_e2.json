@@ -1,0 +1,6 @@
+{"macro": {"gender": 1.0, "age": 0.56, "muscle": 0.45, "weight": 0.5, "height": 0.5, "proportions": 0.5},
+ "race": {"asian": 0.34, "caucasian": 0.33, "african": 0.33}, "skin": "toigo_light_skin_male_bronze",
+ "eyebrows": "eyebrow004", "eyelashes": "eyelashes02", "no_lashes": true, "hair": "short02", "hair_rgb": [0.012, 0.011, 0.014],
+ "clothes": ["male_casualsuit01"],
+ "expression": {"mouthSmileLeft": 0.0},
+ "turn_deg": -12, "light": {"key_x": 0.9, "key_energy": 130, "fill_energy": 18}, "size": [1000, 1100], "lens": 85, "cam_dist": 1.1, "ink_width": 0.02}
