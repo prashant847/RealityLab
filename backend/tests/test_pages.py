@@ -18,7 +18,7 @@ def test_every_round_has_a_valid_page(n):
 
 def test_scene_view_carries_the_page():
     v = scene_view(new_simulation(1))
-    assert v["page"]["layout"] == "three" and len(v["page"]["panels"]) == 3
+    assert v["page"]["layout"] == "three" and len(v["page"]["panels"]) == 4
 
 
 def test_validator_rejects_unknown_ids_and_overlong_text():

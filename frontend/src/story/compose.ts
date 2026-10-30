@@ -4,6 +4,8 @@ import { DESK_ENVS, FLOOR_Y, PERSON_UNITS, type EnvId } from "../comic/notpetya/
 import type { ComicPageData, PanelData } from "../comic/types";
 import type { GameEvent } from "../api/types";
 import { eventTitle, choiceResult, plainPage } from "./plain";
+import { PANEL_SHOTS, type PanelShot } from "./panels";
+import type { ShotId } from "../comic/notpetya/Shots";
 import { BEATS, EVENT_BEATS, carriedEffects, carriedProps, directorMood, type Beat, type Cast } from "./beats";
 
 // Turns story data into flat comic panels. Nothing here invents facts: text comes from the backend page, outcome and events; this file only
@@ -146,6 +148,42 @@ function castFromPanel(p: PanelData, env: EnvId): Cast[] {
   });
 }
 
+/** A story panel drawn so the picture shows what its words say: an object shot (the thing itself, nobody in front of it) or a speaker shot (the
+ *  person talking, from the waist up, in their room, with the room zoomed in so it does not read as a distant view). */
+function shotPanel(id: string, spec: PanelShot, env: EnvId, props: string[], effects: string[], ratio: number, span: 1 | 2, reserve: Reserve, seed: number, round: number, opts: Partial<ArtPanelScript> = {}): ArtPanelScript {
+  const layers: ArtLayer[] = [{ asset: `flat.${spec.shot ?? env}.${id}`, role: "flatenv", flatEnv: { env, props: spec.shot ? [] : oneVehicle(props), effects, facts: [], shot: spec.shot, seed, round, ...(spec.shot ? {} : { zoom: 1.7, anchorY: 66 }) } }];
+  const people = spec.people ?? [];
+  const H = 138;
+  for (const [i, c] of people.entries()) {
+    const top = Math.max(24, reserve(c.x) + 2);
+    const w = ((0.4 * H) / ratio) * 100 * 1.04;
+    layers.push({ asset: `person.${c.who}.${i}`, role: "person", person: { who: c.who, expression: c.expr, pose: c.pose }, box: { x: c.x - w / 2, y: top, w, h: H } });
+  }
+  return { id, ratio, span, layers, ...opts };
+}
+
+const AT_X: Record<Cast["at"], number> = { l: 28, c: 50, r: 72 };
+/** Pictures for decisions and events: the object the words are about where there is one, otherwise the people involved, close, in their room. */
+const DECISION_SHOT: Record<string, ShotId> = {
+  r3_alt_transport: "gate_queue", r3_divert_depot: "route_map:alt", r3_reserve_hospital: "route_map:urgent",
+  r4_pause: "two_numbers:pause", r4_release_verified: "two_numbers:release", r4_provisional: "two_numbers:prov",
+  r5_minimal: "whiteboard:min", r5_balanced: "whiteboard:bal", r5_restoration: "whiteboard:heavy", r5_logistics: "whiteboard:log", r5_negotiated: "whiteboard:neg",
+  r6_restrict: "update_diagram:restrict", r6_specialist: "update_diagram:special", r6_parallel: "update_diagram:parallel",
+  r7_hospital_first: "priority_choice:hosp", r7_commitments: "priority_choice:contract", r7_negotiate: "priority_choice:neg",
+  r8_transfer: "survivor_map", r9_holding: "news_tv:hold", r9_wait: "news_tv:wait", r9_briefing: "news_tv:brief",
+  r10_verified: "gate_open:ver", r10_sweep: "gate_open:sweep", r10_provisional: "gate_open:prov",
+};
+const EVENT_SHOT: Record<string, ShotId> = {
+  secondary_interruption: "monitors_failing", secondary_interruption_partial: "monitors_failing", reinfection_alert: "update_diagram",
+  flare_up: "crane_idle", panel_failure_evacuated: "crane_idle", panel_failure_assessed: "crane_idle", dock_flooding: "gate_queue",
+  depot_scout_report: "route_map:alt", verified_route_pays_off: "route_map:alt", provisional_shortage: "two_numbers:prov", hospital_escalation: "priority_choice",
+  contract_penalty_notice: "priority_choice:contract", insurer_advance: "whiteboard:plus", credit_due: "whiteboard:due", power_dip: "survivor_map",
+};
+function beatPanel(id: string, beat: Beat, shot: ShotId | undefined, ratio: number, span: 1 | 2, reserve: Reserve, seed: number, round: number, opts: Partial<ArtPanelScript>, props: string[] = beat.props ?? []): ArtPanelScript {
+  const people = shot ? [] : beat.cast.map((c) => ({ who: c.who, expr: c.expr, pose: c.pose, x: AT_X[c.at] }));
+  return shotPanel(id, { shot, env: beat.env, people }, beat.env, props, beat.effects ?? [], ratio, span, reserve, seed, round, opts);
+}
+
 /** The evidence panel every round has: the terminal if the facts describe system failures, otherwise a board of what is known. */
 function evidencePanel(round: number, facts: string[]): ArtPanelScript {
   return {
@@ -170,6 +208,13 @@ export function composeRoundPage(round: number, page: ComicPageData | unknown, f
     // The opening wide shot of a working floor shows staff, so a blackout reads as people reacting to it.
     const extras: Cast[] = cast.length === 0 && env === "warehouse_floor" ? [{ who: "worker", expr: "concern", at: "l" }, { who: "worker", expr: "neutral", at: "r", pose: "arms_crossed" }] : [];
     const s = shapes[Math.min(i, shapes.length - 1)];
+    const spec = PANEL_SHOTS[p.id];
+    if (spec) {
+      const at = (x: number): Cast["at"] => (x < 37 ? "l" : x > 63 ? "r" : "c");
+      const lines = p.dialogue.map((d) => { const who = WHO_MAP[d.speaker] ?? "worker"; const sp = spec.people?.find((q) => q.who === who) ?? spec.people?.[0]; return { text: d.text, at: sp ? at(sp.x) : "c" }; });
+      panels.push(shotPanel(p.id, spec, spec.env ?? env, props, effects, s.ratio, s.span, textReserve(lines, p.narration ?? undefined, s.ratio, s.span), round * 17 + i * 5 + 1, round, { source: p.id }));
+      return;
+    }
     panels.push(panelFromCast(p.id, env, props, effects, [...cast, ...extras], s.ratio, s.span, { source: p.id }, textReserve(p.dialogue.map((d) => ({ text: d.text, at: cast.find((c) => c.who === (WHO_MAP[d.speaker] ?? "worker"))?.at ?? "c" })), p.narration ?? undefined, s.ratio, s.span), { seed: round * 17 + i * 5 + 1, round }));
   });
   const ev = evidencePanel(round, facts);
@@ -186,12 +231,12 @@ export function composeConsequence(choiceId: string, label: string, consequence:
   const n = 1 + eventPanels.length;
   const { columns, shapes } = layoutFor(n);
   const panels: ArtPanelScript[] = [
-    panelFromCast("decision", beat.env, beat.props ?? [], beat.effects ?? [], beat.cast, shapes[0].ratio, shapes[0].span, { caption: choiceResult(choiceId, consequence), label }, NO_RESERVE, { seed: round * 17 + 99, round }),
+    beatPanel("decision", beat, DECISION_SHOT[choiceId], shapes[0].ratio, shapes[0].span, NO_RESERVE, round * 17 + 99, round, { caption: choiceResult(choiceId, consequence), label }),
   ];
   eventPanels.forEach((e, i) => {
     const eb = EVENT_BEATS[e.event_id] ?? { env: asEnv(fallbackEnv), effects: e.assets, cast: [] as Cast[] };
     const s = shapes[Math.min(i + 1, shapes.length - 1)];
-    panels.push(panelFromCast(`ev-${e.event_id}`, eb.env, eb.props ?? [], eb.effects ?? e.assets, eb.cast, s.ratio, s.span, { narration: `${e.clock} — ${e.title}`, caption: e.text }, textReserve([], `${e.clock} — ${e.title}`, s.ratio, s.span), { seed: round * 17 + 40 + i * 5, round }));
+    panels.push(beatPanel(`ev-${e.event_id}`, { ...eb, effects: eb.effects ?? e.assets }, EVENT_SHOT[e.event_id], s.ratio, s.span, textReserve([], `${e.clock} — ${e.title}`, s.ratio, s.span), round * 17 + 40 + i * 5, round, { narration: `${e.clock} — ${e.title}`, caption: e.text }));
   });
   return { columns, panels, decisionBackdrop: "np.ops_office", grade: "flat" };
 }
@@ -204,7 +249,7 @@ export function composeEventsPage(events: GameEvent[], fallbackEnv: string, roun
     const eb = EVENT_BEATS[e.event_id] ?? { env: asEnv(fallbackEnv), effects: e.assets, cast: [] as Cast[] };
     const s = shapes[Math.min(i, shapes.length - 1)];
     const title = `${e.clock} — ${eventTitle(e.event_id, e.title)}`;
-    return panelFromCast(`ev-${e.event_id}`, eb.env, eb.props ?? [], eb.effects ?? e.assets, eb.cast, s.ratio, s.span, { narration: title, caption: e.text }, textReserve([], title, s.ratio, s.span), { seed: round * 17 + 60 + i * 5, round });
+    return beatPanel(`ev-${e.event_id}`, { ...eb, effects: eb.effects ?? e.assets }, EVENT_SHOT[e.event_id], s.ratio, s.span, textReserve([], title, s.ratio, s.span), round * 17 + 60 + i * 5, round, { narration: title, caption: e.text });
   });
   return { columns, panels, decisionBackdrop: "np.ops_office", grade: "flat" };
 }

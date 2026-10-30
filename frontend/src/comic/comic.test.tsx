@@ -42,8 +42,8 @@ describe("sanitizePage", () => {
 
   it("limits panels to the layout, truncates long text and strips control characters", () => {
     const long = "x".repeat(MAX_TEXT + 40);
-    const { page } = sanitizePage({ layout: "single", panels: [panel({ narration: long }), panel({ id: "p2" })] });
-    expect(page.panels).toHaveLength(1);
+    const { page } = sanitizePage({ layout: "single", panels: [panel({ narration: long }), panel({ id: "p2" }), panel({ id: "p3" })] });
+    expect(page.panels).toHaveLength(2);
     expect(page.panels[0].narration!.length).toBeLessThanOrEqual(MAX_TEXT);
     const { page: p2 } = sanitizePage({ layout: "single", panels: [panel({ narration: "a\u0000b\u0007c" })] });
     expect(p2.panels[0].narration).toBe("a b c");
@@ -76,7 +76,7 @@ describe("ComicPage", () => {
   it("describes each panel for assistive technology and labels speakers", () => {
     render(<ComicPage page={roundViews[1].scene.page} title="Smoke" />);
     const figs = screen.getAllByRole("figure");
-    expect(figs[1]).toHaveAccessibleName(/Terminal Supervisor looks angry/);
+    expect(figs[2]).toHaveAccessibleName(/Terminal Supervisor looks angry/);
     expect(screen.getByRole("group", { name: /Terminal Supervisor says/ })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Smoke" })).toBeInTheDocument();
   });

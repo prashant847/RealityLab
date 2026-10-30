@@ -1,12 +1,12 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { roundViews } from "../../fixtures";
 import { IllustratedPage } from "../illustrated/IllustratedPage";
 import { ART_SCENES_FLAT, ART_SCENES_VECTOR, FIRST_PAGE_STYLE, activeScenes } from "../illustrated/scenes";
 import { Terminal, evidenceRows } from "./Terminal";
 import { VECTOR_SCENES, VectorScene } from "./VectorScene";
 
-const round1 = roundViews[0].scene;
+
+import { legacyRound1Page } from "../../fixtures/legacyRound1";
 const facts = ["Inventory dashboard offline; barcode scanners are not responding.", "Arjun: unusual authentication attempts appear in the access logs. Cause unknown.", "Emergency response budget: ₹12.0 lakh. Every action costs time before the 6:00 AM dispatch."]; // the original (pre-NotPetya) opening facts: these tests cover the evidence-terminal parser
 
 describe("evidence is understandable and uses only the scene's own words", () => {
@@ -42,12 +42,12 @@ describe("vector first page", () => {
   });
 
   it("the earlier vector page has no photographs or placeholder tags", () => {
-    const { container } = render(<IllustratedPage page={round1.page} script={ART_SCENES_VECTOR[1]} facts={facts} />);
+    const { container } = render(<IllustratedPage page={legacyRound1Page} script={ART_SCENES_VECTOR[1]} facts={facts} />);
     expect(container.querySelectorAll("img")).toHaveLength(0);
     expect(container.querySelector(".art-tag")).toBeNull();
     expect(container.querySelector(".art-credits")).toBeNull();
     expect(container.querySelectorAll("figure.panel--art")).toHaveLength(4);
-    for (const p of round1.page!.panels) for (const d of p.dialogue) expect(container).toHaveTextContent(d.text);
+    for (const p of legacyRound1Page!.panels) for (const d of p.dialogue) expect(container).toHaveTextContent(d.text);
   });
 
   it("draws every environment, and the story script uses all four", () => {
@@ -57,7 +57,7 @@ describe("vector first page", () => {
   });
 
   it("keeps the evidence inspection: the dialog shows the large terminal and the known facts", () => {
-    render(<IllustratedPage page={round1.page} script={ART_SCENES_VECTOR[1]} facts={facts} />);
+    render(<IllustratedPage page={legacyRound1Page} script={ART_SCENES_VECTOR[1]} facts={facts} />);
     fireEvent.click(screen.getByRole("button", { name: "Inspect evidence" }));
     const dialog = screen.getByRole("dialog", { name: "Inspect the evidence" });
     expect(dialog.querySelector("svg.vscene")).not.toBeNull();
@@ -68,18 +68,18 @@ describe("vector first page", () => {
 describe("flat reference-style first page", () => {
   const script = ART_SCENES_FLAT[1];
   it("is flat: no photographs, no placeholder tags, no credits, full-body people and the same story text", () => {
-    const { container } = render(<IllustratedPage page={round1.page} script={script} facts={facts} />);
+    const { container } = render(<IllustratedPage page={legacyRound1Page} script={script} facts={facts} />);
     expect(container.querySelectorAll("img")).toHaveLength(0);
     expect(container.querySelector(".art-tag, .art-credits")).toBeNull();
     expect(container.querySelector(".comic-page--art")).toHaveAttribute("data-grade", "flat");
     expect(container.querySelectorAll(".art--person").length).toBeGreaterThanOrEqual(4);
-    for (const p of round1.page!.panels) for (const d of p.dialogue) expect(container).toHaveTextContent(d.text);
+    for (const p of legacyRound1Page!.panels) for (const d of p.dialogue) expect(container).toHaveTextContent(d.text);
   });
 
   it("uses both story characters with different poses and keeps the readable evidence terminal", () => {
     const who = script.panels.flatMap((p) => p.layers.map((l) => l.person?.who)).filter(Boolean);
     expect(who).toEqual(expect.arrayContaining(["arjun", "director", "worker"]));
-    const { container } = render(<IllustratedPage page={round1.page} script={script} facts={facts} />);
+    const { container } = render(<IllustratedPage page={legacyRound1Page} script={script} facts={facts} />);
     expect(container.querySelector('[data-who="arjun"]')).toHaveAttribute("data-pose", "at_desk");
     expect(container.querySelector('[data-who="director"]')).toHaveAttribute("data-pose", "hand_chin");
     expect(container.querySelector('[data-panel="evidence"]')).toHaveTextContent("NOT RESPONDING");

@@ -4,7 +4,7 @@ import {
 } from "./types";
 
 export const MAX_TEXT = 160;
-const MAX_PANELS: Record<Layout, number> = { single: 1, two: 2, three: 3, revelation: 1, dialogue: 3 };
+const MAX_PANELS: Record<Layout, number> = { single: 2, two: 3, three: 4, revelation: 3, dialogue: 4 };
 
 type Rec = Record<string, unknown>;
 const isRec = (v: unknown): v is Rec => typeof v === "object" && v !== null && !Array.isArray(v);

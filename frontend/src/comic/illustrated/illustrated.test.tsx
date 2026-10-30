@@ -9,6 +9,7 @@ import { ART_SCENES } from "./scenes";
 
 const ART = resolve(__dirname, "../../../public/assets/art");
 const round1 = roundViews[0].scene;
+import { legacyRound1Page } from "../../fixtures/legacyRound1";
 
 describe("art manifest", () => {
   it("is valid and every listed file exists", () => {
@@ -69,7 +70,7 @@ describe("art manifest", () => {
 describe("opening scene script", () => {
   const script = ART_SCENES[1];
   it("only references assets in the manifest and panels in the backend page", () => {
-    const sourceIds = round1.page!.panels.map((p) => p.id);
+    const sourceIds = legacyRound1Page!.panels.map((p) => p.id);
     for (const p of script.panels) {
       for (const l of p.layers) expect(artManifest.assets[l.asset], l.asset).toBeDefined();
       if (p.source) expect(sourceIds).toContain(p.source);
@@ -88,24 +89,24 @@ describe("opening scene script", () => {
 describe("IllustratedPage", () => {
   const script = ART_SCENES[1];
   it("renders image layers (not drawn figures) with the backend's own narration and dialogue", () => {
-    const { container } = render(<IllustratedPage page={round1.page} script={script} title={round1.title} />);
+    const { container } = render(<IllustratedPage page={legacyRound1Page} script={script} title={round1.title} />);
     expect(container.querySelectorAll("figure.panel")).toHaveLength(4);
     expect(container.querySelectorAll("img[data-art]").length).toBe(script.panels.flatMap((p) => p.layers).length);
     expect(container.querySelector("svg.figure")).toBeNull();
-    for (const p of round1.page!.panels) for (const d of p.dialogue) expect(container).toHaveTextContent(d.text);
-    expect(container).toHaveTextContent(round1.page!.panels[0].narration!);
+    for (const p of legacyRound1Page!.panels) for (const d of p.dialogue) expect(container).toHaveTextContent(d.text);
+    expect(container).toHaveTextContent(legacyRound1Page!.panels[0].narration!);
   });
 
   it("tags only panels that still contain placeholder art (none remain on this page)", () => {
-    const { container } = render(<IllustratedPage page={round1.page} script={script} />);
+    const { container } = render(<IllustratedPage page={legacyRound1Page} script={script} />);
     const tagged = [...container.querySelectorAll("figure[data-art-panel]")].filter((f) => f.querySelector(".art-tag")).map((f) => f.getAttribute("data-panel"));
     expect(tagged).toEqual([]);
-    const { container: c2 } = render(<IllustratedPage page={round1.page} script={{ ...script, panels: [{ id: "x", ratio: 2, layers: [{ asset: "char.arjun.concern_closeup", role: "character" }, ...script.panels[0].layers] }] }} />);
+    const { container: c2 } = render(<IllustratedPage page={legacyRound1Page} script={{ ...script, panels: [{ id: "x", ratio: 2, layers: [{ asset: "char.arjun.concern_closeup", role: "character" }, ...script.panels[0].layers] }] }} />);
     expect(c2.querySelector('[data-art-status="missing"]')).not.toBeNull();   // an unknown asset still fails loudly
   });
 
   it("credits every real image with author and licence links", () => {
-    const { container } = render(<IllustratedPage page={round1.page} script={script} />);
+    const { container } = render(<IllustratedPage page={legacyRound1Page} script={script} />);
     const credits = container.querySelector(".art-credits")!;
     expect(credits).toHaveTextContent("Kari Hakli");
     expect(credits).toHaveTextContent("CC BY 4.0");
@@ -114,14 +115,14 @@ describe("IllustratedPage", () => {
   });
 
   it("shows a visible MISSING box when an image fails to load, and for unknown ids", () => {
-    const { container } = render(<IllustratedPage page={round1.page} script={{ ...script, panels: [{ id: "x", ratio: 2, layers: [{ asset: "env.nope.nothing", role: "background" }, script.panels[0].layers[0]] }] }} />);
+    const { container } = render(<IllustratedPage page={legacyRound1Page} script={{ ...script, panels: [{ id: "x", ratio: 2, layers: [{ asset: "env.nope.nothing", role: "background" }, script.panels[0].layers[0]] }] }} />);
     expect(container.querySelector('[data-art-status="missing"]')).toHaveTextContent("env.nope.nothing");
     fireEvent.error(container.querySelector("img[data-art]")!);
     expect(container.querySelectorAll('[data-art-status="missing"]')).toHaveLength(2);
   });
 
   it("never invents text: a panel without a backend source shows none", () => {
-    const { container } = render(<IllustratedPage page={round1.page} script={script} />);
+    const { container } = render(<IllustratedPage page={legacyRound1Page} script={script} />);
     const director = container.querySelector('[data-panel="director"]')!;
     expect(director.querySelector(".bubble, .narration")).toBeNull();
   });

@@ -6,7 +6,7 @@ export interface ArtLayer {
   asset: string;
   role: "background" | "character" | "foreground" | "portrait" | "vector" | "person" | "flatenv";
   /** For role "flatenv": a flat environment with story props and effect overlays (src/comic/flat/World). */
-  flatEnv?: { env: string; props: string[]; effects: string[]; facts: string[]; board?: boolean; seed?: number; round?: number; zoom?: number; anchorY?: number };
+  flatEnv?: { env: string; props: string[]; effects: string[]; facts: string[]; board?: boolean; shot?: string; seed?: number; round?: number; zoom?: number; anchorY?: number };
   /** For role "person": a flat full-body character (src/comic/flat). */
   person?: { who: Who; expression: string; pose?: string };
   /** For role "vector": which illustrated environment to draw (src/comic/vector). */

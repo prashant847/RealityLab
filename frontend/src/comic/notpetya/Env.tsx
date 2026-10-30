@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { INK } from "./Cast";
+import { Shot, type ShotId } from "./Shots";
 
 // Environments for the NotPetya story, in the same language as the cast: one dark outline, solid fills, no gradients.
 // Every room fills a 1600 x 900 frame. A standing person is PERSON_UNITS tall in this frame with the feet on FLOOR_Y, so doors, desks and trucks are drawn to that scale.
@@ -256,7 +257,8 @@ export function EvidenceBoard({ facts }: { facts: string[] }) {
 }
 
 /** Draws one environment with story props and page effects on top. `seed` and `round` vary small details (which monitors show red) so a room does not look identical twice. */
-export function NpEnv({ env, props = [], effects = [], facts = [], board = false, seed = 0, round = 0 }: { env: EnvId; props?: string[]; effects?: string[]; facts?: string[]; board?: boolean; seed?: number; round?: number }) {
+export function NpEnv({ env, props = [], effects = [], facts = [], board = false, shot, seed = 0, round = 0 }: { env: EnvId; props?: string[]; effects?: string[]; facts?: string[]; board?: boolean; shot?: ShotId; seed?: number; round?: number }) {
+  if (shot) return <>{<Shot id={shot} />}{effects.length > 0 && <NpFx ids={effects} />}</>;
   const a = (seed + round) % 3;
   const base = board ? <EvidenceBoard facts={facts} /> : env === "warehouse_floor" ? <OpenOffice alert={a} /> : env === "control_room" ? <ServerRoom alert={effects.includes("system_alert") || props.includes("rush_restore")} /> :
     env === "electrical_area" ? <Quay /> : env === "loading_dock" ? <Gate /> : env === "ops_office" ? <OpsCentre /> : env === "hospital_corridor" ? <CustomerFloor /> :

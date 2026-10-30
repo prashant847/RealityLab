@@ -2,15 +2,15 @@
  "rounds": [
   {
    "simulation": {
-    "id": "2c3cb665825a",
+    "id": "9d349c0f7f97",
     "seed": 1,
-    "active_run_id": "c640d6dcc193",
+    "active_run_id": "74e015f25f1d",
     "rewinds_used": 0,
     "max_rewinds": 5,
     "rewinds_left": 5
    },
    "run": {
-    "id": "c640d6dcc193",
+    "id": "74e015f25f1d",
     "kind": "main",
     "attempt": 1,
     "status": "active",
@@ -20,7 +20,7 @@
     "ending": null
    },
    "state": {
-    "simulation_id": "2c3cb665825a",
+    "simulation_id": "9d349c0f7f97",
     "seed": 1,
     "round": 1,
     "status": "active",
@@ -125,23 +125,27 @@
        "effects": [
         "warning_lights"
        ],
-       "narration": "Tuesday 27 June 2017. Computers across the company begin to fail. Nobody inside yet knows this is not a fault.",
+       "narration": "Tuesday 27 June 2017. Across the company, screens begin to go dark, one after another.",
        "dialogue": [],
        "emphasis": null
       },
       {
        "id": "r1b",
        "environment": "warehouse_floor",
+       "characters": [],
+       "effects": [],
+       "narration": "On some, a red message demands payment. It looks like ransomware.",
+       "dialogue": [],
+       "emphasis": null
+      },
+      {
+       "id": "r1c",
+       "environment": "warehouse_floor",
        "characters": [
         {
          "id": "arjun",
          "expression": "worried",
          "side": "left"
-        },
-        {
-         "id": "player",
-         "expression": "determined",
-         "side": "right"
         }
        ],
        "effects": [],
@@ -156,7 +160,7 @@
        "emphasis": null
       },
       {
-       "id": "r1c",
+       "id": "r1d",
        "environment": "control_room",
        "characters": [
         {
@@ -209,15 +213,15 @@
     "completed": false
    },
    "simulation": {
-    "id": "2c3cb665825a",
+    "id": "9d349c0f7f97",
     "seed": 1,
-    "active_run_id": "c640d6dcc193",
+    "active_run_id": "74e015f25f1d",
     "rewinds_used": 0,
     "max_rewinds": 5,
     "rewinds_left": 5
    },
    "run": {
-    "id": "c640d6dcc193",
+    "id": "74e015f25f1d",
     "kind": "main",
     "attempt": 1,
     "status": "active",
@@ -227,7 +231,7 @@
     "ending": null
    },
    "state": {
-    "simulation_id": "2c3cb665825a",
+    "simulation_id": "9d349c0f7f97",
     "seed": 1,
     "round": 2,
     "status": "active",
@@ -371,32 +375,34 @@
     ],
     "completed": false,
     "page": {
-     "layout": "two",
+     "layout": "three",
      "panels": [
       {
        "id": "r2a",
        "environment": "electrical_area",
        "characters": [],
-       "effects": [
-        "warning_lights"
-       ],
-       "narration": "Day 1. At the terminal, the cranes and gates have lost the systems that tell them what to do. Work falls back to paper and radio.",
+       "effects": [],
+       "narration": "Day 1. At the terminal, a crane stands still with its load hanging. The system that tells it what to do is gone.",
        "dialogue": [],
        "emphasis": null
       },
       {
        "id": "r2b",
        "environment": "electrical_area",
+       "characters": [],
+       "effects": [],
+       "narration": "Work falls back to paper and radio.",
+       "dialogue": [],
+       "emphasis": null
+      },
+      {
+       "id": "r2c",
+       "environment": "electrical_area",
        "characters": [
         {
          "id": "kavya",
          "expression": "angry",
          "side": "left"
-        },
-        {
-         "id": "player",
-         "expression": "worried",
-         "side": "right"
         }
        ],
        "effects": [],
@@ -454,15 +460,15 @@
     "completed": false
    },
    "simulation": {
-    "id": "2c3cb665825a",
+    "id": "9d349c0f7f97",
     "seed": 1,
-    "active_run_id": "c640d6dcc193",
+    "active_run_id": "74e015f25f1d",
     "rewinds_used": 0,
     "max_rewinds": 5,
     "rewinds_left": 5
    },
    "run": {
-    "id": "c640d6dcc193",
+    "id": "74e015f25f1d",
     "kind": "main",
     "attempt": 1,
     "status": "active",
@@ -472,7 +478,7 @@
     "ending": null
    },
    "state": {
-    "simulation_id": "2c3cb665825a",
+    "simulation_id": "9d349c0f7f97",
     "seed": 1,
     "round": 3,
     "status": "active",
@@ -705,10 +711,10 @@
      "panels": [
       {
        "id": "r3a",
-       "environment": "flooded_highway",
+       "environment": "loading_dock",
        "characters": [],
        "effects": [],
-       "narration": "Day 2, 28 June. The company says the attack is contained. Outside the gates, the trucks keep coming.",
+       "narration": "Day 2, 28 June. The company says the attack is contained. Outside the gates, trucks keep arriving.",
        "dialogue": [],
        "emphasis": null
       },
@@ -720,11 +726,6 @@
          "id": "raghav",
          "expression": "worried",
          "side": "left"
-        },
-        {
-         "id": "player",
-         "expression": "calm",
-         "side": "right"
         }
        ],
        "effects": [],
@@ -749,7 +750,7 @@
         }
        ],
        "effects": [],
-       "narration": null,
+       "narration": "Three routes. One runs through a site nobody has confirmed.",
        "dialogue": [
         {
          "speaker": "raghav",
@@ -818,15 +819,15 @@
     "completed": false
    },
    "simulation": {
-    "id": "2c3cb665825a",
+    "id": "9d349c0f7f97",
     "seed": 1,
-    "active_run_id": "c640d6dcc193",
+    "active_run_id": "74e015f25f1d",
     "rewinds_used": 0,
     "max_rewinds": 5,
     "rewinds_left": 5
    },
    "run": {
-    "id": "c640d6dcc193",
+    "id": "74e015f25f1d",
     "kind": "main",
     "attempt": 1,
     "status": "active",
@@ -836,7 +837,7 @@
     "ending": null
    },
    "state": {
-    "simulation_id": "2c3cb665825a",
+    "simulation_id": "9d349c0f7f97",
     "seed": 1,
     "round": 4,
     "status": "active",
@@ -1148,10 +1149,19 @@
     ],
     "completed": false,
     "page": {
-     "layout": "two",
+     "layout": "three",
      "panels": [
       {
        "id": "r4a",
+       "environment": "loading_dock",
+       "characters": [],
+       "effects": [],
+       "narration": "Days 2 to 3. The system says 480 cargo lots. The hand count in the yard has only reached about half.",
+       "dialogue": [],
+       "emphasis": null
+      },
+      {
+       "id": "r4b",
        "environment": "loading_dock",
        "characters": [
         {
@@ -1166,18 +1176,23 @@
         }
        ],
        "effects": [],
-       "narration": "Days 2 to 3. With the systems down, nobody can say exactly what is where.",
+       "narration": null,
        "dialogue": [
         {
          "speaker": "arjun",
-         "text": "The system says 480. The yard count is only half done.",
+         "text": "I can't sign off on the system's number. Not yet.",
+         "kind": "speech"
+        },
+        {
+         "speaker": "kavya",
+         "text": "And the yard won't wait for it.",
          "kind": "speech"
         }
        ],
        "emphasis": null
       },
       {
-       "id": "r4b",
+       "id": "r4c",
        "environment": "loading_dock",
        "characters": [
         {
@@ -1186,10 +1201,8 @@
          "side": "center"
         }
        ],
-       "effects": [
-        "damaged_inventory"
-       ],
-       "narration": "Which number do you trust?",
+       "effects": [],
+       "narration": null,
        "dialogue": [
         {
          "speaker": "player",
@@ -1240,15 +1253,15 @@
     "completed": false
    },
    "simulation": {
-    "id": "2c3cb665825a",
+    "id": "9d349c0f7f97",
     "seed": 1,
-    "active_run_id": "c640d6dcc193",
+    "active_run_id": "74e015f25f1d",
     "rewinds_used": 0,
     "max_rewinds": 5,
     "rewinds_left": 5
    },
    "run": {
-    "id": "c640d6dcc193",
+    "id": "74e015f25f1d",
     "kind": "main",
     "attempt": 1,
     "status": "active",
@@ -1258,7 +1271,7 @@
     "ending": null
    },
    "state": {
-    "simulation_id": "2c3cb665825a",
+    "simulation_id": "9d349c0f7f97",
     "seed": 1,
     "round": 5,
     "status": "active",
@@ -1571,36 +1584,40 @@
     ],
     "completed": false,
     "page": {
-     "layout": "two",
+     "layout": "three",
      "panels": [
       {
        "id": "r5a",
+       "environment": "ops_office",
+       "characters": [],
+       "effects": [],
+       "narration": "Days 3 to 5. A huge rebuild is under way. Five jobs all need effort, and there are only 12 points to share.",
+       "dialogue": [],
+       "emphasis": null
+      },
+      {
+       "id": "r5b",
        "environment": "ops_office",
        "characters": [
         {
          "id": "nisha",
          "expression": "worried",
          "side": "left"
-        },
-        {
-         "id": "player",
-         "expression": "exhausted",
-         "side": "right"
         }
        ],
        "effects": [],
-       "narration": "Days 3 to 5. A huge rebuild is under way. There is only so much skill, and so many hours.",
+       "narration": null,
        "dialogue": [
         {
          "speaker": "nisha",
-         "text": "We have 12 points of effort in total. Spend it now and it's gone later.",
+         "text": "Spend it now and it's gone later. Which job can wait?",
          "kind": "speech"
         }
        ],
        "emphasis": null
       },
       {
-       "id": "r5b",
+       "id": "r5c",
        "environment": "ops_office",
        "characters": [
         {
@@ -1691,15 +1708,15 @@
     "completed": false
    },
    "simulation": {
-    "id": "2c3cb665825a",
+    "id": "9d349c0f7f97",
     "seed": 1,
-    "active_run_id": "c640d6dcc193",
+    "active_run_id": "74e015f25f1d",
     "rewinds_used": 0,
     "max_rewinds": 5,
     "rewinds_left": 5
    },
    "run": {
-    "id": "c640d6dcc193",
+    "id": "74e015f25f1d",
     "kind": "main",
     "attempt": 1,
     "status": "active",
@@ -1709,7 +1726,7 @@
     "ending": null
    },
    "state": {
-    "simulation_id": "2c3cb665825a",
+    "simulation_id": "9d349c0f7f97",
     "seed": 1,
     "round": 6,
     "status": "active",
@@ -2114,6 +2131,17 @@
       {
        "id": "r6a",
        "environment": "control_room",
+       "characters": [],
+       "effects": [
+        "system_alert"
+       ],
+       "narration": "The failures began soon after a trusted third-party software update was installed. Suspicious, but not proof.",
+       "dialogue": [],
+       "emphasis": null
+      },
+      {
+       "id": "r6b",
+       "environment": "control_room",
        "characters": [
         {
          "id": "arjun",
@@ -2126,18 +2154,25 @@
          "side": "right"
         }
        ],
-       "effects": [
-        "system_alert"
-       ],
-       "narration": "The pattern points to a trusted software update. Suspicious, but not proof.",
+       "effects": [],
+       "narration": null,
        "dialogue": [
         {
          "speaker": "arjun",
-         "text": "A third-party update arrived just before the failures. It may have been tampered with.",
+         "text": "The update arrived just before the failures. It may have been tampered with.",
          "kind": "speech"
         }
        ],
-       "emphasis": "revelation"
+       "emphasis": null
+      },
+      {
+       "id": "r6c",
+       "environment": "control_room",
+       "characters": [],
+       "effects": [],
+       "narration": "It looked like ransomware. It was not: the data was wiped, so paying could not bring it back.",
+       "dialogue": [],
+       "emphasis": null
       }
      ]
     }
@@ -2192,15 +2227,15 @@
     "completed": false
    },
    "simulation": {
-    "id": "2c3cb665825a",
+    "id": "9d349c0f7f97",
     "seed": 1,
-    "active_run_id": "c640d6dcc193",
+    "active_run_id": "74e015f25f1d",
     "rewinds_used": 0,
     "max_rewinds": 5,
     "rewinds_left": 5
    },
    "run": {
-    "id": "c640d6dcc193",
+    "id": "74e015f25f1d",
     "kind": "main",
     "attempt": 1,
     "status": "active",
@@ -2210,7 +2245,7 @@
     "ending": null
    },
    "state": {
-    "simulation_id": "2c3cb665825a",
+    "simulation_id": "9d349c0f7f97",
     "seed": 1,
     "round": 7,
     "status": "active",
@@ -2598,10 +2633,19 @@
     ],
     "completed": false,
     "page": {
-     "layout": "two",
+     "layout": "three",
      "panels": [
       {
        "id": "r7a",
+       "environment": "hospital_corridor",
+       "characters": [],
+       "effects": [],
+       "narration": "Days 5 to 8. Capacity is short. Urgent cargo is waiting, and so is a key account with a contract.",
+       "dialogue": [],
+       "emphasis": null
+      },
+      {
+       "id": "r7b",
        "environment": "hospital_corridor",
        "characters": [
         {
@@ -2616,18 +2660,18 @@
         }
        ],
        "effects": [],
-       "narration": "Days 5 to 8. Capacity is short, and everyone wants to go first.",
+       "narration": null,
        "dialogue": [
         {
          "speaker": "isha",
-         "text": "Customers with urgent cargo are running out of time. And a key account is quoting penalties.",
+         "text": "I can't promise both. One of them waits.",
          "kind": "shout"
         }
        ],
        "emphasis": null
       },
       {
-       "id": "r7b",
+       "id": "r7c",
        "environment": "loading_dock",
        "characters": [
         {
@@ -2725,15 +2769,15 @@
     "completed": false
    },
    "simulation": {
-    "id": "2c3cb665825a",
+    "id": "9d349c0f7f97",
     "seed": 1,
-    "active_run_id": "c640d6dcc193",
+    "active_run_id": "74e015f25f1d",
     "rewinds_used": 0,
     "max_rewinds": 5,
     "rewinds_left": 5
    },
    "run": {
-    "id": "c640d6dcc193",
+    "id": "74e015f25f1d",
     "kind": "main",
     "attempt": 1,
     "status": "active",
@@ -2743,7 +2787,7 @@
     "ending": null
    },
    "state": {
-    "simulation_id": "2c3cb665825a",
+    "simulation_id": "9d349c0f7f97",
     "seed": 1,
     "round": 8,
     "status": "active",
@@ -3236,16 +3280,15 @@
        "environment": "alt_depot",
        "characters": [],
        "effects": [
-        "power_failure",
-        "emergency_lighting"
+        "power_failure"
        ],
-       "narration": "Days 5 to 9. The recovery rests on a few surviving pieces. The lights flicker.",
+       "narration": "Days 5 to 9. The recovery rests on a few surviving pieces. Almost every site is dark.",
        "dialogue": [],
        "emphasis": null
       },
       {
        "id": "r8b",
-       "environment": "electrical_area",
+       "environment": "alt_depot",
        "characters": [
         {
          "id": "kavya",
@@ -3273,7 +3316,7 @@
         {
          "id": "raghav",
          "expression": "exhausted",
-         "side": "left"
+         "side": "right"
         }
        ],
        "effects": [],
@@ -3362,15 +3405,15 @@
     "completed": false
    },
    "simulation": {
-    "id": "2c3cb665825a",
+    "id": "9d349c0f7f97",
     "seed": 1,
-    "active_run_id": "c640d6dcc193",
+    "active_run_id": "74e015f25f1d",
     "rewinds_used": 0,
     "max_rewinds": 5,
     "rewinds_left": 5
    },
    "run": {
-    "id": "c640d6dcc193",
+    "id": "74e015f25f1d",
     "kind": "main",
     "attempt": 1,
     "status": "active",
@@ -3380,7 +3423,7 @@
     "ending": null
    },
    "state": {
-    "simulation_id": "2c3cb665825a",
+    "simulation_id": "9d349c0f7f97",
     "seed": 1,
     "round": 9,
     "status": "active",
@@ -3866,16 +3909,14 @@
        "id": "r9a",
        "environment": "press_scene",
        "characters": [],
-       "effects": [
-        "warning_lights"
-       ],
+       "effects": [],
        "narration": "Days 6 to 10. Reporters ask whether this is a cyberattack, and when services will return.",
        "dialogue": [],
        "emphasis": null
       },
       {
        "id": "r9b",
-       "environment": "ops_office",
+       "environment": "hospital_corridor",
        "characters": [
         {
          "id": "isha",
@@ -3984,15 +4025,15 @@
     "completed": false
    },
    "simulation": {
-    "id": "2c3cb665825a",
+    "id": "9d349c0f7f97",
     "seed": 1,
-    "active_run_id": "c640d6dcc193",
+    "active_run_id": "74e015f25f1d",
     "rewinds_used": 0,
     "max_rewinds": 5,
     "rewinds_left": 5
    },
    "run": {
-    "id": "c640d6dcc193",
+    "id": "74e015f25f1d",
     "kind": "main",
     "attempt": 1,
     "status": "active",
@@ -4002,7 +4043,7 @@
     "ending": null
    },
    "state": {
-    "simulation_id": "2c3cb665825a",
+    "simulation_id": "9d349c0f7f97",
     "seed": 1,
     "round": 10,
     "status": "active",
@@ -4530,16 +4571,20 @@
       {
        "id": "r10a",
        "environment": "loading_dock",
+       "characters": [],
+       "effects": [],
+       "narration": "About Day 10. The core systems are back. The gates start to open.",
+       "dialogue": [],
+       "emphasis": null
+      },
+      {
+       "id": "r10b",
+       "environment": "loading_dock",
        "characters": [
         {
          "id": "raghav",
          "expression": "calm",
          "side": "left"
-        },
-        {
-         "id": "player",
-         "expression": "determined",
-         "side": "center"
         },
         {
          "id": "isha",
@@ -4548,7 +4593,7 @@
         }
        ],
        "effects": [],
-       "narration": "About Day 10. The core systems are back. Reopening is a promise customers will test.",
+       "narration": "Reopening is a promise customers will test.",
        "dialogue": [
         {
          "speaker": "raghav",
@@ -4646,15 +4691,15 @@
     "completed": true
    },
    "simulation": {
-    "id": "2c3cb665825a",
+    "id": "9d349c0f7f97",
     "seed": 1,
-    "active_run_id": "c640d6dcc193",
+    "active_run_id": "74e015f25f1d",
     "rewinds_used": 0,
     "max_rewinds": 5,
     "rewinds_left": 5
    },
    "run": {
-    "id": "c640d6dcc193",
+    "id": "74e015f25f1d",
     "kind": "main",
     "attempt": 1,
     "status": "completed",
@@ -4664,7 +4709,7 @@
     "ending": "full_recovery"
    },
    "state": {
-    "simulation_id": "2c3cb665825a",
+    "simulation_id": "9d349c0f7f97",
     "seed": 1,
     "round": 10,
     "status": "completed",
@@ -5675,15 +5720,15 @@
    "completed": true
   },
   "simulation": {
-   "id": "341435188d13",
+   "id": "71a95018edbb",
    "seed": 1,
-   "active_run_id": "1d9f91d6665f",
+   "active_run_id": "cadc840e0922",
    "rewinds_used": 0,
    "max_rewinds": 5,
    "rewinds_left": 5
   },
   "run": {
-   "id": "1d9f91d6665f",
+   "id": "cadc840e0922",
    "kind": "main",
    "attempt": 1,
    "status": "completed",
@@ -5693,7 +5738,7 @@
    "ending": "partial_dispatch"
   },
   "state": {
-   "simulation_id": "341435188d13",
+   "simulation_id": "71a95018edbb",
    "seed": 1,
    "round": 10,
    "status": "completed",
@@ -6361,7 +6406,7 @@
  "report": {
   "version": 1,
   "kind": "final",
-  "run_id": "1d9f91d6665f",
+  "run_id": "cadc840e0922",
   "decision_count": 10,
   "ending": {
    "id": "partial_dispatch",
@@ -7420,7 +7465,7 @@
   },
   "attempts": [
    {
-    "run_id": "1d9f91d6665f",
+    "run_id": "cadc840e0922",
     "attempt": 1,
     "kind": "main",
     "status": "completed",
@@ -7438,7 +7483,7 @@
     "label": "Attempt 1"
    }
   ],
-  "simulation_id": "341435188d13",
+  "simulation_id": "71a95018edbb",
   "seed": 1
  },
  "checkpoint": {
@@ -7470,7 +7515,7 @@
    }
   ],
   "state": {
-   "simulation_id": "341435188d13",
+   "simulation_id": "71a95018edbb",
    "seed": 1,
    "round": 10,
    "status": "active",
@@ -8060,7 +8105,7 @@
  },
  "compare": {
   "base": {
-   "run_id": "1d9f91d6665f",
+   "run_id": "cadc840e0922",
    "label": "Attempt 1",
    "status": "completed",
    "ending": "PARTIAL REOPENING",
@@ -8090,7 +8135,7 @@
    "round": 10
   },
   "other": {
-   "run_id": "be836b45e8f1",
+   "run_id": "793034ad7eb9",
    "label": "Attempt 2",
    "status": "completed",
    "ending": "URGENT CUSTOMERS SERVED",
@@ -8457,7 +8502,7 @@
  "report_good": {
   "version": 1,
   "kind": "final",
-  "run_id": "33012e0b6f2b",
+  "run_id": "b9639d36c9c3",
   "decision_count": 10,
   "ending": {
    "id": "full_recovery",
@@ -9211,7 +9256,7 @@
   },
   "attempts": [
    {
-    "run_id": "33012e0b6f2b",
+    "run_id": "b9639d36c9c3",
     "attempt": 1,
     "kind": "main",
     "status": "completed",
@@ -9229,7 +9274,7 @@
     "label": "Attempt 1"
    }
   ],
-  "simulation_id": "98d1dc49bc8a",
+  "simulation_id": "720589e20198",
   "seed": 1
  },
  "dead_end_hard": {
@@ -9260,15 +9305,15 @@
    "completed": false
   },
   "simulation": {
-   "id": "a6074f21b93a",
+   "id": "6fa90331cbf3",
    "seed": 1,
-   "active_run_id": "4d03ef361e95",
+   "active_run_id": "849f813db676",
    "rewinds_used": 0,
    "max_rewinds": 5,
    "rewinds_left": 5
   },
   "run": {
-   "id": "4d03ef361e95",
+   "id": "849f813db676",
    "kind": "main",
    "attempt": 1,
    "status": "dead_end",
@@ -9278,7 +9323,7 @@
    "ending": null
   },
   "state": {
-   "simulation_id": "a6074f21b93a",
+   "simulation_id": "6fa90331cbf3",
    "seed": 1,
    "round": 3,
    "status": "active",
@@ -9499,10 +9544,10 @@
     "panels": [
      {
       "id": "r3a",
-      "environment": "flooded_highway",
+      "environment": "loading_dock",
       "characters": [],
       "effects": [],
-      "narration": "Day 2, 28 June. The company says the attack is contained. Outside the gates, the trucks keep coming.",
+      "narration": "Day 2, 28 June. The company says the attack is contained. Outside the gates, trucks keep arriving.",
       "dialogue": [],
       "emphasis": null
      },
@@ -9514,11 +9559,6 @@
         "id": "raghav",
         "expression": "worried",
         "side": "left"
-       },
-       {
-        "id": "player",
-        "expression": "calm",
-        "side": "right"
        }
       ],
       "effects": [],
@@ -9543,7 +9583,7 @@
        }
       ],
       "effects": [],
-      "narration": null,
+      "narration": "Three routes. One runs through a site nobody has confirmed.",
       "dialogue": [
        {
         "speaker": "raghav",
@@ -9768,15 +9808,15 @@
    "completed": false
   },
   "simulation": {
-   "id": "1ff0c8e4f2d7",
+   "id": "5cf5bb6ef102",
    "seed": 1,
-   "active_run_id": "8c73f4ec20ef",
+   "active_run_id": "44e776f9348d",
    "rewinds_used": 0,
    "max_rewinds": 5,
    "rewinds_left": 5
   },
   "run": {
-   "id": "8c73f4ec20ef",
+   "id": "44e776f9348d",
    "kind": "main",
    "attempt": 1,
    "status": "dead_end",
@@ -9786,7 +9826,7 @@
    "ending": null
   },
   "state": {
-   "simulation_id": "1ff0c8e4f2d7",
+   "simulation_id": "5cf5bb6ef102",
    "seed": 1,
    "round": 6,
    "status": "active",
@@ -10260,6 +10300,17 @@
      {
       "id": "r6a",
       "environment": "control_room",
+      "characters": [],
+      "effects": [
+       "system_alert"
+      ],
+      "narration": "The failures began soon after a trusted third-party software update was installed. Suspicious, but not proof.",
+      "dialogue": [],
+      "emphasis": null
+     },
+     {
+      "id": "r6b",
+      "environment": "control_room",
       "characters": [
        {
         "id": "arjun",
@@ -10272,18 +10323,25 @@
         "side": "right"
        }
       ],
-      "effects": [
-       "system_alert"
-      ],
-      "narration": "The pattern points to a trusted software update. Suspicious, but not proof.",
+      "effects": [],
+      "narration": null,
       "dialogue": [
        {
         "speaker": "arjun",
-        "text": "A third-party update arrived just before the failures. It may have been tampered with.",
+        "text": "The update arrived just before the failures. It may have been tampered with.",
         "kind": "speech"
        }
       ],
-      "emphasis": "revelation"
+      "emphasis": null
+     },
+     {
+      "id": "r6c",
+      "environment": "control_room",
+      "characters": [],
+      "effects": [],
+      "narration": "It looked like ransomware. It was not: the data was wiped, so paying could not bring it back.",
+      "dialogue": [],
+      "emphasis": null
      }
     ]
    }
@@ -10514,25 +10572,25 @@
  },
  "rewound": {
   "simulation": {
-   "id": "1ff0c8e4f2d7",
+   "id": "5cf5bb6ef102",
    "seed": 1,
-   "active_run_id": "dc4e60793fc6",
+   "active_run_id": "8bd42dbf2b81",
    "rewinds_used": 1,
    "max_rewinds": 5,
    "rewinds_left": 4
   },
   "run": {
-   "id": "dc4e60793fc6",
+   "id": "8bd42dbf2b81",
    "kind": "rewind",
    "attempt": 2,
    "status": "active",
-   "parent_run_id": "8c73f4ec20ef",
+   "parent_run_id": "44e776f9348d",
    "branch_checkpoint_index": 4,
    "accepted_risk": false,
    "ending": null
   },
   "state": {
-   "simulation_id": "1ff0c8e4f2d7",
+   "simulation_id": "5cf5bb6ef102",
    "seed": 1,
    "round": 5,
    "status": "active",
@@ -10849,36 +10907,40 @@
    ],
    "completed": false,
    "page": {
-    "layout": "two",
+    "layout": "three",
     "panels": [
      {
       "id": "r5a",
+      "environment": "ops_office",
+      "characters": [],
+      "effects": [],
+      "narration": "Days 3 to 5. A huge rebuild is under way. Five jobs all need effort, and there are only 12 points to share.",
+      "dialogue": [],
+      "emphasis": null
+     },
+     {
+      "id": "r5b",
       "environment": "ops_office",
       "characters": [
        {
         "id": "nisha",
         "expression": "worried",
         "side": "left"
-       },
-       {
-        "id": "player",
-        "expression": "exhausted",
-        "side": "right"
        }
       ],
       "effects": [],
-      "narration": "Days 3 to 5. A huge rebuild is under way. There is only so much skill, and so many hours.",
+      "narration": null,
       "dialogue": [
        {
         "speaker": "nisha",
-        "text": "We have 12 points of effort in total. Spend it now and it's gone later.",
+        "text": "Spend it now and it's gone later. Which job can wait?",
         "kind": "speech"
        }
       ],
       "emphasis": null
      },
      {
-      "id": "r5b",
+      "id": "r5c",
       "environment": "ops_office",
       "characters": [
        {
@@ -10935,7 +10997,7 @@
    }
   ],
   "rewind_context": {
-   "from_run_id": "8c73f4ec20ef",
+   "from_run_id": "44e776f9348d",
    "checkpoint_index": 4,
    "round": 5,
    "clock": "Days 3-5",
