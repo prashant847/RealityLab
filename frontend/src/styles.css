@@ -440,3 +440,12 @@ select { background: var(--panel); color: var(--text); border: 1px solid var(--s
 .plain-label[data-evidence="reconstructed"] { border-color: #4b7fb4; color: #9cc3ea; }
 .plain-label[data-evidence="simulation"] { border-color: #e2862a; color: #f2b26e; }
 .plain-record { margin: .8rem 0 0; font-size: .95rem; color: var(--steel-l); }
+
+/* Narrow screens: the narration and speech sit under the picture instead of on top of it, so text never covers the people. */
+@media (max-width: 640px) {
+  .panel--art:has(.overlay) { aspect-ratio: auto; display: flex; flex-direction: column; }
+  .panel--art:has(.overlay) .stage { position: relative; inset: auto; aspect-ratio: var(--ar, 16 / 9); flex: none; }
+  .panel--art .overlay { position: static; inset: auto; padding: 8px; gap: 8px; background: #0b1020; }
+  .panel--art .overlay .narration, .panel--art .overlay .bubble { max-width: 100%; font-size: 14px; align-self: stretch; }
+  .panel--art .overlay .bubble::after, .panel--art .overlay .bubble::before { display: none; }
+}
