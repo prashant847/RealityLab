@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import type { Analysis } from "../api/types";
-import { FlatEnv } from "../comic/flat/World";
+import { NpEnv } from "../comic/notpetya/Env";
 import { RecoveryTimeline } from "./RecoveryTimeline";
 
 export interface DeadEndActions {
@@ -19,7 +19,7 @@ export function DeadEndScreen({ analysis, rewindsLeft, busy, actions }: {
   return (
     <section className="deadend" aria-labelledby="deadend-title">
       <header className="deadend-hero">
-        <div className="deadend-bg" aria-hidden="true"><FlatEnv env="electrical_area" effects={["warning_lights", "power_failure"]} /></div>
+        <div className="deadend-bg" aria-hidden="true"><NpEnv env="warehouse_floor" effects={["power_failure", "warning_lights"]} /></div>
         <p className="kicker">{analysis.severity === "soft" ? "Objective out of reach — a reduced outcome remains" : "No acceptable outcome remains"}</p>
         <h1 id="deadend-title">{analysis.title}</h1>
       </header>

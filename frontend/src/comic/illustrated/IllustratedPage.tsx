@@ -6,6 +6,7 @@ import { NarrationBox } from "../NarrationBox";
 import { SpeechBubble } from "../SpeechBubble";
 import type { PanelData, Side } from "../types";
 import { sanitizePage } from "../validate";
+import { NpEnv, type EnvId } from "../notpetya/Env";
 import { ArtImage } from "./ArtImage";
 import { getAsset, type ArtCredit } from "./artManifest";
 import { FailedSystemScreen, SCREEN_H, SCREEN_W } from "./FailedSystemScreen";
@@ -147,7 +148,7 @@ function IllustratedPanel({ script, source, index, facts, flat, use }: { script:
 
 /** Attribution for every real asset a script uses (required by the CC BY licences; shown for all real art). */
 export function ArtCredits({ script }: { script: ArtSceneScript }) {
-  const ids = [...new Set([...script.panels.flatMap((p) => p.layers.map((l) => l.asset)), script.decisionBackdrop])].filter((id) => !id.startsWith("vector.") && !id.startsWith("portrait."));
+  const ids = [...new Set([...script.panels.flatMap((p) => p.layers.map((l) => l.asset)), script.decisionBackdrop])].filter((id) => !id.startsWith("vector.") && !id.startsWith("portrait.") && !id.startsWith("np."));
   const credited = ids.map((id) => ({ id, c: getAsset(id)?.credit })).filter((x): x is { id: string; c: ArtCredit } => Boolean(x.c));
   if (credited.length === 0) return null;
   return (
@@ -176,7 +177,7 @@ export function IllustratedPage({ page, script, title, facts = [], evidence, chi
 export function DecisionStage({ asset, children }: { asset: string; children: ReactNode }) {
   return (
     <div className="decision-stage" data-art-panel>
-      <div className="decision-stage-bg" aria-hidden="true">{asset.startsWith("vector.") ? <ArtImage layer={{ asset, role: "vector", vector: asset.slice(7) as "office" }} /> : <ArtImage layer={{ asset, role: "background" }} />}</div>
+      <div className="decision-stage-bg" aria-hidden="true">{asset.startsWith("np.") ? <div className="art art--background art--vector" data-art={asset} data-art-status="drawn"><NpEnv env={asset.slice(3) as EnvId} /></div> : asset.startsWith("vector.") ? <ArtImage layer={{ asset, role: "vector", vector: asset.slice(7) as "office" }} /> : <ArtImage layer={{ asset, role: "background" }} />}</div>
       <div className="decision-stage-body">{children}</div>
     </div>
   );

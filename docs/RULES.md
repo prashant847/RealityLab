@@ -6,165 +6,165 @@ Budget is in lakh rupees. **Time cost** is minutes of dispatch slack (starts at 
 
 ## Decisions
 
-### Round 1 — 8:40 PM: THE BLACKOUT
+### Round 1 — Day 1 · 27 Jun: THE SCREENS GO DARK
 
-**`r1_isolate`** — Isolate affected systems and preserve evidence  
+**`r1_isolate`** — Cut the affected connections and keep the evidence  
 Cost ₹0.5 lakh · time 40 min
-- Evidence quality +25; System integrity +10; Recovery progress +5; Available labour -10; Arjun's trust +10; Containment := full
+- Evidence quality +25; System integrity +10; Recovery progress +5; Available labour -10; IT Lead's trust +10; Containment := full
 
-**`r1_controlled`** — Attempt controlled recovery while monitoring  
+**`r1_controlled`** — Recover in stages while watching the spread  
 Cost ₹1 lakh · time 20 min
-- Evidence quality +10; System integrity +5; Recovery progress +15; Arjun's trust +3; Containment := partial
+- Evidence quality +10; System integrity +5; Recovery progress +15; IT Lead's trust +3; Containment := partial
 
-**`r1_rush`** — Prioritize immediate restoration of operations  
+**`r1_rush`** — Bring everything back online as fast as possible  
 Cost ₹1.5 lakh · time 0 min
-- Evidence quality -20; System integrity -10; Recovery progress +30; Arjun's trust -10; Containment := none; +flag `rushed_restore`
+- Evidence quality -20; System integrity -10; Recovery progress +30; IT Lead's trust -10; Containment := none; +flag `rushed_restore`
 
-### Round 2 — 9:05 PM: SMOKE BEHIND THE CONTROL ROOM
+### Round 2 — Day 1 · 27 Jun: RUNNING BLIND AT THE TERMINAL
 
-**`r2_evacuate`** — Evacuate the affected area and contact emergency responders  
+**`r2_evacuate`** — Clear the affected area and bring in the safety team  
 Cost ₹0.3 lakh · time 30 min
-- Available labour -25; Kavya's trust +15; Facility := evacuated; +flag `evacuated`; +flag `responders_called`; +flag `site_cleared`
+- Available labour -25; Terminal Supervisor's trust +15; Site := evacuated; +flag `evacuated`; +flag `responders_called`; +flag `site_cleared`
 
-**`r2_secure`** — Secure the area while authorized personnel assess  
+**`r2_secure`** — Cordon the area and let a qualified lead check it  
 Cost ₹0.2 lakh · time 20 min
-- Available labour -10; Staff safety -3; Kavya's trust +5; Facility := isolated; +flag `assessed`; +flag `site_cleared`
+- Available labour -10; Staff safety -3; Terminal Supervisor's trust +5; Site := isolated; +flag `assessed`; +flag `site_cleared`
 
-**`r2_maintain`** — Keep operating elsewhere while the area stays isolated  
+**`r2_maintain`** — Keep working manually elsewhere with no formal safety check  
 Cost ₹0 lakh · time 0 min · needs confirmation
-- Staff safety -20; Kavya's trust -20; Facility := smoke; +flag `unsafe_ops`
+- Staff safety -20; Terminal Supervisor's trust -20; Site := smoke; +flag `unsafe_ops`
 
-### Round 3 — 9:35 PM: THE ROAD DISAPPEARS
+### Round 3 — Day 2 · 28 Jun: CARGO WITH NOWHERE TO GO
 
-**`r3_alt_transport`** — Pay for alternative transport  
+**`r3_alt_transport`** — Pay for extra transport capacity  
 Cost ₹4 lakh · time 10 min
-- Raghav's trust +5; Transport capacity := 300; +flag `route_alt_paid`
+- Network Administrator's trust +5; Transport capacity := 300; +flag `route_alt_paid`
 
-**`r3_divert_depot`** — Divert through another depot  
+**`r3_divert_depot`** — Divert cargo through another site  
 Cost ₹1.5 lakh · time 45 min
-- Raghav's trust +3; Transport capacity := 240; +flag `depot_diverted`; +flag `depot_unverified`
+- Network Administrator's trust +3; Transport capacity := 240; +flag `depot_diverted`; +flag `depot_unverified`
 
-**`r3_reserve_hospital`** — Reserve available vehicles for the most urgent hospital deliveries  
+**`r3_reserve_hospital`** — Keep the few usable vehicles for the most urgent cargo  
 Cost ₹0.5 lakh · time 5 min
-- Dr. Kapoor's trust +10; Supplier confidence -3; Transport capacity := 170; +flag `hospital_reserved`
+- Customer Representative's trust +10; Supplier confidence -3; Transport capacity := 170; +flag `hospital_reserved`
 
-### Round 4 — 10:15 PM: THE NUMBERS DON'T MATCH
+### Round 4 — Days 2-3: THE RECORDS DON'T MATCH
 
-**`r4_pause`** — Pause dispatch until reconciliation  
+**`r4_pause`** — Pause releases until a full count is done  
 Cost ₹0.3 lakh · time 75 min
-- Verified stock +250; Evidence quality +15
-- Verified stock +40 _when `evidence_quality >= 60`_
+- Verified cargo +250; Evidence quality +15
+- Verified cargo +40 _when `evidence_quality >= 60`_
 
-**`r4_release_verified`** — Release independently verified batches  
+**`r4_release_verified`** — Release batches as each is independently confirmed  
 Cost ₹0.2 lakh · time 35 min
-- Verified stock +170; Evidence quality +8
-- Verified stock +30 _when `evidence_quality >= 60`_
+- Verified cargo +170; Evidence quality +8
+- Verified cargo +30 _when `evidence_quality >= 60`_
 
-**`r4_provisional`** — Use digital records provisionally while arranging more checks  
+**`r4_provisional`** — Use the last records provisionally and check later  
 Cost ₹0.4 lakh · time 10 min
-- Verified stock +90; Provisional stock +190; Evidence quality -10; +flag `provisional_records`
+- Verified cargo +90; Provisional cargo +190; Evidence quality -10; +flag `provisional_records`
 
-### Round 5 — 11:00 PM: THE EMERGENCY BUDGET
+### Round 5 — Days 3-5: WHERE DOES THE EFFORT GO?
 
 **`r5_minimal`** — Spend only the essentials and hold the rest  
 Cost ₹1 lakh · time 0 min
-- Recovery progress +5; Nisha's trust +10; +flag `reserve_held`
+- Recovery progress +5; Operations Manager's trust +10; +flag `reserve_held`
 
-**`r5_balanced`** — Staged balanced package: repairs, IT and some transport  
+**`r5_balanced`** — A balanced package: repairs, IT recovery and some transport  
 Cost ₹6 lakh · time 0 min
-- Recovery progress +15; System integrity +10; Transport capacity +60; Evidence quality +5; Nisha's trust +5; Facility := cleared; +flag `site_cleared`; +flag `reserve_held`
+- Recovery progress +15; System integrity +10; Transport capacity +60; Evidence quality +5; Operations Manager's trust +5; Site := cleared; +flag `site_cleared`; +flag `reserve_held`
 
 **`r5_restoration`** — Commit heavily to restoration and repairs  
 Cost ₹8.5 lakh · time 0 min · needs confirmation
-- Recovery progress +35; System integrity +20; Evidence quality +10; Nisha's trust -15; Arjun's trust +10; Facility := cleared; +flag `site_cleared`; +flag `spent_heavy_early`
+- Recovery progress +35; System integrity +20; Evidence quality +10; Operations Manager's trust -15; IT Lead's trust +10; Site := cleared; +flag `site_cleared`; +flag `spent_heavy_early`
 
-**`r5_logistics`** — Logistics first: alternative transport and a temporary depot  
+**`r5_logistics`** — Logistics first: extra transport and a temporary site  
 Cost ₹6 lakh · time 10 min
-- Transport capacity +140; Raghav's trust +10; +flag `depot_verified`; -flag `depot_unverified`
+- Transport capacity +140; Network Administrator's trust +10; +flag `depot_verified`; -flag `depot_unverified`
 
-**`r5_negotiated`** — Negotiate payment terms: spend ₹4.0 lakh now, rest on invoice  
+**`r5_negotiated`** — Negotiate payment terms: 4.0 points now, the rest later  
 Cost ₹4 lakh · time 0 min
-- Recovery progress +15; System integrity +5; Transport capacity +60; Nisha's trust -5; Supplier confidence -3; +flag `credit_pending`
+- Recovery progress +15; System integrity +5; Transport capacity +60; Operations Manager's trust -5; Supplier confidence -3; +flag `credit_pending`
 
-### Round 6 — 11:45 PM: THE HIDDEN CONNECTION
+### Round 6 — Days 2-6: HOW DID IT GET IN?
 
-**`r6_restrict`** — Restrict the suspicious account and contain affected systems  
+**`r6_restrict`** — Block the third-party update path and contain what it reached  
 Cost ₹0 lakh · time 20 min
-- Evidence quality +15; Arjun's trust +8; Supplier confidence -5; Containment := full; +flag `account_restricted`
+- Evidence quality +15; IT Lead's trust +8; Supplier confidence -5; Containment := full; +flag `account_restricted`
 
-**`r6_specialist`** — Obtain specialist incident-response support  
+**`r6_specialist`** — Bring in outside incident specialists  
 Cost ₹2 lakh · time 35 min
-- Evidence quality +30; System integrity +10; Recovery progress +10; Arjun's trust +10; Containment := full; +flag `ir_engaged`
+- Evidence quality +30; System integrity +10; Recovery progress +10; IT Lead's trust +10; Containment := full; +flag `ir_engaged`
 
-**`r6_parallel`** — Prioritize restoration while investigating in parallel  
+**`r6_parallel`** — Keep restoring while investigating in parallel  
 Cost ₹0 lakh · time 5 min
 - Recovery progress +15; +flag `parallel_investigation`
 - Evidence quality -10 _when `containment != full`_
 - Evidence quality +5 _when `containment == full`_
 
-### Round 7 — 1:00 AM: THE HOSPITAL ULTIMATUM
+### Round 7 — Days 5-8: WHOSE CARGO MOVES FIRST?
 
-**`r7_hospital_first`** — Prioritize verified urgent hospital requirements  
+**`r7_hospital_first`** — Put verified time-critical cargo first  
 Cost ₹0 lakh · time 0 min
-- Dr. Kapoor's trust +15; Public trust +5; Supplier confidence -5; Delivery priority := hospital_first; +flag `contract_breach`
+- Customer Representative's trust +15; Customer trust +5; Supplier confidence -5; Cargo priority := hospital_first; +flag `contract_breach`
 
 **`r7_commitments`** — Follow existing order commitments  
 Cost ₹0 lakh · time 0 min
-- Dr. Kapoor's trust -20; Public trust -10; Supplier confidence +5; Delivery priority := contract_first; +flag `hospitals_deprioritized`
+- Customer Representative's trust -20; Customer trust -10; Supplier confidence +5; Cargo priority := contract_first; +flag `hospitals_deprioritized`
 
 **`r7_negotiate`** — Negotiate partial deliveries across customers  
 Cost ₹0.2 lakh · time 25 min
-- Dr. Kapoor's trust +3; Delivery priority := split _when `public_trust >= 60` and `supplier_confidence >= 55`_
-- Dr. Kapoor's trust -5; Supplier confidence -5; Public trust -3; Delivery priority := contract_first; +flag `contract_breach`; +flag `negotiation_failed` _when `public_trust < 60`_
-- Dr. Kapoor's trust -5; Supplier confidence -5; Public trust -3; Delivery priority := contract_first; +flag `contract_breach`; +flag `negotiation_failed` _when `public_trust >= 60` and `supplier_confidence < 55`_
+- Customer Representative's trust +3; Cargo priority := split _when `public_trust >= 60` and `supplier_confidence >= 55`_
+- Customer Representative's trust -5; Supplier confidence -5; Customer trust -3; Cargo priority := contract_first; +flag `contract_breach`; +flag `negotiation_failed` _when `public_trust < 60`_
+- Customer Representative's trust -5; Supplier confidence -5; Customer trust -3; Cargo priority := contract_first; +flag `contract_breach`; +flag `negotiation_failed` _when `public_trust >= 60` and `supplier_confidence < 55`_
 
-### Round 8 — 2:20 AM: A SECOND PROBLEM
+### Round 8 — Days 5-9: A FRAGILE FALLBACK
 
-**`r8_transfer`** — Transfer verified stock to the alternate depot  
+**`r8_transfer`** — Move verified work to the alternate site  
 Cost ₹1 lakh · time 35 min
-- Transport capacity +40; Raghav's trust +3; +flag `depot_transfer`
-- Verified stock -30; Evidence quality -5 _when flag `depot_unverified` has_
+- Transport capacity +40; Network Administrator's trust +3; +flag `depot_transfer`
+- Verified cargo -30; Evidence quality -5 _when flag `depot_unverified` has_
 
-**`r8_restricted`** — Maintain restricted operations (site cleared as safe)  
+**`r8_restricted`** — Keep a minimal crew working under restrictions (site cleared as safe)  
 Cost ₹0 lakh · time 10 min
-- Requires flag `site_cleared` has (The site has not been cleared as safe by an authorized assessment.)
-- Staff safety -4; Kavya's trust -5; +flag `restricted_ops`
+- Requires flag `site_cleared` has (The site has not been cleared as safe by an authorised check.)
+- Staff safety -4; Terminal Supervisor's trust -5; +flag `restricted_ops`
 
-**`r8_suspend`** — Suspend dispatch until safety and inventory checks are complete  
+**`r8_suspend`** — Pause everything until safety and cargo checks are complete  
 Cost ₹0 lakh · time 60 min
-- Verified stock +60; Evidence quality +10; Kavya's trust +10; Public trust -3; +flag `dispatch_suspended`
+- Verified cargo +60; Evidence quality +10; Terminal Supervisor's trust +10; Customer trust -3; +flag `dispatch_suspended`
 
-### Round 9 — 4:10 AM: THE STORY LEAKS
+### Round 9 — Days 6-10: THE STORY GETS OUT
 
-**`r9_holding`** — Issue a factual holding statement  
+**`r9_holding`** — Issue a short factual holding statement  
 Cost ₹0.2 lakh · time 5 min
-- Public trust +8; Dr. Kapoor's trust +3; Supplier confidence +3; +flag `factual_statement`
+- Customer trust +8; Customer Representative's trust +3; Supplier confidence +3; +flag `factual_statement`
 
 **`r9_wait`** — Wait until the investigation establishes more facts  
 Cost ₹0 lakh · time 0 min
-- Public trust -15; Supplier confidence -10; +flag `silence`
-- Public trust +7 _when `evidence_quality >= 70`_
+- Customer trust -15; Supplier confidence -10; +flag `silence`
+- Customer trust +7 _when `evidence_quality >= 70`_
 
-**`r9_briefing`** — Arrange a coordinated briefing with incident leads  
+**`r9_briefing`** — Arrange a joint briefing with the incident leads  
 Cost ₹0.3 lakh · time 20 min
-- Public trust +12; Evidence quality +5; +flag `coordinated_briefing` _when `trust.arjun >= 40` and `trust.kavya >= 40`_
-- Public trust +4; Supplier confidence -3; +flag `leads_disagreed` _when `trust.arjun < 40`_
-- Public trust +4; Supplier confidence -3; +flag `leads_disagreed` _when `trust.arjun >= 40` and `trust.kavya < 40`_
+- Customer trust +12; Evidence quality +5; +flag `coordinated_briefing` _when `trust.arjun >= 40` and `trust.kavya >= 40`_
+- Customer trust +4; Supplier confidence -3; +flag `leads_disagreed` _when `trust.arjun < 40`_
+- Customer trust +4; Supplier confidence -3; +flag `leads_disagreed` _when `trust.arjun >= 40` and `trust.kavya < 40`_
 
-### Round 10 — 6:00 AM: THE FINAL DISPATCH
+### Round 10 — About Day 10: REOPENING
 
-**`r10_verified`** — Dispatch verified stock only  
+**`r10_verified`** — Reopen on verified cargo only  
 Cost ₹0 lakh · time 0 min
 - +flag `final_verified`
 
-**`r10_sweep`** — Final physical sweep, then dispatch  
+**`r10_sweep`** — One last physical check, then reopen  
 Cost ₹0 lakh · time 30 min
-- Requires `window_min >= 30` (Not enough time slack left for a 30-minute sweep.)
-- Verified stock +60; +flag `final_sweep`
+- Requires `window_min >= 30` (Not enough time left for a 30-minute check.)
+- Verified cargo +60; +flag `final_sweep`
 
-**`r10_provisional`** — Dispatch including provisional digital records  
+**`r10_provisional`** — Reopen including the provisional records  
 Cost ₹0 lakh · time 0 min · needs confirmation
-- Requires `provisional_units > 0` (There are no provisional records to dispatch.)
+- Requires `provisional_units > 0` (There are no provisional records to use.)
 - +flag `final_provisional`
 
 ## Events
@@ -172,48 +172,48 @@ Cost ₹0 lakh · time 0 min · needs confirmation
 Fire on entering a round in their window when conditions hold and a seeded roll (`sha256(seed:event:round)`) is below the probability. Each fires at most once.
 
 **`secondary_interruption`** — Systems fail again · rounds 2–4 · p=0.8 · `containment == none`
-- System integrity -15; Recovery progress -15; Time slack -25; Evidence quality -10
+- System integrity -15; Recovery progress -15; Time left -25; Evidence quality -10
 
 **`secondary_interruption_partial`** — A brief relapse · rounds 2–4 · p=0.3 · `containment == partial`
-- System integrity -5; Time slack -10
+- System integrity -5; Time left -10
 
-**`dock_flooding`** — Water at the loading dock · rounds 3–4 · p=0.5 · always
+**`dock_flooding`** — A surge of trucks at the gate · rounds 3–4 · p=0.5 · always
 - true_units -20
 
-**`flare_up`** — The panel catches · rounds 3–5 · p=0.85 · flag `unsafe_ops` has
-- Staff safety -35; Available labour -20; Time slack -20; Public trust -5; Kavya's trust -10; Facility := hazard; +flag `staff_injured`; -flag `site_cleared`
+**`flare_up`** — A handling accident at the terminal · rounds 3–5 · p=0.85 · flag `unsafe_ops` has
+- Staff safety -35; Available labour -20; Time left -20; Customer trust -5; Terminal Supervisor's trust -10; Site := hazard; +flag `staff_injured`; -flag `site_cleared`
 
-**`panel_failure_assessed`** — The panel fails during assessment · rounds 3–5 · p=0.6 · flag `assessed` has
-- Staff safety -8; Time slack -10
+**`panel_failure_assessed`** — The equipment fails during the check · rounds 3–5 · p=0.6 · flag `assessed` has
+- Staff safety -8; Time left -10
 
-**`panel_failure_evacuated`** — The panel fails, nobody is near it · rounds 3–5 · p=0.6 · flag `evacuated` has
-- Time slack -10; Available labour -5
+**`panel_failure_evacuated`** — The equipment fails, nobody is near it · rounds 3–5 · p=0.6 · flag `evacuated` has
+- Time left -10; Available labour -5
 
-**`depot_scout_report`** — Raghav's scouts report back · rounds 4–5 · p=1 · flag `depot_unverified` has
-- Transport capacity -40; Raghav's trust -8
+**`depot_scout_report`** — The scouts report back · rounds 4–5 · p=1 · flag `depot_unverified` has
+- Transport capacity -40; Network Administrator's trust -8
 
-**`provisional_shortage`** — The records overstated stock · rounds 5–6 · p=0.7 · flag `provisional_records` has
-- Provisional stock -20; Evidence quality -10; Public trust -3
+**`provisional_shortage`** — The records overstated cargo · rounds 5–6 · p=0.7 · flag `provisional_records` has
+- Provisional cargo -20; Evidence quality -10; Customer trust -3
 
-**`hospital_escalation`** — Dr. Kapoor escalates · rounds 6–7 · p=1 · `transport_capacity < 220`
-- Public trust -3; Dr. Kapoor's trust -5
+**`hospital_escalation`** — Time-critical customers escalate · rounds 6–7 · p=1 · `transport_capacity < 220`
+- Customer trust -3; Customer Representative's trust -5
 
 **`insurer_advance`** — Insurer fast-tracks funds · rounds 6–8 · p=1 · `evidence_quality >= 75`
-- Budget +1.5; Nisha's trust +5
+- Recovery effort +1.5; Operations Manager's trust +5
 
-**`reinfection_alert`** — Intrusion resurfaces · rounds 7–8 · p=0.6 · flag `account_restricted` lacks and flag `ir_engaged` lacks and `containment != full`
-- System integrity -10; Recovery progress -10; Evidence quality -10; Time slack -20
+**`reinfection_alert`** — The attack resurfaces · rounds 7–8 · p=0.6 · flag `account_restricted` lacks and flag `ir_engaged` lacks and `containment != full`
+- System integrity -10; Recovery progress -10; Evidence quality -10; Time left -20
 
 **`verified_route_pays_off`** — The verified route holds · rounds 7–8 · p=1 · flag `depot_verified` has and flag `depot_diverted` has
 - Transport capacity +30
 
 **`contract_penalty_notice`** — Penalty notice arrives · rounds 8–9 · p=1 · flag `contract_breach` has
-- Budget -1.5 _when `budget >= 1.5`_
-- Supplier confidence -10; Budget := 0.0; +flag `penalty_unpaid` _when `budget < 1.5`_
+- Recovery effort -1.5 _when `budget >= 1.5`_
+- Supplier confidence -10; Recovery effort := 0.0; +flag `penalty_unpaid` _when `budget < 1.5`_
 
-**`credit_due`** — The deferred invoice falls due · rounds 9–9 · p=1 · flag `credit_pending` has
-- Budget -2 _when `budget >= 2.0`_
-- Supplier confidence -15; Budget := 0.0; +flag `invoice_default` _when `budget < 2.0`_
+**`credit_due`** — The deferred payment falls due · rounds 9–9 · p=1 · flag `credit_pending` has
+- Recovery effort -2 _when `budget >= 2.0`_
+- Supplier confidence -15; Recovery effort := 0.0; +flag `invoice_default` _when `budget < 2.0`_
 
 **`power_dip`** — Backup power dips · rounds 9–10 · p=0.4 · flag `restricted_ops` has
-- System integrity -10; Time slack -15
+- System integrity -10; Time left -15

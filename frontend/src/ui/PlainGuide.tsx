@@ -7,6 +7,7 @@ export function PlainBrief({ round, trail, original }: { round: number | undefin
   const done = trail.map((id) => CHOICE_PLAIN[id]?.done).filter((x): x is string => Boolean(x));
   return (
     <section className="plain-brief" aria-label="What is going on">
+      <p className="plain-label" data-evidence={p.label}>{p.label === "documented" ? "Documented history" : p.label === "reconstructed" ? "Reconstructed scene" : "Simulation"}</p>
       <dl>
         <div><dt>Where we are</dt><dd>{p.where}</dd></div>
         <div><dt>The problem</dt><dd>{p.problem}</dd></div>
@@ -18,6 +19,7 @@ export function PlainBrief({ round, trail, original }: { round: number | undefin
           <ol>{done.map((d, i) => <li key={i}>You {d}.</li>)}</ol>
         </details>
       )}
+      {p.record && <p className="plain-record"><b>What the record says.</b> {p.record}</p>}
       {original && <details className="plain-original"><summary>Read the original briefing</summary><p>{original}</p></details>}
     </section>
   );

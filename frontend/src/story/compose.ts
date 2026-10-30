@@ -1,7 +1,6 @@
 import type { ArtLayer, ArtPanelScript, ArtSceneScript } from "../comic/illustrated/scenes";
-import type { Expr, Pose, Who } from "../comic/flat/Person";
-import { DESK_ENVS, FLOOR_Y, PERSON_UNITS, type EnvId } from "../comic/flat/World";
-import { evidenceRows } from "../comic/vector/Terminal";
+import type { Expr, StagePose as Pose, Who } from "../comic/notpetya/Cast";
+import { DESK_ENVS, FLOOR_Y, PERSON_UNITS, type EnvId } from "../comic/notpetya/Env";
 import type { ComicPageData, PanelData } from "../comic/types";
 import type { GameEvent } from "../api/types";
 import { eventTitle, choiceResult, plainPage } from "./plain";
@@ -13,7 +12,7 @@ import { BEATS, EVENT_BEATS, carriedEffects, carriedProps, directorMood, type Be
 const ENV_IDS: EnvId[] = ["warehouse_floor", "control_room", "electrical_area", "loading_dock", "ops_office", "hospital_corridor", "flooded_highway", "alt_depot", "press_scene"];
 const asEnv = (s: string | undefined): EnvId => ((ENV_IDS as string[]).includes(s ?? "") ? (s as EnvId) : "ops_office");
 
-const EXPR_MAP: Record<string, Expr> = { calm: "neutral", worried: "concerned", angry: "determined", surprised: "shocked", determined: "determined", exhausted: "tired", speaking: "neutral", pointing: "neutral" };
+const EXPR_MAP: Record<string, Expr> = { calm: "neutral", worried: "concern", angry: "frustration", surprised: "shock", determined: "determination", exhausted: "tired", speaking: "neutral", pointing: "neutral" };
 const WHO_MAP: Record<string, Who> = { player: "director", arjun: "arjun", kavya: "kavya", nisha: "nisha", raghav: "raghav", isha: "isha" };
 const AT: Record<string, Cast["at"]> = { left: "l", center: "c", right: "r" };
 
@@ -101,7 +100,7 @@ function zoomRoom(layers: ArtLayer[], env: EnvId, ratio: number) {
 }
 
 /** Vehicles take up a whole scene, so a room shows at most one: the one the latest decision put there. */
-const VEHICLES = ["loaded_truck", "hospital_truck", "trucks_hired"];
+const VEHICLES = ["loaded_truck", "priority_truck", "extra_trucks"];
 export function oneVehicle(props: string[]): string[] {
   const keep = VEHICLES.find((v) => props.includes(v));
   return props.filter((p) => !VEHICLES.includes(p) || p === keep);
@@ -112,8 +111,8 @@ function envLayers(env: EnvId, props: string[], effects: string[], facts: string
   return layers;
 }
 
-function deskLayer(env: EnvId): ArtLayer | null {
-  return env === "control_room" ? { asset: "vector.flat_control_desk", role: "vector", vector: "flat_control_desk" } : env === "ops_office" ? { asset: "vector.flat_office_desk", role: "vector", vector: "flat_office_desk" } : null;
+function deskLayer(_env: EnvId): ArtLayer | null {
+  return null;
 }
 
 function panelFromCast(id: string, env: EnvId, props: string[], effects: string[], cast: Cast[], ratio: number, span: 1 | 2, opts: Partial<ArtPanelScript>, reserve: Reserve = NO_RESERVE, look?: { seed: number; round: number }): ArtPanelScript {
@@ -140,8 +139,8 @@ function castFromPanel(p: PanelData, env: EnvId): Cast[] {
     else if (who === "kavya" && p.dialogue.some((d) => d.speaker === c.id && d.kind === "shout")) pose = "point";
     else if (who === "nisha") pose = "clipboard";
     else if (who === "isha") pose = "arms_crossed";
-    else if (who === "director" && expr === "concerned") pose = "hand_chin";
-    else if (who === "director" && expr === "determined") pose = "arms_crossed";
+    else if (who === "director" && expr === "concern") pose = "hand_chin";
+    else if (who === "director" && expr === "determination") pose = "arms_crossed";
     else if (speakers.size === 0 && who === "raghav") pose = "arms_crossed";
     return { who, expr, at: AT[c.side] ?? "c", pose };
   });
@@ -149,11 +148,9 @@ function castFromPanel(p: PanelData, env: EnvId): Cast[] {
 
 /** The evidence panel every round has: the terminal if the facts describe system failures, otherwise a board of what is known. */
 function evidencePanel(round: number, facts: string[]): ArtPanelScript {
-  const terminal = evidenceRows(facts).length > 0;
   return {
     id: "evidence", ratio: 1.24, span: 1, inspect: true, bubbleBottom: true,
-    layers: terminal ? [{ asset: "vector.flat_terminal", role: "vector", vector: "flat_terminal" }]
-      : [{ asset: `flat.board.${round}`, role: "flatenv", flatEnv: { env: "ops_office", props: [], effects: [], facts, board: true } }],
+    layers: [{ asset: `flat.board.${round}`, role: "flatenv", flatEnv: { env: "ops_office", props: [], effects: [], facts, board: true } }],
   };
 }
 
@@ -171,20 +168,20 @@ export function composeRoundPage(round: number, page: ComicPageData | unknown, f
     const mood = directorMood(trail);
     const cast = castFromPanel(p, env).map((c) => (c.who === "director" && mood && c.expr === "neutral" ? { ...c, expr: mood } : c));
     // The opening wide shot of a working floor shows staff, so a blackout reads as people reacting to it.
-    const extras: Cast[] = cast.length === 0 && env === "warehouse_floor" ? [{ who: "worker", expr: "concerned", at: "l" }, { who: "worker", expr: "neutral", at: "r", pose: "arms_crossed" }] : [];
+    const extras: Cast[] = cast.length === 0 && env === "warehouse_floor" ? [{ who: "worker", expr: "concern", at: "l" }, { who: "worker", expr: "neutral", at: "r", pose: "arms_crossed" }] : [];
     const s = shapes[Math.min(i, shapes.length - 1)];
     panels.push(panelFromCast(p.id, env, props, effects, [...cast, ...extras], s.ratio, s.span, { source: p.id }, textReserve(p.dialogue.map((d) => ({ text: d.text, at: cast.find((c) => c.who === (WHO_MAP[d.speaker] ?? "worker"))?.at ?? "c" })), p.narration ?? undefined, s.ratio, s.span), { seed: round * 17 + i * 5 + 1, round }));
   });
   const ev = evidencePanel(round, facts);
   const last = shapes[Math.min(story.length, shapes.length - 1)];
   panels.push({ ...ev, ratio: Math.min(last.ratio, 1.78), span: last.span });
-  return { columns, panels, decisionBackdrop: "vector.flat_office", grade: "flat" };
+  return { columns, panels, decisionBackdrop: "np.ops_office", grade: "flat" };
 }
 
 /** The consequence of a decision: the choice being carried out, then each event it set off, as flat comic panels with the backend's own text. */
 export function composeConsequence(choiceId: string, label: string, consequence: string, events: GameEvent[], fallbackEnv: string): ArtSceneScript {
   const round = Number(/^r(\d+)_/.exec(choiceId)?.[1] ?? 0);
-  const beat: Beat = BEATS[choiceId] ?? { env: asEnv(fallbackEnv), cast: [{ who: "director", expr: "determined", at: "c" }] };
+  const beat: Beat = BEATS[choiceId] ?? { env: asEnv(fallbackEnv), cast: [{ who: "director", expr: "determination", at: "c" }] };
   const eventPanels = events.slice(0, 4);
   const n = 1 + eventPanels.length;
   const { columns, shapes } = layoutFor(n);
@@ -196,7 +193,7 @@ export function composeConsequence(choiceId: string, label: string, consequence:
     const s = shapes[Math.min(i + 1, shapes.length - 1)];
     panels.push(panelFromCast(`ev-${e.event_id}`, eb.env, eb.props ?? [], eb.effects ?? e.assets, eb.cast, s.ratio, s.span, { narration: `${e.clock} — ${e.title}`, caption: e.text }, textReserve([], `${e.clock} — ${e.title}`, s.ratio, s.span), { seed: round * 17 + 40 + i * 5, round }));
   });
-  return { columns, panels, decisionBackdrop: "vector.flat_office", grade: "flat" };
+  return { columns, panels, decisionBackdrop: "np.ops_office", grade: "flat" };
 }
 
 /** The events that fired when a round began, as one flat comic page (used above each round's scene). */
@@ -209,5 +206,5 @@ export function composeEventsPage(events: GameEvent[], fallbackEnv: string, roun
     const title = `${e.clock} — ${eventTitle(e.event_id, e.title)}`;
     return panelFromCast(`ev-${e.event_id}`, eb.env, eb.props ?? [], eb.effects ?? e.assets, eb.cast, s.ratio, s.span, { narration: title, caption: e.text }, textReserve([], title, s.ratio, s.span), { seed: round * 17 + 60 + i * 5, round });
   });
-  return { columns, panels, decisionBackdrop: "vector.flat_office", grade: "flat" };
+  return { columns, panels, decisionBackdrop: "np.ops_office", grade: "flat" };
 }

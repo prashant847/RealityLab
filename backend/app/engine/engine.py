@@ -18,17 +18,17 @@ SCALARS = (
     *[f"trust.{k}" for k in STAKEHOLDERS],
 )
 LABELS = {
-    "window_min": "Time slack", "budget": "Budget", "system_integrity": "System integrity",
+    "window_min": "Time left", "budget": "Recovery effort", "system_integrity": "System integrity",
     "recovery_progress": "Recovery progress", "evidence_quality": "Evidence quality",
-    "containment": "Containment", "verified_units": "Verified stock", "provisional_units": "Provisional stock",
-    "staff_safety": "Staff safety", "labour_pct": "Available labour", "facility": "Facility",
-    "transport_capacity": "Transport capacity", "priority": "Delivery priority", "public_trust": "Public trust",
+    "containment": "Containment", "verified_units": "Verified cargo", "provisional_units": "Provisional cargo",
+    "staff_safety": "Staff safety", "labour_pct": "Available labour", "facility": "Site",
+    "transport_capacity": "Transport capacity", "priority": "Cargo priority", "public_trust": "Customer trust",
     "supplier_confidence": "Supplier confidence",
-    "trust.kavya": "Kavya's trust", "trust.arjun": "Arjun's trust", "trust.nisha": "Nisha's trust",
-    "trust.raghav": "Raghav's trust", "trust.isha": "Dr. Kapoor's trust",
+    "trust.kavya": "Terminal Supervisor's trust", "trust.arjun": "IT Lead's trust", "trust.nisha": "Operations Manager's trust",
+    "trust.raghav": "Network Administrator's trust", "trust.isha": "Customer Representative's trust",
 }
-UNITS = {"window_min": " min", "budget": " lakh", "verified_units": " units", "provisional_units": " units",
-         "transport_capacity": " units"}
+UNITS = {"window_min": " min", "budget": " points", "verified_units": " lots", "provisional_units": " lots",
+         "transport_capacity": " lots"}
 
 
 class EngineError(Exception):
@@ -60,7 +60,7 @@ def _ctx(state: WorldState) -> dict[str, Any]:
 
 def availability(state: WorldState, choice: Choice) -> tuple[bool, str]:
     if state.budget + 1e-9 < choice.cost:
-        return False, f"Needs ₹{choice.cost:.1f} lakh; only ₹{state.budget:.1f} lakh remains."
+        return False, f"Needs {choice.cost:.1f} points of effort; only {state.budget:.1f} remain."
     for cond, reason in choice.requires:
         if not cond.test(state):
             return False, reason
@@ -234,12 +234,12 @@ def _fire_events(s: WorldState, record: bool = True) -> None:
 # ----------------------------------------------------------------------------- ending
 
 ENDINGS = {
-    "full_recovery": ("FULL RECOVERY", "Both hospitals and the contract customer were served, safely and on time."),
-    "hospitals_served": ("HOSPITALS SERVED", "The hospitals got what they needed, though other commitments went unmet."),
-    "partial_dispatch": ("PARTIAL DISPATCH", "A meaningful share of urgent equipment left, but hospital need was not fully met."),
-    "critical_shortfall": ("CRITICAL SHORTFALL", "Too little equipment left the gate; hospitals remain at risk."),
-    "missed_dispatch": ("DISPATCH MISSED", "The 6:00 AM window closed before the trucks could leave."),
-    "safety_failure": ("SAFETY FAILURE", "Workers were seriously hurt. Whatever shipped, it did not justify that."),
+    "full_recovery": ("FULL RECOVERY", "Urgent customers and the key account were both served, safely and on time."),
+    "hospitals_served": ("URGENT CUSTOMERS SERVED", "Urgent customers got what they needed, though other commitments went unmet."),
+    "partial_dispatch": ("PARTIAL REOPENING", "A meaningful share of urgent cargo moved, but urgent need was not fully met."),
+    "critical_shortfall": ("CRITICAL SHORTFALL", "Too little cargo moved; urgent customers remain at risk."),
+    "missed_dispatch": ("REOPENING MISSED", "The reopening deadline passed before the cargo could move."),
+    "safety_failure": ("SAFETY FAILURE", "Workers were seriously hurt in the simulation. Whatever moved, it did not justify that."),
 }
 
 

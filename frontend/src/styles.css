@@ -433,3 +433,10 @@ select { background: var(--panel); color: var(--text); border: 1px solid var(--s
 .np-tag-R { background: #cfd6e8; color: #1d1c2b; } .np-tag-D { background: #bfe3c2; color: #1d1c2b; }
 .np-legend { color: #aab3c8; font-size: .85rem; }
 @media (max-width: 800px) { .np-row, .np-row-8 { grid-template-columns: repeat(3, 1fr); } .np-two, .np-page { grid-template-columns: 1fr; } .np-wide { grid-column: auto; } }
+
+/* Evidence labels */
+.plain-label { display: inline-block; margin: 0 0 .6rem; padding: 2px 8px; font: 700 .68rem/1.4 var(--font-head); letter-spacing: .12em; text-transform: uppercase; border: 1px solid var(--steel); border-radius: 3px; color: var(--steel-l); }
+.plain-label[data-evidence="documented"] { border-color: #3f9a78; color: #8fd9b8; }
+.plain-label[data-evidence="reconstructed"] { border-color: #4b7fb4; color: #9cc3ea; }
+.plain-label[data-evidence="simulation"] { border-color: #e2862a; color: #f2b26e; }
+.plain-record { margin: .8rem 0 0; font-size: .95rem; color: var(--steel-l); }

@@ -1,8 +1,10 @@
-import type { EnvId } from "../comic/flat/World";
-import type { Expr, Pose, Who } from "../comic/flat/Person";
+import type { EnvId } from "../comic/notpetya/Env";
+import type { Expr, StagePose as Pose, Who } from "../comic/notpetya/Cast";
 
 // Visual story data: how each decision looks when it is carried out, how each event looks when it hits, and how earlier decisions change the
 // rooms later rounds are set in. This is presentation only: it names pictures; every fact and consequence still comes from the backend.
+// Backend character ids stay as they are; on screen arjun = IT Lead, kavya = Terminal Supervisor, raghav = Network Administrator,
+// nisha = Operations Manager, isha = Customer Representative and director = Recovery Team Lead.
 export interface Cast { who: Who; expr: Expr; pose?: Pose; at: "l" | "c" | "r" }
 export interface Beat { env: EnvId; props?: string[]; effects?: string[]; cast: Cast[] }
 
@@ -10,57 +12,57 @@ const C = (who: Who, expr: Expr, at: Cast["at"], pose?: Pose): Cast => ({ who, e
 
 /** A decision being carried out. */
 export const BEATS: Record<string, Beat> = {
-  r1_isolate: { env: "control_room", props: ["cables_cut"], cast: [C("arjun", "focused", "r", "at_desk"), C("director", "determined", "l", "arms_crossed")] },
-  r1_controlled: { env: "control_room", props: ["staged_recovery"], cast: [C("arjun", "focused", "r", "at_desk"), C("director", "neutral", "l")] },
-  r1_rush: { env: "control_room", props: ["rush_restore"], cast: [C("arjun", "concerned", "r", "at_desk"), C("director", "determined", "l", "point")] },
-  r2_evacuate: { env: "electrical_area", props: ["tape_barrier"], effects: ["smoke"], cast: [C("kavya", "determined", "r", "point"), C("worker", "concerned", "l")] },
-  r2_secure: { env: "electrical_area", props: ["cones"], effects: ["smoke"], cast: [C("kavya", "focused", "r", "clipboard"), C("worker", "neutral", "l")] },
-  r2_maintain: { env: "electrical_area", props: ["cones"], effects: ["smoke"], cast: [C("kavya", "concerned", "r", "arms_crossed"), C("worker", "neutral", "l")] },
-  r3_alt_transport: { env: "flooded_highway", props: ["trucks_hired"], effects: ["rain"], cast: [C("raghav", "determined", "r", "clipboard")] },
-  r3_divert_depot: { env: "flooded_highway", props: ["detour_sign"], effects: ["rain"], cast: [C("raghav", "determined", "r", "point")] },
-  r3_reserve_hospital: { env: "flooded_highway", props: ["hospital_truck"], effects: ["rain"], cast: [C("raghav", "determined", "r", "arms_crossed")] },
-  r4_pause: { env: "warehouse_floor", props: ["hold_tags"], cast: [C("arjun", "focused", "r", "clipboard"), C("worker", "concerned", "l")] },
-  r4_release_verified: { env: "warehouse_floor", props: ["verified_tags"], cast: [C("arjun", "determined", "r", "clipboard"), C("worker", "neutral", "l")] },
-  r4_provisional: { env: "warehouse_floor", props: ["provisional_tags"], cast: [C("arjun", "concerned", "r", "clipboard"), C("worker", "neutral", "l")] },
-  r5_minimal: { env: "ops_office", props: ["cash_small"], cast: [C("nisha", "neutral", "l", "clipboard"), C("director", "neutral", "r")] },
-  r5_balanced: { env: "ops_office", props: ["cash_medium"], cast: [C("nisha", "focused", "l", "clipboard"), C("director", "determined", "r")] },
-  r5_restoration: { env: "ops_office", props: ["cash_large"], cast: [C("nisha", "concerned", "l", "clipboard"), C("director", "determined", "r")] },
-  r5_logistics: { env: "ops_office", props: ["cash_large"], cast: [C("nisha", "concerned", "l", "clipboard"), C("director", "determined", "r")] },
-  r5_negotiated: { env: "ops_office", props: ["cash_medium"], cast: [C("nisha", "determined", "l", "clipboard"), C("director", "focused", "r")] },
-  r6_restrict: { env: "control_room", props: ["account_locked"], cast: [C("arjun", "focused", "r", "at_desk"), C("director", "determined", "l")] },
-  r6_specialist: { env: "control_room", props: ["staged_recovery"], cast: [C("arjun", "neutral", "r", "at_desk"), C("worker", "focused", "c"), C("director", "neutral", "l")] },
-  r6_parallel: { env: "control_room", props: ["staged_recovery", "account_locked"], cast: [C("arjun", "concerned", "r", "at_desk"), C("director", "determined", "l")] },
-  r7_hospital_first: { env: "hospital_corridor", props: ["delivery_cart"], cast: [C("isha", "determined", "r", "point"), C("director", "determined", "l")] },
-  r7_commitments: { env: "loading_dock", props: ["order_sheets"], cast: [C("raghav", "neutral", "r", "clipboard"), C("director", "concerned", "l")] },
-  r7_negotiate: { env: "loading_dock", props: ["split_pallets"], cast: [C("raghav", "determined", "r", "clipboard"), C("isha", "concerned", "l", "arms_crossed")] },
-  r8_transfer: { env: "alt_depot", props: ["boxes_in_transit"], cast: [C("raghav", "determined", "l", "point"), C("worker", "focused", "r")] },
-  r8_restricted: { env: "alt_depot", props: ["cones"], cast: [C("kavya", "focused", "r", "clipboard"), C("worker", "neutral", "l")] },
-  r8_suspend: { env: "alt_depot", props: ["stop_sign"], cast: [C("kavya", "determined", "r", "arms_crossed"), C("worker", "neutral", "l")] },
-  r9_holding: { env: "press_scene", props: ["statement_card"], cast: [C("isha", "neutral", "l", "clipboard"), C("director", "determined", "r")] },
+  r1_isolate: { env: "control_room", props: ["cables_cut"], cast: [C("arjun", "concentration", "r", "clipboard"), C("director", "determination", "l", "arms_crossed")] },
+  r1_controlled: { env: "control_room", props: ["staged_recovery"], cast: [C("arjun", "concentration", "r", "clipboard"), C("director", "neutral", "l")] },
+  r1_rush: { env: "control_room", props: ["rush_restore"], cast: [C("arjun", "concern", "r", "clipboard"), C("director", "determination", "l", "point")] },
+  r2_evacuate: { env: "electrical_area", props: ["tape_barrier"], effects: ["warning_lights"], cast: [C("kavya", "determination", "r", "point"), C("worker", "concern", "l")] },
+  r2_secure: { env: "electrical_area", props: ["cones"], cast: [C("kavya", "concentration", "r", "clipboard"), C("worker", "neutral", "l")] },
+  r2_maintain: { env: "electrical_area", props: ["cones"], effects: ["warning_lights"], cast: [C("kavya", "frustration", "r", "arms_crossed"), C("worker", "concern", "l")] },
+  r3_alt_transport: { env: "flooded_highway", props: ["extra_trucks"], cast: [C("raghav", "determination", "r", "clipboard")] },
+  r3_divert_depot: { env: "flooded_highway", props: ["detour_sign"], cast: [C("raghav", "concentration", "r", "point")] },
+  r3_reserve_hospital: { env: "flooded_highway", props: ["priority_truck"], cast: [C("raghav", "determination", "r", "arms_crossed")] },
+  r4_pause: { env: "loading_dock", props: ["hold_tags"], cast: [C("arjun", "concentration", "r", "clipboard"), C("worker", "concern", "l")] },
+  r4_release_verified: { env: "loading_dock", props: ["verified_tags"], cast: [C("arjun", "determination", "r", "clipboard"), C("worker", "neutral", "l")] },
+  r4_provisional: { env: "loading_dock", props: ["provisional_tags"], cast: [C("arjun", "concern", "r", "clipboard"), C("worker", "neutral", "l")] },
+  r5_minimal: { env: "ops_office", props: ["effort_small"], cast: [C("nisha", "neutral", "l", "clipboard"), C("director", "neutral", "r")] },
+  r5_balanced: { env: "ops_office", props: ["effort_medium"], cast: [C("nisha", "concentration", "l", "clipboard"), C("director", "determination", "r")] },
+  r5_restoration: { env: "ops_office", props: ["effort_large"], cast: [C("nisha", "concern", "l", "clipboard"), C("director", "determination", "r")] },
+  r5_logistics: { env: "ops_office", props: ["effort_large"], cast: [C("nisha", "concern", "l", "clipboard"), C("director", "determination", "r")] },
+  r5_negotiated: { env: "ops_office", props: ["effort_medium"], cast: [C("nisha", "determination", "l", "clipboard"), C("director", "concentration", "r")] },
+  r6_restrict: { env: "control_room", props: ["account_locked"], cast: [C("arjun", "concentration", "r", "clipboard"), C("director", "determination", "l")] },
+  r6_specialist: { env: "control_room", props: ["staged_recovery"], cast: [C("arjun", "neutral", "r", "clipboard"), C("worker", "concentration", "c"), C("director", "neutral", "l")] },
+  r6_parallel: { env: "control_room", props: ["staged_recovery", "account_locked"], cast: [C("arjun", "concern", "r", "clipboard"), C("director", "determination", "l")] },
+  r7_hospital_first: { env: "hospital_corridor", cast: [C("isha", "determination", "r", "point"), C("director", "determination", "l")] },
+  r7_commitments: { env: "loading_dock", props: ["order_sheets"], cast: [C("raghav", "neutral", "r", "clipboard"), C("director", "concern", "l")] },
+  r7_negotiate: { env: "loading_dock", props: ["split_pallets"], cast: [C("raghav", "determination", "r", "clipboard"), C("isha", "concern", "l", "arms_crossed")] },
+  r8_transfer: { env: "alt_depot", cast: [C("raghav", "determination", "l", "point"), C("worker", "concentration", "r")] },
+  r8_restricted: { env: "alt_depot", props: ["cones"], cast: [C("kavya", "concentration", "r", "clipboard"), C("worker", "neutral", "l")] },
+  r8_suspend: { env: "alt_depot", props: ["stop_sign"], cast: [C("kavya", "determination", "r", "arms_crossed"), C("worker", "neutral", "l")] },
+  r9_holding: { env: "press_scene", props: ["statement_card"], cast: [C("isha", "neutral", "l", "clipboard"), C("director", "determination", "r")] },
   r9_wait: { env: "press_scene", props: ["empty_podium"], cast: [C("director", "tired", "c", "hand_chin")] },
-  r9_briefing: { env: "press_scene", props: ["podium"], cast: [C("arjun", "focused", "l"), C("director", "determined", "c"), C("kavya", "neutral", "r")] },
-  r10_verified: { env: "loading_dock", props: ["loaded_truck"], cast: [C("raghav", "determined", "l", "clipboard"), C("isha", "neutral", "r")] },
-  r10_sweep: { env: "loading_dock", props: ["sweep_torch"], cast: [C("raghav", "focused", "l", "point"), C("worker", "focused", "r")] },
-  r10_provisional: { env: "loading_dock", props: ["loaded_truck"], cast: [C("director", "concerned", "l"), C("raghav", "concerned", "r", "arms_crossed")] },
+  r9_briefing: { env: "press_scene", props: ["podium"], cast: [C("arjun", "concentration", "l"), C("director", "determination", "c"), C("kavya", "neutral", "r")] },
+  r10_verified: { env: "loading_dock", props: ["loaded_truck"], cast: [C("raghav", "determination", "l", "clipboard"), C("isha", "relief", "r")] },
+  r10_sweep: { env: "loading_dock", props: ["verified_tags"], cast: [C("raghav", "concentration", "l", "point"), C("worker", "concentration", "r")] },
+  r10_provisional: { env: "loading_dock", props: ["loaded_truck"], cast: [C("director", "concern", "l"), C("raghav", "concern", "r", "arms_crossed")] },
 };
 
 /** An event happening. Keyed by the backend event id. */
 export const EVENT_BEATS: Record<string, Beat> = {
-  secondary_interruption: { env: "control_room", effects: ["power_failure", "system_alert"], cast: [C("arjun", "shocked", "r", "at_desk")] },
-  secondary_interruption_partial: { env: "control_room", effects: ["system_alert"], cast: [C("arjun", "concerned", "r", "at_desk")] },
-  flare_up: { env: "electrical_area", effects: ["smoke", "sparks", "warning_lights"], cast: [C("kavya", "shocked", "r"), C("worker", "shocked", "l")] },
-  panel_failure_evacuated: { env: "electrical_area", props: ["tape_barrier"], effects: ["smoke", "sparks", "warning_lights"], cast: [C("kavya", "concerned", "r", "arms_crossed")] },
-  panel_failure_assessed: { env: "electrical_area", props: ["cones"], effects: ["smoke", "sparks", "warning_lights"], cast: [C("kavya", "concerned", "r"), C("worker", "shocked", "l")] },
-  dock_flooding: { env: "loading_dock", effects: ["rain", "damaged_inventory"], cast: [C("raghav", "shocked", "r")] },
+  secondary_interruption: { env: "control_room", effects: ["power_failure", "system_alert"], cast: [C("arjun", "shock", "r")] },
+  secondary_interruption_partial: { env: "control_room", effects: ["system_alert"], cast: [C("arjun", "concern", "r")] },
+  flare_up: { env: "electrical_area", effects: ["warning_lights"], cast: [C("kavya", "shock", "r"), C("worker", "shock", "l")] },
+  panel_failure_evacuated: { env: "electrical_area", props: ["tape_barrier"], effects: ["warning_lights"], cast: [C("kavya", "concern", "r", "arms_crossed")] },
+  panel_failure_assessed: { env: "electrical_area", props: ["cones"], effects: ["warning_lights"], cast: [C("kavya", "concern", "r"), C("worker", "shock", "l")] },
+  dock_flooding: { env: "loading_dock", effects: ["damaged_inventory"], cast: [C("raghav", "shock", "r")] },
   depot_scout_report: { env: "alt_depot", cast: [C("raghav", "neutral", "r", "clipboard")] },
-  provisional_shortage: { env: "warehouse_floor", effects: ["damaged_inventory"], cast: [C("arjun", "concerned", "r", "clipboard"), C("nisha", "tired", "l")] },
-  hospital_escalation: { env: "hospital_corridor", effects: ["warning_lights"], cast: [C("isha", "determined", "r", "point")] },
-  insurer_advance: { env: "ops_office", props: ["cash_large"], cast: [C("nisha", "neutral", "l", "clipboard")] },
-  reinfection_alert: { env: "control_room", effects: ["power_failure", "system_alert"], cast: [C("arjun", "shocked", "r", "at_desk")] },
-  verified_route_pays_off: { env: "flooded_highway", props: ["hospital_truck"], cast: [C("raghav", "determined", "r", "arms_crossed")] },
-  contract_penalty_notice: { env: "ops_office", cast: [C("nisha", "concerned", "l", "clipboard")] },
-  power_dip: { env: "alt_depot", effects: ["power_failure", "emergency_lighting"], cast: [C("kavya", "concerned", "r")] },
-  credit_due: { env: "ops_office", props: ["cash_small"], cast: [C("nisha", "tired", "l", "clipboard")] },
+  provisional_shortage: { env: "loading_dock", effects: ["damaged_inventory"], cast: [C("arjun", "concern", "r", "clipboard"), C("nisha", "tired", "l")] },
+  hospital_escalation: { env: "hospital_corridor", effects: ["warning_lights"], cast: [C("isha", "frustration", "r", "point")] },
+  insurer_advance: { env: "ops_office", props: ["effort_large"], cast: [C("nisha", "relief", "l", "clipboard")] },
+  reinfection_alert: { env: "control_room", effects: ["power_failure", "system_alert"], cast: [C("arjun", "shock", "r")] },
+  verified_route_pays_off: { env: "flooded_highway", props: ["priority_truck"], cast: [C("raghav", "relief", "r", "arms_crossed")] },
+  contract_penalty_notice: { env: "ops_office", cast: [C("nisha", "concern", "l", "clipboard")] },
+  power_dip: { env: "alt_depot", effects: ["power_failure", "emergency_lighting"], cast: [C("kavya", "concern", "r")] },
+  credit_due: { env: "ops_office", props: ["effort_small"], cast: [C("nisha", "tired", "l", "clipboard")] },
 };
 
 /** Who reads the evidence for the player in each round (the advisor whose job it is). */
@@ -79,14 +81,14 @@ export function carriedProps(env: EnvId, trail: string[], round: number): string
   if (env === "electrical_area") {
     if (has("r2_evacuate")) out.push("tape_barrier"); else if (has("r2_secure") || has("r2_maintain")) out.push("cones");
   }
-  if (env === "warehouse_floor" && round >= 5) {
+  if (env === "loading_dock" && round >= 5) {
     if (has("r4_pause")) out.push("hold_tags"); else if (has("r4_release_verified")) out.push("verified_tags"); else if (has("r4_provisional")) out.push("provisional_tags");
   }
   if (env === "ops_office") {
-    if (has("r5_minimal")) out.push("cash_small"); else if (has("r5_balanced") || has("r5_negotiated")) out.push("cash_medium"); else if (has("r5_restoration") || has("r5_logistics")) out.push("cash_large");
+    if (has("r5_minimal")) out.push("effort_small"); else if (has("r5_balanced") || has("r5_negotiated")) out.push("effort_medium"); else if (has("r5_restoration") || has("r5_logistics")) out.push("effort_large");
   }
   if (env === "loading_dock" && round >= 4 && !has("r7_hospital_first")) {
-    if (has("r3_alt_transport")) out.push("trucks_hired"); else if (has("r3_divert_depot")) out.push("detour_sign"); else if (has("r3_reserve_hospital")) out.push("hospital_truck");
+    if (has("r3_alt_transport")) out.push("extra_trucks"); else if (has("r3_divert_depot")) out.push("detour_sign"); else if (has("r3_reserve_hospital")) out.push("priority_truck");
   }
   if (env === "loading_dock") {
     if (has("r7_hospital_first")) out.push("loaded_truck"); else if (has("r7_negotiate")) out.push("split_pallets"); else if (has("r7_commitments")) out.push("order_sheets");
@@ -96,15 +98,15 @@ export function carriedProps(env: EnvId, trail: string[], round: number): string
 
 /** Effects an earlier decision leaves behind in a later room. */
 export function carriedEffects(env: EnvId, trail: string[], round: number): string[] {
-  // Rushing the systems back online without containment is what overloads the electrical panel in round 2.
-  if (env === "electrical_area" && round >= 2 && trail.includes("r1_rush")) return ["warning_lights", "sparks"];
+  // Rushing systems back without containment leaves the terminals unstable (a simulation consequence, not a documented one).
+  if (env === "electrical_area" && round >= 2 && trail.includes("r1_rush")) return ["warning_lights"];
   if (env === "control_room" && round >= 7 && trail.includes("r6_parallel")) return ["system_alert"];
   return [];
 }
 
-/** How the director looks given what they have already put the team through. */
-export function directorMood(trail: string[]): "concerned" | "determined" | null {
-  if (trail.includes("r1_rush")) return "concerned";
-  if (trail.includes("r1_isolate")) return "determined";
+/** How the Recovery Team Lead looks given what they have already put the team through. */
+export function directorMood(trail: string[]): "concern" | "determination" | null {
+  if (trail.includes("r1_rush")) return "concern";
+  if (trail.includes("r1_isolate")) return "determination";
   return null;
 }

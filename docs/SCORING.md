@@ -8,22 +8,22 @@ Rubric version 1. **No language model is involved in scoring.** Every number com
 
 | Category | Weight | What it measures |
 |---|---|---|
-| Staff safety & risk management | 20% | Whether people were kept safe, and whether emergency procedure was followed. |
-| Inventory & evidence reliability | 15% | How trustworthy your stock numbers and your evidence trail were. |
-| Financial discipline | 10% | Keeping money in reserve and meeting obligations. |
+| Staff safety & risk management | 20% | Whether people were kept safe, and whether safety procedure was followed. |
+| Cargo records & evidence reliability | 15% | How trustworthy your cargo numbers and your evidence trail were. |
+| Financial discipline | 10% | Keeping effort in reserve and meeting obligations. |
 | Recovery speed | 10% | How far systems were actually restored, and how much time was left. |
-| Delivery prioritization | 25% | How much of what was needed actually left, hospitals first. |
+| Delivery prioritization | 25% | How much of what was needed actually moved, urgent customers first. |
 | Stakeholder coordination | 8% | Whether your team stayed with you through the decisions. |
 | Communication quality | 7% | How the story was handled once it leaked. |
 | Adaptability to new information | 5% | Whether decisions stayed sound after things went wrong. |
 
 ### Formulas
 
-- **Staff safety & risk management** (20%): `staff_safety − 15 × [operations continued without an authorized safety assessment]`
-- **Inventory & evidence reliability** (15%): `0.45 × evidence_quality + 0.40 × verified_share + 0.15 × shipment_reliability, where verified_share = min(100, 100 × verified_units ÷ (hospital_need + contract_need)) and shipment_reliability = max(0, 100 − 5 × phantom_units_shipped)`
-- **Financial discipline** (10%): `50 + 50 × min(1, budget_left ÷ ₹3 lakh) − 25 × [invoice defaulted] − 25 × [penalty unpaid] − 15 × [most of the budget committed early]`
+- **Staff safety & risk management** (20%): `staff_safety − 15 × [operations continued without a qualified safety check]`
+- **Cargo records & evidence reliability** (15%): `0.45 × evidence_quality + 0.40 × verified_share + 0.15 × shipment_reliability, where verified_share = min(100, 100 × verified_units ÷ (hospital_need + contract_need)) and shipment_reliability = max(0, 100 − 5 × phantom_units_shipped)`
+- **Financial discipline** (10%): `50 + 50 × min(1, budget_left ÷ 3 points) − 25 × [invoice defaulted] − 25 × [penalty unpaid] − 15 × [most of the effort committed early]`
 - **Recovery speed** (10%): `0.50 × system_integrity + 0.30 × recovery_progress + 0.20 × min(100, 100 × time_slack_left ÷ 120 min)`
-- **Delivery prioritization** (25%): `100 × (0.70 × min(1, hospital_units_shipped ÷ hospital_need) + 0.30 × min(1, contract_units_shipped ÷ contract_need)) − 10 × [hospitals deprioritized]; 0 if the dispatch deadline was missed`
+- **Delivery prioritization** (25%): `100 × (0.70 × min(1, hospital_units_shipped ÷ hospital_need) + 0.30 × min(1, contract_units_shipped ÷ contract_need)) − 10 × [urgent customers deprioritized]; 0 if the reopening deadline was missed`
 - **Stakeholder coordination** (8%): `average of the five stakeholders' trust in you`
 - **Communication quality** (7%): `public_trust + 8 × [factual statement or coordinated briefing] − 15 × [silence] − 10 × [leads disagreed publicly]`
 - **Adaptability to new information** (5%): `100 × (decisions rated sound ÷ decisions) counted from the first setback onward (all decisions if there was no setback)`

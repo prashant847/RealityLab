@@ -19,8 +19,8 @@ import { StakeholderCard } from "../ui/StakeholderCard";
 import { Glossary, PlainBrief } from "../ui/PlainGuide";
 import { plainPage } from "../story/plain";
 
-const STAFF_NAMES = { kavya: "Kavya Rao", arjun: "Arjun Mehta", nisha: "Nisha Sen", raghav: "Raghav Verma", isha: "Dr. Isha Kapoor" } as const;
-const STAFF_ROLES = { kavya: "Safety Chief", arjun: "IT & Systems Lead", nisha: "Finance Director", raghav: "Logistics Manager", isha: "Hospital Liaison" } as const;
+const STAFF_NAMES = { kavya: "Terminal Supervisor", arjun: "IT Lead", nisha: "Operations Manager", raghav: "Network Administrator", isha: "Customer Representative" } as const;
+const STAFF_ROLES = { kavya: "Site safety and terminal operations", arjun: "IT systems and incident analysis", nisha: "Operations and recovery planning", raghav: "Networks, connections and routes", isha: "Customers and communication" } as const;
 
 const asEnvironment = (s: string | undefined): EnvironmentId =>
   (ENVIRONMENT_IDS as readonly string[]).includes(s ?? "") ? (s as EnvironmentId) : "ops_office";
@@ -99,7 +99,7 @@ export function SceneScreen({ api, view, busy, onDecide }: { api: GameApi; view:
           </section>
         )}
         {artScript ? <IllustratedPage page={flatStory ? plainPage(scene.page) : scene.page} script={artScript} title={scene.title} facts={scene.info ?? []} evidence={flatStory ? evidence : undefined} /> : <ComicPage page={scene.page} title={scene.title} />}
-        {flatStory && !analystCard && <p className="evidence-hint">Inspect the evidence above and have {STAFF_NAMES[analystId]} analyse it: their view of each option will be marked on the choices below.</p>}
+        {flatStory && !analystCard && <p className="evidence-hint">Inspect the evidence above and have the {STAFF_NAMES[analystId]} analyse it: their view of each option will be marked on the choices below.</p>}
         <section className="card known" aria-labelledby="known-h">
           <h2 id="known-h">What you know</h2>
           <ul className="scene-info">{scene.info?.map((t, i) => <li key={i}>{t}</li>)}</ul>

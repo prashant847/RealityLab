@@ -11,18 +11,18 @@ export function StartScreen({ onStart, busy, notice }: { onStart: (seed?: number
         <div className="start-title">
           <p className="kicker">RealityLab AI · Scenario 1</p>
           <h1>BLACKOUT</h1>
-          <p className="lede">The Last 24 Hours</p>
+          <p className="lede">The NotPetya Incident</p>
         </div>
       </div>
       <div className="start-body">
         <p>
-          You are the emergency operations director of Meridian Industrial Systems, a company that makes
-          medical-monitoring equipment. At 8:40 PM the inventory system goes dark, a monsoon floods the main
-          route, and smoke appears near an electrical panel. Hospitals are waiting. A shipment must leave by 6:00 AM.
+          On 27 June 2017 a cyberattack called NotPetya spread from Ukraine across the world. Among the companies it brought to a halt was the
+          shipping giant Maersk: computers, servers and terminals went dark, and it took about ten days to rebuild the core systems. You lead a
+          fictional recovery team through those days, one decision at a time.
         </p>
         <p>
-          Ten decisions. Every choice changes the world and what happens next. Some mistakes can still be recovered
-          from; some cannot. If the situation becomes unrecoverable, you will be told exactly why, and you can rewind.
+          Ten decisions. Every choice changes what happens next, and you can rewind to try another. The story follows the documented events in outline;
+          each scene is labelled as documented, reconstructed or simulation, so you always know which is which.
         </p>
         {notice && <p className="notice" role="status">{notice}</p>}
         <form onSubmit={(e) => { e.preventDefault(); if (seedValid && !busy) onStart(seed === "" ? undefined : Number(seed)); }}>
@@ -38,7 +38,7 @@ export function StartScreen({ onStart, busy, notice }: { onStart: (seed?: number
           </details>
         </form>
         <p className="muted fine">
-          All characters, companies and events are fictional. Progress is saved on the server, so you can refresh or close this page and continue.
+          The people you meet are fictional roles, and no real employee is portrayed or quoted in invented dialogue. Your decisions and their consequences are a simulation, not a record of what Maersk did. Progress is saved on the server, so you can refresh or close this page and continue.
         </p>
       </div>
     </main>

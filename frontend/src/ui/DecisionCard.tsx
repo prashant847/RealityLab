@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { Choice, StakeholderKey, Verdict } from "../api/types";
-import { CHOICE_PLAIN } from "../story/plain";
 
 export interface Endorsement { id: StakeholderKey; name: string; verdict: Verdict }
 const MARK: Record<Verdict, string> = { support: "✓", caution: "?", oppose: "✗", neutral: "" };
@@ -20,7 +19,7 @@ export function DecisionCard({ choice, selected, onSelect, index, endorsements =
       <span className="decision-key" aria-hidden="true">{index + 1}</span>
       <span className="decision-body">
         <strong>{choice.label}</strong>
-        <span className="decision-summary">{CHOICE_PLAIN[choice.id]?.means ?? choice.summary}</span>
+        <span className="decision-summary">{choice.summary}</span>
         <span className="chips">
           <span className="chip">{choice.cost > 0 ? `₹${choice.cost.toFixed(1)} lakh` : "No cost"}</span>
           <span className="chip">{choice.time_cost > 0 ? `${choice.time_cost} min` : "No delay"}</span>

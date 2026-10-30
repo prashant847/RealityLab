@@ -2,8 +2,8 @@ import { useState } from "react";
 import { artUrl, getAsset } from "./artManifest";
 import { ArjunPortrait, type ArjunExpression } from "../portraits/Arjun";
 import { DirectorPortrait, type DirectorExpression } from "../portraits/Director";
-import { FlatPerson, type Expr, type Pose } from "../flat/Person";
-import { FlatEnv, type EnvId } from "../flat/World";
+import { NpPerson, type Expr, type StagePose } from "../notpetya/Cast";
+import { NpEnv, type EnvId } from "../notpetya/Env";
 import { VectorScene } from "../vector/VectorScene";
 import { ArjunToon, type ArjunExpression as ToonArjunExpression, type ArjunPose } from "../toons/ArjunToon";
 import { DirectorToon, type DirectorExpression as ToonDirectorExpression, type DirectorPose } from "../toons/DirectorToon";
@@ -16,11 +16,11 @@ export function ArtImage({ layer, facts }: { layer: ArtLayer; facts?: string[] }
   const box = layer.box;
   if (layer.role === "flatenv" && layer.flatEnv) {
     const fe = layer.flatEnv;
-    return <div className="art art--background art--vector" data-art={layer.asset} data-art-status="drawn"><div style={{ position: "absolute", inset: 0, ...(fe.zoom && fe.zoom > 1 ? { transform: `scale(${fe.zoom})`, transformOrigin: `50% ${fe.anchorY ?? 80}%` } : {}) }}><FlatEnv env={fe.env as EnvId} props={fe.props} effects={fe.effects} facts={fe.board ? fe.facts : facts ?? fe.facts} board={fe.board} seed={fe.seed} round={fe.round} /></div></div>;
+    return <div className="art art--background art--vector" data-art={layer.asset} data-art-status="drawn"><div style={{ position: "absolute", inset: 0, ...(fe.zoom && fe.zoom > 1 ? { transform: `scale(${fe.zoom})`, transformOrigin: `50% ${fe.anchorY ?? 80}%` } : {}) }}><NpEnv env={fe.env as EnvId} props={fe.props} effects={fe.effects} facts={fe.board ? fe.facts : facts ?? fe.facts} board={fe.board} seed={fe.seed} round={fe.round} /></div></div>;
   }
   if (layer.role === "person" && layer.person) {
     const st = box ? { left: `${box.x}%`, top: `${box.y}%`, width: `${box.w}%`, height: `${box.h}%` } : undefined;
-    return <div className="art art--person" style={st} data-art={layer.asset} data-art-status="drawn"><FlatPerson who={layer.person.who} expression={layer.person.expression as Expr} pose={layer.person.pose as Pose | undefined} /></div>;
+    return <div className="art art--person" style={st} data-art={layer.asset} data-art-status="drawn"><NpPerson who={layer.person.who} expression={layer.person.expression as Expr} pose={layer.person.pose as StagePose | undefined} /></div>;
   }
   if (layer.role === "vector" && layer.vector) {
     return <div className="art art--background art--vector" data-art={layer.asset} data-art-status="drawn"><VectorScene scene={layer.vector} facts={facts} /></div>;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHOICE_PLAIN, EVENT_PLAIN, PANEL_PLAIN, ROUND_PLAIN, GLOSSARY, plainPage } from "./plain";
+import { CHOICE_PLAIN, ROUND_PLAIN, GLOSSARY, plainPage } from "./plain";
 import { BEATS, EVENT_BEATS, ANALYST, carriedProps } from "./beats";
 import { composeConsequence, composeRoundPage, layoutFor, oneVehicle, textReserve } from "./compose";
 
@@ -26,11 +26,11 @@ describe("story beats", () => {
   it("carries earlier choices into later rooms", () => {
     expect(carriedProps("electrical_area", ["r2_evacuate"], 8)).toContain("tape_barrier");
     expect(carriedProps("electrical_area", ["r2_secure"], 8)).toContain("cones");
-    expect(carriedProps("warehouse_floor", ["r4_pause"], 6)).toContain("hold_tags");
-    expect(carriedProps("warehouse_floor", ["r4_pause"], 4)).toHaveLength(0);
+    expect(carriedProps("loading_dock", ["r4_pause"], 6)).toContain("hold_tags");
+    expect(carriedProps("loading_dock", ["r4_pause"], 4)).toHaveLength(0);
     expect(carriedProps("control_room", ["r1_isolate", "r6_restrict"], 7)).toEqual(["cables_cut", "account_locked"]);
-    expect(carriedProps("ops_office", ["r5_minimal"], 8)).toEqual(["cash_small"]);
-    expect(carriedProps("ops_office", ["r5_restoration"], 8)).toEqual(["cash_large"]);
+    expect(carriedProps("ops_office", ["r5_minimal"], 8)).toEqual(["effort_small"]);
+    expect(carriedProps("ops_office", ["r5_restoration"], 8)).toEqual(["effort_large"]);
     expect(carriedProps("ops_office", [], 8)).toEqual([]);
   });
 });
@@ -72,7 +72,7 @@ describe("layout and composition", () => {
     const ev = [{ event_id: "dock_flooding", title: "Water at the loading dock", clock: "9:40 PM", text: "Boxes are damaged.", assets: ["rain"] }] as never;
     const s = composeConsequence("r2_evacuate", "Evacuate", "The area is clear.", ev, "electrical_area");
     expect(s.panels).toHaveLength(2);
-    expect(s.panels[0].caption).toBe(CHOICE_PLAIN.r2_evacuate.result);
+    expect(s.panels[0].caption).toBe("The area is clear.");
     expect(s.panels[1].narration).toContain("Water at the loading dock");
     expect(s.panels[1].caption).toBe("Boxes are damaged.");
   });
@@ -127,7 +127,7 @@ describe("one world scale", () => {
   });
   it("keeps vehicles out of the interior depot", () => {
     expect(carriedProps("alt_depot", ["r3_alt_transport"], 8)).toEqual([]);
-    expect(carriedProps("loading_dock", ["r3_alt_transport"], 8)).toContain("trucks_hired");
+    expect(carriedProps("loading_dock", ["r3_alt_transport"], 8)).toContain("extra_trucks");
   });
 });
 
@@ -141,7 +141,7 @@ describe("people in one panel share one size", () => {
 
 describe("one vehicle per scene", () => {
   it("never shows two vehicle props together", () => {
-    expect(oneVehicle(["trucks_hired", "loaded_truck", "cones"])).toEqual(["loaded_truck", "cones"]);
+    expect(oneVehicle(["extra_trucks", "loaded_truck", "cones"])).toEqual(["loaded_truck", "cones"]);
     expect(oneVehicle(["cones"])).toEqual(["cones"]);
   });
   it("does not add hired trucks to a dock that already has the loaded truck", () => {
@@ -150,32 +150,35 @@ describe("one vehicle per scene", () => {
 });
 
 describe("plain-language layer", () => {
-  it("covers every decision, event and round", () => {
-    for (const c of CHOICES) { const p = CHOICE_PLAIN[c]; expect(p, c).toBeDefined(); expect(p.means.length).toBeGreaterThan(10); expect(p.done.length).toBeGreaterThan(5); expect(p.result.length).toBeGreaterThan(10); }
-    for (const e of EVENTS) expect(EVENT_PLAIN[e], e).toBeTruthy();
-    for (let r = 1; r <= 10; r++) { expect(ROUND_PLAIN[r].where).toBeTruthy(); expect(ROUND_PLAIN[r].problem).toBeTruthy(); expect(ROUND_PLAIN[r].job).toMatch(/^Decide/); }
+  it("covers every decision and round", () => {
+    for (const c of CHOICES) { const p = CHOICE_PLAIN[c]; expect(p, c).toBeDefined(); expect(p.done.length).toBeGreaterThan(5); }
+    for (let r = 1; r <= 10; r++) {
+      expect(ROUND_PLAIN[r].where).toBeTruthy(); expect(ROUND_PLAIN[r].problem).toBeTruthy(); expect(ROUND_PLAIN[r].job).toMatch(/^Decide/);
+      expect(["documented", "reconstructed", "simulation"]).toContain(ROUND_PLAIN[r].label);
+    }
   });
 
-  it("keeps notes and speech short enough to read at a glance", () => {
-    for (const [id, p] of Object.entries(PANEL_PLAIN)) { expect((p.note ?? "").length, id).toBeLessThanOrEqual(95); expect((p.say ?? "").length, id).toBeLessThanOrEqual(110); }
+  it("keeps the briefing short enough to read at a glance", () => {
+    for (let r = 1; r <= 10; r++) { const p = ROUND_PLAIN[r]; expect(p.where.length, `${r} where`).toBeLessThanOrEqual(120); expect(p.problem.length, `${r} problem`).toBeLessThanOrEqual(190); expect(p.job.length, `${r} job`).toBeLessThanOrEqual(190); }
   });
 
-  it("swaps in the plain wording for known panels and leaves unknown ones alone", () => {
+  it("tells the truth about what is simulation: the rounds with no documented counterpart say so", () => {
+    for (const r of [2, 3, 7, 8]) expect(ROUND_PLAIN[r].label, `round ${r}`).toBe("simulation");
+    expect(ROUND_PLAIN[7].record).toMatch(/simulation/i);
+  });
+
+  it("passes page text through untouched (the backend wording is already plain)", () => {
     const page = { layout: "two", panels: [
-      { id: "r1b", environment: "warehouse_floor", characters: [{ id: "arjun", side: "left", expression: "worried" }], dialogue: [{ speaker: "arjun", text: "Scanners are dead. And these logins — none of them are ours.", kind: "speech" }], effects: [] },
-      { id: "zzz", environment: "warehouse_floor", characters: [], dialogue: [{ speaker: "arjun", text: "Original words.", kind: "speech" }], narration: "Original note.", effects: [] },
+      { id: "r1b", environment: "warehouse_floor", characters: [{ id: "arjun", side: "left", expression: "worried" }], dialogue: [{ speaker: "arjun", text: "Original words.", kind: "speech" }], narration: "Original note.", effects: [] },
     ] };
     const out = plainPage(page);
-    expect(out.panels[0].dialogue[0].text).toBe(PANEL_PLAIN.r1b.say);
-    expect(out.panels[0].narration).toBe(PANEL_PLAIN.r1b.note);
-    expect(out.panels[1].dialogue[0].text).toBe("Original words.");
-    expect(out.panels[1].narration).toBe("Original note.");
+    expect(out.panels[0].dialogue[0].text).toBe("Original words.");
+    expect(out.panels[0].narration).toBe("Original note.");
   });
 
   it("explains hard words only when they are used", () => {
     const used = (t: string) => GLOSSARY.filter((g) => g.match.test(t)).map((g) => g.term);
-    expect(used("Logs show access via a third-party logistics (3PL) account.")).toEqual(expect.arrayContaining(["3PL", "Logs / logins"]));
-    expect(used("The smoke is rising.")).toEqual([]);
+    expect(used("Logs show a third-party software update arriving just before the failures.")).toEqual(expect.arrayContaining(["Third-party software update", "Evidence"]));
+    expect(used("The cranes are idle.")).toEqual([]);
   });
 });
-

@@ -45,22 +45,22 @@ def diagnose(state: WorldState, nodes: int | None = None) -> list[dict[str, Any]
     spare = state.window_min - _min_forced_time(state)
     if spare < 0:
         out.append({"id": "time", "text": (
-            f"Only {state.window_min} minutes of dispatch slack remain, but even the fastest remaining "
+            f"Only {state.window_min} minutes remain before the reopening deadline, but even the fastest remaining "
             f"choices need {_min_forced_time(state)} minutes.")})
     need = state.hospital_need
     cap_ub = state.transport_capacity + _max_gain("transport_capacity", state)
     if cap_ub < need:
         out.append({"id": "transport", "text": (
-            f"Transport capacity is {state.transport_capacity} units. Taking every remaining capacity option "
-            f"would reach at most {int(cap_ub)} units, short of the hospitals' {need} units.")})
+            f"Transport capacity is {state.transport_capacity} cargo lots. Taking every remaining capacity option "
+            f"would reach at most {int(cap_ub)} lots, short of the {need} lots time-critical customers need.")})
     else:
         costs = [c.cost for n in range(state.round, LAST_ROUND + 1) for c in ROUNDS[n].choices
                  if any(fx.add.get("transport_capacity", 0) > 0 for fx in c.effects)]
         if state.transport_capacity < need and costs and state.budget < min(costs):
             out.append({"id": "transport_budget", "text": (
-                f"Transport capacity ({state.transport_capacity} units) is below the hospitals' need ({need}), "
-                f"and the cheapest remaining way to add capacity costs ₹{min(costs):g} lakh against "
-                f"₹{state.budget:.1f} lakh left.")})
+                f"Transport capacity ({state.transport_capacity} lots) is below what time-critical customers need ({need}), "
+                f"and the cheapest remaining way to add capacity costs {min(costs):g} points against "
+                f"{state.budget:.1f} points left.")})
     stock_ub = min(state.true_units, state.verified_units + _max_gain("verified_units", state))
     if stock_ub < need:
         out.append({"id": "stock", "text": (

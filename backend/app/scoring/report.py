@@ -15,17 +15,17 @@ from . import ratings as R
 from . import rubric
 
 _EVENTS = {e.id: e for e in EVENTS}
-LOSS_FIELDS = {"staff_safety": ("points of staff safety", "safety"), "window_min": ("minutes of time slack", "time"),
+LOSS_FIELDS = {"staff_safety": ("points of staff safety", "safety"), "window_min": ("minutes of time left", "time"),
                "evidence_quality": ("points of evidence quality", "evidence"), "system_integrity": ("points of system integrity", "systems"),
-               "public_trust": ("points of public trust", "trust"), "budget": ("lakh of budget", "money"),
-               "transport_capacity": ("units of transport capacity", "capacity"),
-               "true_units": ("units of stock written off", "stock")}
+               "public_trust": ("points of customer trust", "trust"), "budget": ("points of recovery effort", "money"),
+               "transport_capacity": ("cargo lots of transport capacity", "capacity"),
+               "true_units": ("cargo lots written off", "stock")}
 FOCUS = {
-    "safety": "Follow emergency procedure first: evacuate or have an authorized person assess before operating near a hazard.",
-    "inventory": "Verify stock physically and protect the evidence trail early; unverified records cost you later.",
+    "safety": "Follow safety procedure first: clear the area or have a qualified person check it before working near a hazard.",
+    "inventory": "Verify cargo physically and protect the evidence trail early; unverified records cost you later.",
     "finance": "Stage spending and keep a reserve for the round-6 to round-8 contingencies; avoid deferred obligations you cannot meet.",
     "recovery": "Contain before restoring, then invest in the repairs that actually restore system integrity.",
-    "delivery": "Work backwards from the hospitals' need: confirm enough verified stock and enough transport capacity before the last hour.",
+    "delivery": "Work backwards from what urgent customers need: confirm enough verified cargo and enough transport capacity before the last hour.",
     "coordination": "Listen to the advisor whose priorities your decision affects most; trust falls when their warnings are ignored.",
     "communication": "Say what is known, what is not, and when you will update; silence and public disagreement both cost trust.",
     "adaptability": "After a setback, re-check the options rather than continuing the plan unchanged.",
@@ -167,9 +167,9 @@ def _losses(checkpoints: list[WorldState], final: WorldState, dec: list[dict[str
     if final.final and final.final.get("provisional_shortfall"):
         n = final.final["provisional_shortfall"]
         cause = next((i for i, d in enumerate(final.decisions) if d["choice_id"] == "r10_provisional"), None)
-        losses.append({"kind": "phantom_stock", "amount": n, "unit": "units shipped on records that did not exist",
-                       "event": "Provisional records overstated stock", "round": 10, "clock": "6:00 AM", "probability": 1.0, "chance": False,
-                       "avoidable": True, "alternative": "Dispatch verified stock only, or sweep first", "earlier_chances": [],
+        losses.append({"kind": "phantom_stock", "amount": n, "unit": "cargo lots moved on records that did not exist",
+                       "event": "Provisional records overstated cargo", "round": 10, "clock": "About Day 10", "probability": 1.0, "chance": False,
+                       "avoidable": True, "alternative": "Reopen on verified cargo only, or check first", "earlier_chances": [],
                        "caused_by": None if cause is None else {"index": cause, "label": dec[cause]["label"]}})
     return sorted(losses, key=lambda x: (not x["avoidable"], -x["amount"]))
 
@@ -179,12 +179,12 @@ def _opportunities(final: WorldState) -> list[dict[str, Any]]:
     out = [{"kind": "event", "text": e.opportunity} for e in EVENTS
            if e.opportunity and e.id not in fired and all(c.test(final) for c in e.opportunity_if)]
     d = final.final or {}
-    for who, key, need in (("hospitals", "shipped_hospital", "hospital_need"), ("the contract customer", "shipped_contract", "contract_need")):
+    for who, key, need in (("urgent customers", "shipped_hospital", "hospital_need"), ("the key account", "shipped_contract", "contract_need")):
         short = d.get(need, 0) - d.get(key, 0)
         if short > 0:
-            limit = ("verified stock" if final.verified_units < final.transport_capacity else "transport capacity")
-            out.append({"kind": "shortfall", "text": f"{short} units short for {who}; the binding limit was {limit} "
-                        f"({final.verified_units} verified units, {final.transport_capacity} units of capacity)."})
+            limit = ("verified cargo" if final.verified_units < final.transport_capacity else "transport capacity")
+            out.append({"kind": "shortfall", "text": f"{short} lots short for {who}; the binding limit was {limit} "
+                        f"({final.verified_units} verified lots, {final.transport_capacity} lots of capacity)."})
     return out
 
 
@@ -192,7 +192,7 @@ def _reveal(final: WorldState) -> dict[str, Any]:
     return {"recorded_units": final.recorded_units, "true_units": final.true_units,
             "records_overstated_by": final.recorded_units - final.true_units, "verified_units": final.verified_units,
             "existing_but_unverified": max(0, final.true_units - final.verified_units),
-            "note": "Revealed only now that the run is over. During play the true stock was never shown."}
+            "note": "Revealed only now that the run is over. During play the true cargo count was never shown."}
 
 
 # ------------------------------------------------------------------ the report

@@ -37,7 +37,7 @@ def finish(svc, path, seed=1):
 # ============================================================================ rubric
 def test_eight_required_categories_with_weights_that_sum_to_one():
     names = [c.name for c in rubric.CATEGORIES]
-    assert names == ["Staff safety & risk management", "Inventory & evidence reliability", "Financial discipline",
+    assert names == ["Staff safety & risk management", "Cargo records & evidence reliability", "Financial discipline",
                      "Recovery speed", "Delivery prioritization", "Stakeholder coordination", "Communication quality",
                      "Adaptability to new information"]
     assert sum(c.weight for c in rubric.CATEGORIES) == pytest.approx(1.0)
@@ -230,18 +230,18 @@ def test_questionable_final_dispatch_names_the_better_option(svc):
 def test_losses_are_traced_to_the_last_decision_that_could_have_prevented_them(svc):
     r = svc.report(finish(svc, FAST))
     loss = next(x for x in r["avoidable_losses"] if x["event"] == "Systems fail again")
-    assert loss["caused_by"]["index"] == 0 and loss["alternative"] == "Isolate affected systems and preserve evidence"
+    assert loss["caused_by"]["index"] == 0 and loss["alternative"] == "Cut the affected connections and keep the evidence"
     assert loss["avoidable"] and not loss["chance"] and loss["probability"] == 0.8
     assert loss["earlier_chances"] == []                                     # nothing before decision 1 could have helped
     power = next((x for x in r["avoidable_losses"] if x["event"] == "Backup power dips"), None)
     if power:
-        assert power["caused_by"]["index"] == 7 and "Suspend" in power["alternative"]
+        assert power["caused_by"]["index"] == 7 and "Pause everything" in power["alternative"]
 
 
 def test_chance_only_events_are_not_blamed_on_the_player(svc):
     seed = next(s for s in range(1, 60) if any(e["event_id"] == "dock_flooding" for e in play(CAUTIOUS, seed=s)[0].events))
     r = svc.report(finish(svc, CAUTIOUS, seed=seed))
-    flood = next(x for x in r["unavoidable_losses"] if x["event"] == "Water at the loading dock")
+    flood = next(x for x in r["unavoidable_losses"] if x["event"] == "A surge of trucks at the gate")
     assert flood["chance"] and flood["caused_by"] is None and flood["probability"] == 0.5 and not flood["avoidable"]
     assert flood["kind"] == "stock" and flood["amount"] == 20
 
@@ -253,7 +253,7 @@ def test_a_sound_unwarned_choice_hit_by_a_chance_event_is_called_unlucky(svc):
     r = svc.report(finish(svc, UNLUCKY_PATH, seed=bad_seed))
     d = r["decisions"][1]
     assert d["choice_id"] == "r2_secure" and d["rating"] == "sound" and d["outcome"] == "unlucky"
-    assert d["bad_luck"] == ["The panel fails during assessment"] and "chance intervened" in d["verdict"] and not d["warned_by"]
+    assert d["bad_luck"] == ["The equipment fails during the check"] and "chance intervened" in d["verdict"] and not d["warned_by"]
     assert r["quality"]["unlucky"] >= 1 and r["quality"]["poor"] == 0
     calm = svc.report(finish(svc, UNLUCKY_PATH, seed=calm_seed))              # same decisions, kinder dice
     assert calm["decisions"][1]["outcome"] == "as_expected" and calm["decisions"][1]["bad_luck"] == []
@@ -284,7 +284,7 @@ def test_a_decision_that_did_not_enable_an_event_is_not_blamed_for_it(svc):
 def test_missed_opportunities_depend_on_what_actually_happened(svc):
     weak = svc.report(finish(svc, FAST))
     texts = " ".join(m["text"] for m in weak["missed_opportunities"])
-    assert "insurer advance" in texts and "units short for hospitals" in texts and "binding limit was verified stock" in texts
+    assert "insurer advance" in texts and "lots short for urgent customers" in texts and "binding limit was verified cargo" in texts
     strong = svc.report(finish(svc, CAUTIOUS))
     assert "insurer advance" not in " ".join(m["text"] for m in strong["missed_opportunities"])
 
@@ -328,7 +328,7 @@ def test_replay_comparison_isolates_the_effect_of_one_decision(svc):
     assert m["hospital_shipped"]["base"] == 170 and m["hospital_shipped"]["other"] == 220 and m["hospital_shipped"]["favours"] == "other"
     assert m["time_left"]["delta"] == -30 and m["time_left"]["favours"] == "base"          # the sweep costs time
     assert m["staff_safety"]["favours"] == "same" and m["evidence_quality"]["delta"] == 0
-    assert c["base"]["ending"] == "Partial dispatch".upper() and c["other"]["ending"] == "HOSPITALS SERVED"
+    assert c["base"]["ending"] == "Partial reopening".upper() and c["other"]["ending"] == "URGENT CUSTOMERS SERVED"
     assert m["overall_score"]["other"] > m["overall_score"]["base"]
     assert c["favours_count"]["other"] > c["favours_count"]["base"]
     assert [t["diverged"] for t in c["timeline"]] == [False] * 9 + [True] and all(t["same_choice"] for t in c["timeline"][:9])
@@ -382,7 +382,7 @@ def test_checkpoint_view_shows_what_was_known_and_which_option_was_taken(svc):
     v = svc.checkpoint_view(sid, 2)
     assert v["round"] == 3 and v["chosen_choice_id"] == "r3_alt_transport"
     assert [c["id"] for c in v["choices"] if c["chosen"]] == ["r3_alt_transport"] and len(v["choices"]) == 3
-    assert any("hospitals together need" in k for k in v["known_info"]) and "true_units" not in json.dumps(v)
+    assert any("customers together need" in k for k in v["known_info"]) and "true_units" not in json.dumps(v)
     with pytest.raises(BadRequest):
         svc.checkpoint_view(sid, 9)
 

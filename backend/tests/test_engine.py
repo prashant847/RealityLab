@@ -15,7 +15,7 @@ def test_new_simulation_initial_state():
     assert s.budget == 12.0 and s.recorded_units == 480 and s.verified_units == 0
     assert s.decisions == [] and s.events == []
     view = scene_view(s)
-    assert view["round"] == 1 and view["clock"] == "8:40 PM" and len(view["choices"]) == 3
+    assert view["round"] == 1 and view["clock"] == "Day 1 · 27 Jun" and len(view["choices"]) == 3
 
 
 def test_player_view_hides_ground_truth():
@@ -148,7 +148,7 @@ def test_overspending_blocks_later_contingency():
     s, _ = play(["r1_controlled", "r2_secure", "r3_divert_depot", "r4_provisional", "r5_restoration"])
     assert s.budget < 2.0
     spec = next(c for c in scene_view(s)["choices"] if c["id"] == "r6_specialist")
-    assert not spec["available"] and "lakh" in spec["reason"]
+    assert not spec["available"] and "points" in spec["reason"]
 
 
 def test_staged_spending_keeps_contingency_open():

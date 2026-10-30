@@ -95,7 +95,7 @@ def test_hospital_priority_split_between_isha_and_nisha():
     assert c["isha"]["recommendation"] == "r7_hospital_first"
     assert c["nisha"]["recommendation"] == "r7_commitments"
     stance = {st["choice_id"]: st for st in c["isha"]["stances"]}
-    assert stance["r7_commitments"]["vetoed"] and "patients" in stance["r7_commitments"]["reasons"][0]
+    assert stance["r7_commitments"]["vetoed"] and "urgent customers" in stance["r7_commitments"]["reasons"][0]
 
 
 def test_hard_constraints_are_vetoes_with_reasons():
@@ -109,7 +109,7 @@ def test_hard_constraints_are_vetoes_with_reasons():
     assert arjun["vetoed"] and "containment" in arjun["reasons"][0]
     s5, _ = play(["r1_controlled", "r2_secure", "r3_divert_depot", "r4_release_verified"])
     nisha = {x["choice_id"]: x for x in build_core("nisha", s5)["stances"]}["r5_restoration"]
-    assert nisha["vetoed"] and "contingencies" in nisha["reasons"][0]
+    assert nisha["vetoed"] and "still ahead" in nisha["reasons"][0]
 
 
 def test_no_advisor_ever_recommends_an_unsafe_action_anywhere():
@@ -145,11 +145,11 @@ def test_raghav_gives_optimistic_unverified_capacity_until_the_depot_is_confirme
     s, _ = play(["r1_isolate", "r2_evacuate", "r3_divert_depot"])
     priv = build_core("raghav", s)["private"][0]
     assert not priv["verified"] and priv["reliability"] <= 0.5
-    assert f"{s.transport_capacity + 25} units" in priv["text"] and "verify" in priv["text"].lower()
+    assert f"{s.transport_capacity + 25} cargo lots" in priv["text"] and "verify" in priv["text"].lower()
     assert s.transport_capacity + 25 != s.transport_capacity                 # his figure differs from the HUD
     s2, _ = play(["r1_isolate", "r2_evacuate", "r3_divert_depot", "r4_pause", "r5_logistics"])
     priv2 = build_core("raghav", s2)["private"][0]
-    assert priv2["verified"] and f"{s2.transport_capacity} units" in priv2["text"]
+    assert priv2["verified"] and f"{s2.transport_capacity} cargo lots" in priv2["text"]
 
 
 def test_arjun_never_attributes_blame_and_hedges_when_evidence_is_poor():
@@ -166,14 +166,14 @@ def test_arjun_never_attributes_blame_and_hedges_when_evidence_is_poor():
 def test_nisha_reports_committed_obligations_exactly():
     s, _ = play(["r1_isolate", "r2_evacuate", "r3_divert_depot", "r4_pause", "r5_negotiated"])
     texts = " ".join(p["text"] for p in build_core("nisha", s)["private"])
-    assert "₹2.0 lakh invoice" in texts and "genuinely free" in texts
+    assert "2.0-point payment" in texts and "genuinely free" in texts
 
 
 def test_kavya_warns_privately_about_an_unassessed_hazard():
     from app.engine.state import WorldState
     s = WorldState(seed=1, round=3)
     s.add_flag("unsafe_ops")
-    assert "unassessed" in build_core("kavya", s)["private"][0]["text"]
+    assert "no safety check" in build_core("kavya", s)["private"][0]["text"]
 
 
 # ----------------------------------------------------------------------------- safety of the information
@@ -255,7 +255,7 @@ def test_what_the_model_is_sent_contains_no_hidden_or_foreign_data():
     ctx = json.loads(user)
     assert set(ctx) == {"character", "time", "recommendation", "reasons", "objection", "confidence_percent",
                         "uncertainty", "facts", "own_claims", "draft"}
-    assert ctx["character"]["name"] == "Arjun Mehta" and "Kavya" not in user
+    assert ctx["character"]["name"] == "IT Lead" and "Kavya" not in user
     assert "never state who is responsible" in system and "ONLY facts and numbers present" in system
 
 
@@ -264,7 +264,7 @@ def test_numbers_in_model_output_must_come_from_the_context():
     ctx = build_context(core, compose(core, 1))
     ok = allowed_numbers(ctx)
     assert str(core["confidence"]) in ok
-    claimed = core["private"][0]["text"].split(" units")[0].split()[-1]
+    claimed = core["private"][0]["text"].split(" cargo lots")[0].split()[-1]
     assert claimed in ok
     assert parse_and_validate(json.dumps({"dialogue": f"I make it about {claimed} units, but please verify the depot first."}), ok)
     with pytest.raises(Invalid):

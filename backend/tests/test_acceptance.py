@@ -71,7 +71,7 @@ def keys(o):
 # 1. Start a new BLACKOUT simulation.
 def test_01_start_a_new_simulation(client):
     sid, v = start(client)
-    assert v["scene"]["title"] == "THE BLACKOUT" and v["scene"]["clock"] == "8:40 PM" and v["run"]["status"] == "active"
+    assert v["scene"]["title"] == "THE SCREENS GO DARK" and v["scene"]["clock"] == "Day 1 · 27 Jun" and v["run"]["status"] == "active"
     assert v["state"]["budget"] == 12.0 and len(v["scene"]["choices"]) == 3
 
 
@@ -148,10 +148,10 @@ def test_08_factual_explanation_from_recorded_data(client):
     sid, _ = start(client)
     a = play(client, sid, SOFT)["analysis"]
     assert a["title"] == "DEAD END — RECOVERY WINDOW CLOSED"
-    assert any("170 units" in d["text"] and "220" in d["text"] for d in a["why_unrecoverable"])
+    assert any("170 cargo lots" in d["text"] and "220" in d["text"] for d in a["why_unrecoverable"])
     point = a["critical_point"]
     assert point["decision_taken"] == "Spend only the essentials and hold the rest"
-    assert any("hospitals together need 220" in k for k in point["known_at_time"])        # judged by what was known
+    assert any("customers need 220" in k for k in point["known_at_time"])        # judged by what was known
     assert point["better_options"] and a["last_recoverable_checkpoint"] == 4
     text = json.dumps(a).lower()
     assert not any(w in text for w in ("stupid", "careless", "your fault", "incompetent"))
@@ -169,7 +169,7 @@ def test_09_rewind_lands_on_a_verified_recoverable_checkpoint():
         restored = WorldState.model_validate(db.get(Run, v["run"]["id"]).state)
     assert v["run"]["status"] == "active" and v["scene"]["round"] == 5
     assert planner.classify(restored)["status"] == "viable"                  # the planner proves a path still exists
-    assert "Remaining emergency budget" in " ".join(v["rewind_context"]["known_at_decision"])
+    assert "Recovery effort left" in " ".join(v["rewind_context"]["known_at_decision"])
 
 
 # 10. Make a different choice and continue.

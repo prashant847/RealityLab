@@ -18,7 +18,7 @@ NO_PREF = {
     "arjun": "From a systems point of view these are close.",
     "nisha": "Financially these are close, so I won't fight you on it.",
     "raghav": "Logistically there's not much between them.",
-    "isha": "For the hospitals these don't differ much.",
+    "isha": "For urgent customers these don't differ much.",
 }
 REACT = {
     "challenge": ("I have to say I disagreed with ", "I'd have chosen differently on "),

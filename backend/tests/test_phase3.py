@@ -53,7 +53,7 @@ def test_unsafe_path_is_a_hard_dead_end_and_pauses_the_run(svc):
     assert a["title"] == "DEAD END — RECOVERY WINDOW CLOSED"
     assert a["severity"] == "hard" and a["continue_allowed"] is False
     assert any("SAFETY FAILURE" in d["text"] for d in a["why_unrecoverable"])
-    assert a["critical_point"]["decision_taken"].startswith("Keep operating")
+    assert a["critical_point"]["decision_taken"].startswith("Keep working manually")
     with pytest.raises(Conflict):
         svc.decide(sid, "r3_alt_transport")
     with pytest.raises(Conflict):
@@ -66,7 +66,7 @@ def test_soft_dead_end_when_hospital_capacity_can_no_longer_reach_need(svc):
     a = v["analysis"]
     assert v["run"]["status"] == "dead_end" and a["severity"] == "soft" and a["continue_allowed"]
     assert any(d["id"] == "transport" and "210" in d["text"] and "220" in d["text"] for d in a["why_unrecoverable"])
-    assert "Transport capacity is below the hospitals' combined need." in a["risks_not_addressed"]
+    assert "Transport capacity is below what time-critical customers need." in a["risks_not_addressed"]
 
 
 def test_analysis_never_leaks_the_winning_plan(svc):
@@ -152,7 +152,7 @@ def test_rewind_restores_the_exact_checkpoint_state_and_explains_what_was_known(
     assert rv["scene"]["round"] == 5 and rv["run"]["branch_checkpoint_index"] == 4
     ctx = rv["rewind_context"]
     assert ctx["previous_choice"] == "Spend only the essentials and hold the rest"
-    assert any("Remaining emergency budget" in x for x in ctx["known_at_decision"])
+    assert any("Recovery effort left" in x for x in ctx["known_at_decision"])
     assert rv["simulation"]["rewinds_used"] == 1 and rv["simulation"]["rewinds_left"] == 4
 
 

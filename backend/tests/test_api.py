@@ -51,7 +51,7 @@ def test_health_and_openapi_document_the_endpoints(client):
 def test_create_returns_first_scene_without_hidden_truth(client):
     v = create(client, seed=7)
     assert v["simulation"]["seed"] == 7 and v["run"]["status"] == "active"
-    assert v["scene"]["round"] == 1 and v["scene"]["title"] == "THE BLACKOUT"
+    assert v["scene"]["round"] == 1 and v["scene"]["title"] == "THE SCREENS GO DARK"
     assert [c["id"] for c in v["scene"]["choices"]] == ["r1_isolate", "r1_controlled", "r1_rush"]
     assert "true_units" not in v["state"] and "true_units" not in str(v)
     assert v["state"]["budget"] == 12.0 and v["checkpoints"] == []
@@ -131,7 +131,7 @@ def test_unaffordable_and_unsafe_actions_rejected(client):
     sid = create(client)["simulation"]["id"]
     play(client, sid, ["r1_controlled", "r2_secure", "r3_alt_transport", "r4_release_verified", "r5_logistics"])
     r = decide(client, sid, "r6_specialist")
-    assert r.status_code == 422 and "lakh" in r.json()["error"]["message"]
+    assert r.status_code == 422 and "points" in r.json()["error"]["message"]
     sid2 = create(client)["simulation"]["id"]
     play(client, sid2, ["r1_isolate", "r2_maintain"])        # dead end; later restrictions need a live run
     assert decide(client, sid2, "r3_alt_transport").status_code == 409
@@ -176,7 +176,7 @@ def test_e2e_poor_strategy_dead_ends_then_rewinds_and_recovers(client):
     assert dead["run"]["status"] == "dead_end"
     a = dead["analysis"]
     assert a["title"] == "DEAD END — RECOVERY WINDOW CLOSED" and a["continue_allowed"] is False
-    assert a["critical_point"]["decision_taken"].startswith("Keep operating")
+    assert a["critical_point"]["decision_taken"].startswith("Keep working manually")
     assert a["critical_point"]["better_options"] and a["last_recoverable_checkpoint"] == 1
     assert "recovery_plan_from_checkpoint" not in a
     assert decide(client, sid, "r3_alt_transport").status_code == 409
@@ -189,7 +189,7 @@ def test_e2e_poor_strategy_dead_ends_then_rewinds_and_recovers(client):
     assert rv.status_code == 200
     rv = rv.json()
     assert rv["run"]["status"] == "active" and rv["run"]["parent_run_id"] == old_run
-    assert rv["scene"]["round"] == 2 and rv["rewind_context"]["previous_choice"].startswith("Keep operating")
+    assert rv["scene"]["round"] == 2 and rv["rewind_context"]["previous_choice"].startswith("Keep working manually")
     assert rv["rewind_context"]["known_at_decision"] and rv["simulation"]["rewinds_left"] == 4
 
     done = play(client, sid, ["r2_evacuate", *GOOD_TAIL])

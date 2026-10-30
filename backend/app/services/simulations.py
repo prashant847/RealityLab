@@ -58,7 +58,7 @@ def pending_events(state: WorldState) -> list[dict[str, Any]]:
 def _checkpoint_row(run_id: str, idx: int, state: WorldState) -> Checkpoint:
     scene = scene_view(state)
     return Checkpoint(
-        run_id=run_id, idx=idx, round=state.round, clock=scene.get("clock", "6:00 AM"), state=state.model_dump(),
+        run_id=run_id, idx=idx, round=state.round, clock=scene.get("clock", "About Day 10"), state=state.model_dump(),
         available_actions=[{"id": c["id"], "available": c["available"], "cost": c["cost"]}
                            for c in scene.get("choices", [])],
         active_risks=active_risks(state), event_queue=pending_events(state),

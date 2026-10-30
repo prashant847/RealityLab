@@ -1,4 +1,4 @@
-import type { Who } from "../flat/Person";
+import type { Who } from "../notpetya/Cast";
 // Layered scene scripts for illustrated chapters. A script only decides WHICH art goes in which panel and how it is
 // framed; narration, dialogue, speakers and effects are read from the page the backend already sent (via `source`),
 // so no story text or outcome is defined here.

@@ -25,23 +25,23 @@ class Category:
 
 CATEGORIES: tuple[Category, ...] = (
     Category("safety", "Staff safety & risk management", 0.20,
-             "staff_safety − 15 × [operations continued without an authorized safety assessment]",
-             "Whether people were kept safe, and whether emergency procedure was followed."),
-    Category("inventory", "Inventory & evidence reliability", 0.15,
+             "staff_safety − 15 × [operations continued without a qualified safety check]",
+             "Whether people were kept safe, and whether safety procedure was followed."),
+    Category("inventory", "Cargo records & evidence reliability", 0.15,
              "0.45 × evidence_quality + 0.40 × verified_share + 0.15 × shipment_reliability, where verified_share = "
              "min(100, 100 × verified_units ÷ (hospital_need + contract_need)) and shipment_reliability = "
              "max(0, 100 − 5 × phantom_units_shipped)",
-             "How trustworthy your stock numbers and your evidence trail were."),
+             "How trustworthy your cargo numbers and your evidence trail were."),
     Category("finance", "Financial discipline", 0.10,
-             "50 + 50 × min(1, budget_left ÷ ₹3 lakh) − 25 × [invoice defaulted] − 25 × [penalty unpaid] − 15 × [most of the budget committed early]",
-             "Keeping money in reserve and meeting obligations."),
+             "50 + 50 × min(1, budget_left ÷ 3 points) − 25 × [invoice defaulted] − 25 × [penalty unpaid] − 15 × [most of the effort committed early]",
+             "Keeping effort in reserve and meeting obligations."),
     Category("recovery", "Recovery speed", 0.10,
              "0.50 × system_integrity + 0.30 × recovery_progress + 0.20 × min(100, 100 × time_slack_left ÷ 120 min)",
              "How far systems were actually restored, and how much time was left."),
     Category("delivery", "Delivery prioritization", 0.25,
              "100 × (0.70 × min(1, hospital_units_shipped ÷ hospital_need) + 0.30 × min(1, contract_units_shipped ÷ contract_need)) "
-             "− 10 × [hospitals deprioritized]; 0 if the dispatch deadline was missed",
-             "How much of what was needed actually left, hospitals first."),
+             "− 10 × [urgent customers deprioritized]; 0 if the reopening deadline was missed",
+             "How much of what was needed actually moved, urgent customers first."),
     Category("coordination", "Stakeholder coordination", 0.08,
              "average of the five stakeholders' trust in you",
              "Whether your team stayed with you through the decisions."),
