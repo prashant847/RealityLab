@@ -93,12 +93,12 @@ def vram_sampler(stop: threading.Event, peak: list[int]) -> None:
         time.sleep(0.4)
 
 
-def workflow(prompt: str, seed: int, face: str, posename: str, ipa_w: float, cn_s: float, steps: int, cfg: float, neg: str = NEGATIVE) -> dict:
+def workflow(prompt: str, seed: int, face: str, posename: str, ipa_w: float, cn_s: float, steps: int, cfg: float, neg: str = NEGATIVE, preset: str = "PLUS FACE (portraits)") -> dict:
     return {
         "4": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": G.CONFIG["checkpoint"]}},
         "20": {"class_type": "LoraLoader", "inputs": {"lora_name": LORA, "strength_model": 1.0, "strength_clip": 1.0, "model": ["4", 0], "clip": ["4", 1]}},
         "30": {"class_type": "LoadImage", "inputs": {"image": face}},
-        "31": {"class_type": "IPAdapterUnifiedLoader", "inputs": {"model": ["20", 0], "preset": "PLUS FACE (portraits)"}},
+        "31": {"class_type": "IPAdapterUnifiedLoader", "inputs": {"model": ["20", 0], "preset": preset}},
         "32": {"class_type": "IPAdapterAdvanced", "inputs": {"model": ["31", 0], "ipadapter": ["31", 1], "image": ["30", 0], "weight": ipa_w, "weight_type": "linear",
                                                               "combine_embeds": "concat", "start_at": 0.0, "end_at": 1.0, "embeds_scaling": "V only"}},
         "40": {"class_type": "LoadImage", "inputs": {"image": posename}},
@@ -125,7 +125,7 @@ def gen(a) -> None:
     peak = [0]; stop = threading.Event()
     th = threading.Thread(target=vram_sampler, args=(stop, peak), daemon=True); th.start()
     t0 = time.time()
-    pid = G.call("/prompt", {"prompt": workflow(prompt, a.seed, face, posename, a.ipa_weight, a.cn_strength, a.steps, a.cfg, neg)})["prompt_id"]
+    pid = G.call("/prompt", {"prompt": workflow(prompt, a.seed, face, posename, a.ipa_weight, a.cn_strength, a.steps, a.cfg, neg, a.preset)})["prompt_id"]
     while True:
         h = G.call(f"/history/{pid}")
         if pid in h and h[pid].get("outputs"):
@@ -160,6 +160,7 @@ def main() -> None:
     ap.add_argument("--neg-extra", default="", help="extra negative-prompt words, e.g. smile, grin")
     ap.add_argument("--size", default=None, help="WxH of the picture, e.g. 640x512")
     ap.add_argument("--pose-file", default=None, help="a ready-made OpenPose skeleton image to use instead of --pose")
+    ap.add_argument("--preset", default="PLUS FACE (portraits)", help="IP-Adapter preset, e.g. \"PLUS (high strength)\" for whole-figure style")
     ap.add_argument("--ipa-weight", type=float, default=0.5); ap.add_argument("--cn-strength", type=float, default=0.9)
     ap.add_argument("--steps", type=int, default=28); ap.add_argument("--cfg", type=float, default=7.0)
     a = ap.parse_args()
