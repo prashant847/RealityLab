@@ -64,8 +64,8 @@ def diagnose(state: WorldState, nodes: int | None = None) -> list[dict[str, Any]
     stock_ub = min(state.true_units, state.verified_units + _max_gain("verified_units", state))
     if stock_ub < need:
         out.append({"id": "stock", "text": (
-            f"Verified stock is {state.verified_units} units; verification options remaining could raise it to "
-            f"about {int(stock_ub)}, short of {need}.")})
+            f"Verified cargo is {state.verified_units} lots; verification options remaining could raise it to "
+            f"about {int(stock_ub)} lots, short of {need}.")})
     return out
 
 

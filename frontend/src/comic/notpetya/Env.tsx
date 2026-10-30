@@ -42,10 +42,10 @@ const Desk = ({ x, y, w = 330 }: { x: number; y: number; w?: number }) => <g><re
 function Truck({ x, y, s = 1, priority = false }: { x: number; y: number; s?: number; priority?: boolean }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`}>
-      <rect x="0" y="-150" width="250" height="150" fill="#eef0f4" {...ln} /><rect x="0" y="-38" width="250" height="22" fill={priority ? P.red : P.blue} />
-      <rect x="250" y="-110" width="90" height="110" fill={P.orange} {...ln} /><rect x="266" y="-96" width="50" height="44" fill="#9fd0e8" {...ln} />
-      <rect x="-6" y="-12" width="352" height="22" fill={P.metalDark} {...ln} /><circle cx="70" cy="16" r="30" fill="#2a2a36" {...ln} /><circle cx="280" cy="16" r="30" fill="#2a2a36" {...ln} />
-      {priority && <path d="M100 -112 h60 v60 h-60 z M130 -100 v36 M112 -82 h36" fill="#fff" stroke={INK} strokeWidth="5" />}
+      <rect x="0" y="-170" width="200" height="170" fill="#eef0f4" {...ln} /><rect x="0" y="-40" width="200" height="22" fill={priority ? P.red : P.blue} />
+      <rect x="200" y="-120" width="90" height="120" fill={P.orange} {...ln} /><rect x="216" y="-104" width="50" height="46" fill="#9fd0e8" {...ln} />
+      <rect x="-6" y="-12" width="302" height="22" fill={P.metalDark} {...ln} /><circle cx="60" cy="16" r="30" fill="#2a2a36" {...ln} /><circle cx="230" cy="16" r="30" fill="#2a2a36" {...ln} />
+      {priority && <path d="M70 -130 h60 v60 h-60 z M100 -118 v36 M82 -100 h36" fill="#fff" stroke={INK} strokeWidth="5" />}
     </g>
   );
 }
@@ -106,7 +106,7 @@ function Quay() {
   );
 }
 
-function Gate({ queue }: { queue: boolean }) {
+function Gate() {
   return (
     <Frame label="The terminal gate: a barrier, a gatehouse and trucks waiting.">
       <rect width="1600" height="900" fill="#2d3a5c" /><rect y="300" width="1600" height="170" fill="#263250" /><path d="M0 300 H1600" stroke={INK} strokeWidth="4" />
@@ -117,7 +117,6 @@ function Gate({ queue }: { queue: boolean }) {
       <rect x="640" y="372" width="320" height="22" fill={P.metalDark} {...ln} />
       <rect x="520" y="330" width="130" height="150" fill={P.white} {...ln} /><rect x="548" y="360" width="76" height="46" fill="#2a3150" {...ln} /><path d="M502 332 H668 L650 306 H520 Z" fill="#b8bfce" {...ln} />
       <rect x="960" y="380" width="14" height="90" fill={P.metalDark} {...ln} /><rect x="640" y="380" width="14" height="90" fill={P.metalDark} {...ln} />
-      {queue && <g><Truck x={1100} y={640} s={0.9} /><Truck x={1180} y={560} s={0.6} /></g>}
     </Frame>
   );
 }
@@ -130,7 +129,6 @@ function Road() {
       <polygon points="0,900 1600,900 1060,470 540,470" fill="#222a44" {...ln} />
       <path d="M800 470 L800 900" stroke="#9aa4c8" strokeWidth="10" strokeDasharray="40 36" />
       <rect x="560" y="440" width="480" height="20" fill={P.red} {...ln} /><rect x="540" y="430" width="22" height="60" fill={P.metalDark} {...ln} /><rect x="1040" y="430" width="22" height="60" fill={P.metalDark} {...ln} />
-      {[0, 1, 2, 3].map((i) => <Truck key={i} x={820 + i * 90} y={560 + i * 5} s={0.34 + 0.0 * i} />)}
     </Frame>
   );
 }
@@ -223,16 +221,16 @@ export const PROPS: Record<string, () => ReactNode> = {
   effort_small: () => <g>{NOTE_AT.slice(0, 2).map(([x, y], i) => <Note key={i} x={x} y={y} c="#f2d46a" />)}</g>,
   effort_medium: () => <g>{NOTE_AT.slice(0, 5).map(([x, y], i) => <Note key={i} x={x} y={y} c={i % 2 ? "#9fd0a8" : "#f2d46a"} />)}</g>,
   effort_large: () => <g>{NOTE_AT.map(([x, y], i) => <Note key={i} x={x} y={y} c={["#f2d46a", "#9fd0a8", "#f2a8a0"][i % 3]} />)}</g>,
-  extra_trucks: () => <g><Truck x={-60} y={740} s={1.5} /></g>,
+  extra_trucks: () => <g><Truck x={-420} y={800} s={2.2} /></g>,
   detour_sign: () => <g transform="translate(260 540)"><rect x="-8" y="0" width="16" height="260" fill={P.metalDark} {...ln} /><rect x="-90" y="-110" width="180" height="120" rx="10" fill={P.yellow} {...ln} /><path d="M-50 -60 H30 M10 -86 l36 26 l-36 26" stroke={INK} strokeWidth="14" fill="none" strokeLinecap="round" strokeLinejoin="round" /></g>,
-  priority_truck: () => <Truck x={-60} y={740} s={1.5} priority />,
+  priority_truck: () => <Truck x={-420} y={800} s={2.2} priority />,
   order_sheets: () => <g transform="translate(800 790)">{[0, 1, 2].map((i) => <g key={i} transform={`rotate(${-6 + i * 6} ${i * 30} 0)`}><rect x={-100 + i * 70} y="-110" width="100" height="130" fill={P.paper} {...ln} /><path d={`M${-84 + i * 70} -84 h64 M${-84 + i * 70} -64 h50`} stroke={INK} strokeOpacity="0.5" strokeWidth="5" /></g>)}</g>,
   split_pallets: () => <g><rect x="450" y="760" width="260" height="22" fill="#8a6a3a" {...ln} /><Crate x={470} y={690} w={110} h={70} c={P.red} /><Crate x={600} y={700} w={100} h={60} c={P.blue} /><rect x="900" y="760" width="260" height="22" fill="#8a6a3a" {...ln} /><Crate x={920} y={690} w={110} h={70} c={P.teal} /><Crate x={1050} y={700} w={100} h={60} c={P.yellow} /></g>,
   stop_sign: () => <g transform="translate(1260 540)"><rect x="-8" y="40" width="16" height="230" fill={P.metalDark} {...ln} /><polygon points="-44,-18 44,-18 82,18 82,100 44,136 -44,136 -82,100 -82,18" fill={P.red} {...ln} transform="scale(0.9)" /><rect x="-56" y="52" width="112" height="14" fill="#fff" /></g>,
   podium: () => <g transform="translate(800 790)"><rect x="-120" y="-130" width="240" height="130" fill="#3a4262" {...ln} /></g>,
   empty_podium: () => <g transform="translate(800 790)"><rect x="-120" y="-130" width="240" height="130" fill="#3a4262" {...ln} /><rect x="-90" y="-100" width="180" height="60" fill={INK} opacity="0.35" /></g>,
   statement_card: () => <g transform="translate(800 790)"><rect x="-120" y="-130" width="240" height="130" fill="#3a4262" {...ln} /><rect x="-70" y="-168" width="140" height="64" fill={P.paper} {...ln} /><path d="M-52 -148 h96 M-52 -128 h70" stroke={INK} strokeOpacity="0.5" strokeWidth="5" /></g>,
-  loaded_truck: () => <g><Truck x={480} y={770} s={1.6} /></g>,
+  loaded_truck: () => <g><Truck x={470} y={800} s={2.2} /></g>,
 };
 
 export function NpProps({ ids }: { ids: string[] }) {
@@ -249,8 +247,8 @@ export function EvidenceBoard({ facts }: { facts: string[] }) {
       <rect x="220" y="60" width="1160" height="650" rx="26" fill="#10131c" {...ln} /><rect x="252" y="92" width="1096" height="586" rx="8" fill="#1d2748" {...ln} /><rect x="252" y="92" width="1096" height="72" fill="#2a3668" {...ln} />
       <text x="290" y="141" fontSize="34" fontWeight="800" fill="#fff" fontFamily="Bahnschrift, 'Arial Narrow', Arial, sans-serif" letterSpacing="3">WHAT WE KNOW</text>
       {rows.map((t, i) => {
-        const y = 188 + i * 122, c = sev(t), lines = t.match(/.{1,50}(\s|$)/g)?.slice(0, 2) ?? [t];
-        return <g key={i}><rect x="290" y={y} width="1020" height="102" rx="12" fill="#2a3270" {...ln} /><rect x="290" y={y} width="20" height="102" fill={c} {...ln} /><circle cx="364" cy={y + 51} r="26" fill={c} {...ln} />{lines.map((l, k) => <text key={k} x="420" y={y + 44 + k * 34} fontSize="30" fontWeight={k ? 400 : 700} fill="#fff" fontFamily="Arial, sans-serif">{l.trim()}</text>)}</g>;
+        const y = 184 + i * 122, c = sev(t), lines = t.match(/.{1,58}(\s|$)/g)?.slice(0, 3) ?? [t];
+        return <g key={i}><rect x="290" y={y} width="1020" height="110" rx="12" fill="#2a3270" {...ln} /><rect x="290" y={y} width="20" height="110" fill={c} {...ln} /><circle cx="364" cy={y + 55} r="26" fill={c} {...ln} />{lines.map((l, k) => <text key={k} x="420" y={y + 36 + k * 30 + (lines.length < 3 ? 8 : 0)} fontSize="25" fontWeight={k ? 400 : 700} fill="#fff" fontFamily="Arial, sans-serif">{l.trim()}</text>)}</g>;
       })}
       <rect x="740" y="710" width="120" height="30" fill="#4a5578" {...ln} />
     </Frame>
@@ -261,7 +259,7 @@ export function EvidenceBoard({ facts }: { facts: string[] }) {
 export function NpEnv({ env, props = [], effects = [], facts = [], board = false, seed = 0, round = 0 }: { env: EnvId; props?: string[]; effects?: string[]; facts?: string[]; board?: boolean; seed?: number; round?: number }) {
   const a = (seed + round) % 3;
   const base = board ? <EvidenceBoard facts={facts} /> : env === "warehouse_floor" ? <OpenOffice alert={a} /> : env === "control_room" ? <ServerRoom alert={effects.includes("system_alert") || props.includes("rush_restore")} /> :
-    env === "electrical_area" ? <Quay /> : env === "loading_dock" ? <Gate queue={round >= 2 && round < 10} /> : env === "ops_office" ? <OpsCentre /> : env === "hospital_corridor" ? <CustomerFloor /> :
+    env === "electrical_area" ? <Quay /> : env === "loading_dock" ? <Gate /> : env === "ops_office" ? <OpsCentre /> : env === "hospital_corridor" ? <CustomerFloor /> :
     env === "flooded_highway" ? <Road /> : env === "alt_depot" ? <RecoveryRoom /> : <CommsRoom />;
   return <>{base}{!board && props.length > 0 && <NpProps ids={props} />}{!board && effects.length > 0 && <NpFx ids={effects} />}</>;
 }

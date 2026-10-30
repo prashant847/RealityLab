@@ -150,7 +150,6 @@ export function ResultScreen({ view, outcome, onContinue }: { view: SimulationVi
             )}
           </>
         )}
-        {script && <p className="official-note"><b>Official note:</b> {outcome.consequence}</p>}
         {script && outcome.effects.length > 0 && <p className="chips" aria-label="Recorded changes">{outcome.effects.map((e) => <span key={e} className="chip">{e}</span>)}</p>}
         <button ref={btn} type="button" className="primary big" onClick={onContinue}>{next}</button>
       </main>

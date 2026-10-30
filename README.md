@@ -1,12 +1,12 @@
-# RealityLab AI — BLACKOUT: The Last 24 Hours
+# RealityLab AI — BLACKOUT: The NotPetya Incident
 
-An interactive crisis-simulation prototype presented as a graphic novel. You are the emergency operations director of
-a fictional Indian manufacturer of medical-monitoring equipment. Between 8:40 PM and 6:00 AM an outage, a monsoon, a
-possible intrusion and a fire hazard collide with a hospital deadline. Ten decisions decide what leaves the gate.
+An interactive crisis-simulation prototype presented as a graphic novel, based on the 2017 NotPetya cyberattack and its impact on
+Maersk. You lead a fictional recovery team over about ten days from 27 June 2017. Ten decisions, each with consequences you can rewind.
 
-![Start screen](docs/screenshots/start.png)
-
-**All characters, companies and events are fictional.**
+Every scene is labelled **documented** (a historical fact), **reconstructed** (a plausible dramatisation) or **simulation** (an invented
+decision or hypothetical outcome). The people you meet are fictional roles; no real employee is portrayed or given invented dialogue.
+The decisions and all numbers (recovery points, cargo lots) are simulation, not a record of what Maersk did. Sources, source quality
+and what is verified are in `docs/NOTPETYA_OUTLINE_v2.md`. The original fictional story is preserved at tag `pre-notpetya-checkpoint`.
 
 ## What is in the box
 
