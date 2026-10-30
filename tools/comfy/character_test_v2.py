@@ -50,6 +50,8 @@ POSES = {
     "B": pose(255, 385, (120, 400), ((140, 480), (436, 480)), ((205, 335), (371, 335)), hips_y=730),
     # C: seated at a computer, arms bent forward with hands low in front of the body
     "C": pose(275, 400, (122, 415), ((150, 555), (426, 555)), ((236, 660), (340, 660)), hips_y=740),
+    # N: neutral, relaxed, arms hanging (used by experiment 3 so that only the expression changes)
+    "N": pose(250, 375, (112, 385), ((160, 545), (416, 545)), ((178, 690), (398, 690)), hips_y=740),
 }
 LIMBS = [(1, 2), (1, 5), (2, 3), (3, 4), (5, 6), (6, 7), (1, 8), (1, 11), (1, 0), (0, 14), (14, 16), (0, 15), (15, 17)]
 COLORS = [(255, 0, 0), (255, 85, 0), (255, 170, 0), (255, 255, 0), (170, 255, 0), (85, 255, 0), (0, 255, 0), (0, 255, 85), (0, 255, 170), (0, 255, 255), (0, 170, 255), (0, 85, 255),
@@ -74,8 +76,9 @@ def draw_pose(pts: dict[int, tuple[int, int]]) -> Image.Image:
 
 def prepare() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    master = Image.open(V1 / "master_it_lead.png").convert("RGB")
-    master.crop((170, 70, 410, 310)).resize((512, 512), Image.LANCZOS).save(OUT / "master_face_crop.png")
+    if not (OUT / "master_face_crop.png").exists() and OUT.name == "character-consistency-test-v2":
+        master = Image.open(V1 / "master_it_lead.png").convert("RGB")
+        master.crop((170, 70, 410, 310)).resize((512, 512), Image.LANCZOS).save(OUT / "master_face_crop.png")
     for k, p in POSES.items():
         draw_pose(p).save(OUT / f"pose_{k}.png")
     print("prepared face crop and poses in", OUT)
@@ -90,7 +93,7 @@ def vram_sampler(stop: threading.Event, peak: list[int]) -> None:
         time.sleep(0.4)
 
 
-def workflow(prompt: str, seed: int, face: str, posename: str, ipa_w: float, cn_s: float, steps: int, cfg: float) -> dict:
+def workflow(prompt: str, seed: int, face: str, posename: str, ipa_w: float, cn_s: float, steps: int, cfg: float, neg: str = NEGATIVE) -> dict:
     return {
         "4": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": G.CONFIG["checkpoint"]}},
         "20": {"class_type": "LoraLoader", "inputs": {"lora_name": LORA, "strength_model": 1.0, "strength_clip": 1.0, "model": ["4", 0], "clip": ["4", 1]}},
@@ -101,7 +104,7 @@ def workflow(prompt: str, seed: int, face: str, posename: str, ipa_w: float, cn_
         "40": {"class_type": "LoadImage", "inputs": {"image": posename}},
         "41": {"class_type": "ControlNetLoader", "inputs": {"control_net_name": CONTROLNET}},
         "6": {"class_type": "CLIPTextEncode", "inputs": {"text": prompt, "clip": ["20", 1]}},
-        "7": {"class_type": "CLIPTextEncode", "inputs": {"text": NEGATIVE, "clip": ["20", 1]}},
+        "7": {"class_type": "CLIPTextEncode", "inputs": {"text": neg, "clip": ["20", 1]}},
         "42": {"class_type": "ControlNetApplyAdvanced", "inputs": {"positive": ["6", 0], "negative": ["7", 0], "control_net": ["41", 0], "image": ["40", 0], "strength": cn_s,
                                                                   "start_percent": 0.0, "end_percent": 1.0, "vae": ["4", 2]}},
         "5": {"class_type": "EmptyLatentImage", "inputs": {"width": W, "height": H, "batch_size": 1}},
@@ -114,13 +117,15 @@ def workflow(prompt: str, seed: int, face: str, posename: str, ipa_w: float, cn_
 
 def gen(a) -> None:
     G.check()
-    face = G.upload(OUT / "master_face_crop.png")
+    face_path = Path(a.face) if a.face else OUT / "master_face_crop.png"
+    face = G.upload(face_path)
     posename = G.upload(OUT / f"pose_{a.pose}.png")
     prompt = f"flat illustration, {a.scene}"
+    neg = NEGATIVE + (", " + a.neg_extra if a.neg_extra else "")
     peak = [0]; stop = threading.Event()
     th = threading.Thread(target=vram_sampler, args=(stop, peak), daemon=True); th.start()
     t0 = time.time()
-    pid = G.call("/prompt", {"prompt": workflow(prompt, a.seed, face, posename, a.ipa_weight, a.cn_strength, a.steps, a.cfg)})["prompt_id"]
+    pid = G.call("/prompt", {"prompt": workflow(prompt, a.seed, face, posename, a.ipa_weight, a.cn_strength, a.steps, a.cfg, neg)})["prompt_id"]
     while True:
         h = G.call(f"/history/{pid}")
         if pid in h and h[pid].get("outputs"):
@@ -138,9 +143,9 @@ def gen(a) -> None:
     rp = OUT / "records.json"
     rows = json.loads(rp.read_text(encoding="utf-8")) if rp.exists() else []
     rows.append({"file": out.name, "checkpoint": G.CONFIG["checkpoint"], "lora": LORA, "lora_weight": 1.0, "ipadapter": "ip-adapter-plus-face_sd15.safetensors (preset PLUS FACE)",
-                 "ipadapter_weight": a.ipa_weight, "clip_vision": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors", "identity_reference": "master_face_crop.png (face crop of master_it_lead.png)",
+                 "ipadapter_weight": a.ipa_weight, "clip_vision": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors", "identity_reference": str(face_path.name),
                  "controlnet": CONTROLNET, "controlnet_strength": a.cn_strength, "pose_image": f"pose_{a.pose}.png", "seed": a.seed, "size": [W, H], "steps": a.steps, "cfg": a.cfg,
-                 "positive": prompt, "negative": NEGATIVE, "seconds": round(time.time() - t0, 1), "peak_vram_mib": peak[0], "comfyui": "v0.3.50", "ipadapter_plus_commit": "a0f451a",
+                 "positive": prompt, "negative": neg, "seconds": round(time.time() - t0, 1), "peak_vram_mib": peak[0], "comfyui": "v0.3.50", "ipadapter_plus_commit": "a0f451a",
                  "created": datetime.now(timezone.utc).isoformat(timespec="seconds")})
     rp.write_text(json.dumps(rows, indent=2), encoding="utf-8")
     print("saved", out, f"{time.time() - t0:.0f}s", f"peak VRAM {peak[0]} MiB")
@@ -150,9 +155,15 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("mode", choices=["prepare", "gen"])
     ap.add_argument("--name"); ap.add_argument("--seed", type=int); ap.add_argument("--pose", choices=sorted(POSES)); ap.add_argument("--scene", default="")
+    ap.add_argument("--out", default=None, help="output folder name under frontend/art-staging (default character-consistency-test-v2)")
+    ap.add_argument("--face", default=None, help="identity reference image (path); default master_face_crop.png in the output folder")
+    ap.add_argument("--neg-extra", default="", help="extra negative-prompt words, e.g. smile, grin")
     ap.add_argument("--ipa-weight", type=float, default=0.5); ap.add_argument("--cn-strength", type=float, default=0.9)
     ap.add_argument("--steps", type=int, default=28); ap.add_argument("--cfg", type=float, default=7.0)
     a = ap.parse_args()
+    global OUT
+    if a.out:
+        OUT = G.ROOT / "frontend" / "art-staging" / a.out
     prepare() if a.mode == "prepare" else gen(a)
 
 
