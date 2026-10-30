@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api as liveApi, type GameApi } from "./api/client";
 import { CharacterExport } from "./gallery/CharacterExport";
 import { Gallery } from "./gallery/Gallery";
+import { NotPetyaPreview } from "./comic/notpetya/Preview";
 import { useGame } from "./game/useGame";
 import { BusyToast, ErrorBanner, PauseOverlay, Topbar } from "./screens/Chrome";
 import { HistoryScreen } from "./screens/HistoryScreen";
@@ -26,6 +27,7 @@ const useHash = () => {
 export default function App({ api = liveApi }: { api?: GameApi }) {
   const hash = useHash();
   if (hash === "#/gallery") return <Gallery />;
+  if (hash === "#/preview-notpetya") return <NotPetyaPreview />;
   if (hash === "#/char-export") return <CharacterExport />;
   return <Game api={api} />;
 }
