@@ -48,6 +48,7 @@ def create_app(db_url: str | None = None, voice: Voice | None = None,
     sessions = make_session_factory(make_engine(db_url))
     app.state.service = SimulationService(sessions, voice or Voice(provider_from_env()))
     app.state.sims = SimsService(sessions)
+    app.state.service.prep_provider = lambda: app.state.sims.latest_prep("blackout")   # a BLACKOUT game starts with its workday head start
     app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                        allow_methods=["*"], allow_headers=["*"])
     install_error_handlers(app)

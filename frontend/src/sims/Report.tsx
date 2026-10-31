@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
-import type { SimReport, SimsApi } from "../api/sims";
+import type { PrepItem, SimReport, SimsApi } from "../api/sims";
+import { ReflectionForm } from "./Reflection";
 import { Radar } from "./Radar";
 import "./sims.css";
 
 const RATING = { strong: "Strong", mixed: "Mixed", weak: "Weak" } as const;
-const TABS = [["overview", "Overview"], ["decisions", "Decisions"], ["skills", "Skills"], ["improve", "Improve"], ["lessons", "Lessons & next"]] as const;
+const TABS = [["overview", "Overview"], ["decisions", "Decisions"], ["skills", "Skills"], ["improve", "Improve"], ["prep", "Preparation"], ["lessons", "Lessons & next"], ["felt", "How it felt"]] as const;
 type Tab = (typeof TABS)[number][0];
 
-export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId: string; onHome: () => void; onOpen: (simId: string) => void }) {
+const STATUS = { full: "Set up", part: "Half set up", missed: "Not set up" } as const;
+
+export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId: string; onHome: () => void; onOpen: (simId: string, to?: string) => void }) {
   const [rep, setRep] = useState<SimReport | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("overview");
@@ -21,7 +24,7 @@ export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId
   const s = rep.summary;
   const sk = rep.skills[Math.min(skill, rep.skills.length - 1)];
   return (
-    <main className={`rep rep--${rep.simulation_id}`}>
+    <main className={`rep rep--${rep.profession ?? rep.simulation_id}`}>
       <section className={`rep-hero rep-hero--${rep.outcome.tone}`}>
         <div>
           <p className="sim-kicker">Career experience report</p>
@@ -86,13 +89,28 @@ export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId
           {rep.focus_areas.length > 0 && <><h3>Skills to focus on next</h3><ul>{rep.focus_areas.map((f, i) => <li key={i}>{f}</li>)}</ul></>}
         </section>
 
+        <section className={`rep-panel${tab === "prep" ? " on" : ""}`} aria-labelledby="r-pr">
+          <h2 id="r-pr">{rep.kind === "workday" ? "What this day set up for the crisis" : "The head start you brought into the crisis"}</h2>
+          {rep.kind === "workday" && rep.prep && rep.prep.length > 0 ? (
+            <ul className="prep-list">{rep.prep.map((p: PrepItem) => (
+              <li key={p.flag} className={`prep--${p.status}`}><span className="prep-badge">{STATUS[p.status]}</span><div><b>{p.label}</b><span>{p.text}</span>{p.effects.length > 0 && <em>{p.effects.join(" · ")}</em>}</div></li>))}</ul>
+          ) : rep.prepared && rep.prepared.length > 0 ? (
+            <ul className="prep-list">{rep.prepared.map((p) => (
+              <li key={p.flag} className={p.full ? "prep--full" : "prep--part"}><span className="prep-badge">{p.full ? "Set up" : "Half set up"}</span><div><b>{p.label}</b><span>{p.text}</span></div></li>))}</ul>
+          ) : <p className="rep-big">{rep.kind === "workday" ? "Nothing from this day carries into the crisis." : "You began this crisis without a workday behind you, so there was no head start. Doing the ordinary day first changes how the crisis begins."}</p>}
+        </section>
+
+        <section className={`rep-panel${tab === "felt" ? " on" : ""}`}>
+          <ReflectionForm api={api} runId={runId} />
+        </section>
+
         <section className={`rep-panel${tab === "lessons" ? " on" : ""}`} aria-labelledby="r-ls">
           <div className="rep-cols">
             <div><h2 id="r-ls">Important lessons</h2><ul>{rep.lessons.map((l, i) => <li key={i}>{l}</li>)}</ul>
               {rep.sources.length > 0 && <><h3>Sources</h3><ul className="rep-src">{rep.sources.map((x) => <li key={x.url}>{x.label} <span className="sim-fine">({x.url})</span></li>)}</ul>
                 <p className="sim-fine">These are summaries consulted when writing this simulation. Check primary reports before quoting any detail.</p></>}</div>
             {nx.id && <div className="rep-next no-print"><h2>Recommended next</h2><p><b>{nx.title}</b></p><p>{nx.reason}</p>
-              <button type="button" className="sim-btn sim-btn--primary" onClick={() => onOpen(nx.id!)}>{nx.id === rep.simulation_id ? "Replay this simulation" : "Open it"}</button></div>}
+              <button type="button" className="sim-btn sim-btn--primary" onClick={() => onOpen(nx.id!, nx.to)}>{nx.to === "interval" ? "Continue to the interval" : nx.id === rep.simulation_id ? "Replay this simulation" : "Open it"}</button></div>}
           </div>
         </section>
       </div>

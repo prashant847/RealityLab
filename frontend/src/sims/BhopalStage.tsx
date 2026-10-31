@@ -91,16 +91,17 @@ export function BhopalStage({ scene, decision }: { scene: Scene; decision: React
   const historical = !scene.step || scene.step.kind === "documented";
   const meters = scene.meters.filter((m) => (historical ? m.id === "insight" : m.id !== "insight"));
   const n = scene.status === "completed" ? scene.total_rounds : scene.round;
+  const record = scene.total_rounds > HISTORICAL_STEPS;          // the full simulation has a historical record; the workday does not
   return (
     <div className="bh-layout">
       <aside className="bh-aside" aria-label="Situation board">
         <ol className="bh-rail" aria-label="Where you are in the simulation">
           {Array.from({ length: scene.total_rounds }, (_, i) => (
-            <li key={i} className={`${i < HISTORICAL_STEPS ? "hist" : "fict"}${i + 1 === n ? " now" : i + 1 < n ? " done" : ""}`} aria-current={i + 1 === n ? "step" : undefined}>
-              <span className="sr-only">Step {i + 1} {i < HISTORICAL_STEPS ? "historical" : "fictional"}</span>
+            <li key={i} className={`${record && i < HISTORICAL_STEPS ? "hist" : "fict"}${i + 1 === n ? " now" : i + 1 < n ? " done" : ""}`} aria-current={i + 1 === n ? "step" : undefined}>
+              <span className="sr-only">Step {i + 1} {record && i < HISTORICAL_STEPS ? "historical" : "fictional"}</span>
             </li>))}
         </ol>
-        <p className="bh-legend"><span className="hist" /> Historical record <span className="fict" /> Fictional exercise</p>
+        {record && <p className="bh-legend"><span className="hist" /> Historical record <span className="fict" /> Fictional exercise</p>}
         <PlantSchematic scene={scene} />
         <section className="sim-meters sm-grid" aria-label="Indicators">
           {meters.map((m) => <MeterBar key={m.id} m={m} />)}

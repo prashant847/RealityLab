@@ -5,7 +5,7 @@ Wording about the real events follows widely cited public summaries and is hedge
 established. Nothing here is invented dialogue. Check the primary sources listed in the report before quoting any detail."""
 from __future__ import annotations
 
-from .engine import Choice as C, Ending, Event, Meter, Round, Scenario
+from .engine import Choice as C, Ending, Event, Meter, PrepItem, Round, Scenario
 
 P1 = "Part 1 · The historical record"
 P2 = "Part 2 · Kestrel Works (fictional)"
@@ -274,6 +274,36 @@ EVENTS = (
           (("flag", "early_alarm"),), {"hazard": -8, "trust": 5}, kind="simulation"),
 )
 
+PREP = (
+    PrepItem("prep_alarm_test", "A tested cooling alarm", "You ran and logged the cooling alarm test, and Dev Raman recalibrated it. You know what it should do.",
+             "The cooling alarm test was left overdue with a bypass tag on the panel, so nobody knows how it will respond.", {"safeguards": 10}, "", "The walk-round (08:30)"),
+    PrepItem("prep_no_bypass", "No bypassed safeguards", "You refused the scrubber bypass and scheduled the work for a planned shutdown.",
+             "A scrubber alarm was bypassed \u201cjust for today\u201d, and bypasses like that tend to outlast the day.", {"safeguards": 6, "hazard": -3}, "", "The contractor's request (11:30)"),
+    PrepItem("prep_reporting", "A shift that speaks up", "Lena Okafor and the rest of the shift know a near miss will be heard, not blamed.",
+             "Operators learned that reporting a near miss earns blame, so small problems will stay quiet.", {"trust": 8, "readiness": 2}, "prep_reporting_part", "A near miss (10:00)"),
+    PrepItem("prep_handover", "Handovers that check the plant", "Handovers walk the open permits and interlocks together.",
+             "Handovers are signed from the log, so small mismatches slip through.", {"readiness": 6}, "prep_handover_part", "Shift handover (06:45)"),
+    PrepItem("prep_drill", "Operators who have done the drill", "Four new operators have walked the exit route with a real alarm and radios.",
+             "Induction was slides only, so new operators have never moved in an alarm.", {"readiness": 8}, "prep_drill_part", "Induction for the new operators (16:30)"),
+    PrepItem("prep_community", "A neighbour who knows the siren", "Mrs. Aydin has a one-page card and has told her street what the siren means.",
+             "Neighbours were never told what the siren means, so it will mean nothing when it matters.", {"community": 12}, "", "Mrs. Aydin and the siren (15:00)"),
+    PrepItem("prep_riskreg", "A risk register head office has read", "Jonas Berg has read your risk register and knows what each saving would cost.",
+             "Head office has never seen what its savings risk, so the next target will arrive without that conversation.", {"trust": 4, "hazard": -2}, "prep_riskreg_part", "Head office on the line (13:30)"),
+)
+INTERVAL = (
+    "Six weeks later. Head office announces an external safety audit of Kestrel Works, to take place over four weeks. Nobody calls it an inspection, and everybody uses the word.",
+    "Hollis Grant, the plant director, calls you in. \u201cBefore the auditors arrive,\u201d she says, \u201cI want you to read the history of Bhopal. Not to frighten us. Because every incident like it started the way our ordinary Thursdays go.\u201d",
+    "You open the record, and then you will walk the plant with its lessons in mind. Whatever you did on that Thursday is what you have now: the alarms, the people, the neighbours, and the habits.",
+)
+EVENTS_PREP = (
+    Event("ev_p_alarm", N + 1, "The alarm you tested", "The cooling alarm tripped correctly in your logged test last month. You know what it should do.", (("flag", "prep_alarm_test"),), {}, kind="simulation"),
+    Event("ev_p_alarm_miss", N + 1, "An overdue sticker", "The auditors point at the cooling alarm's overdue test sticker. You remember seeing it.", (("no_flag", "prep_alarm_test"),), {}, kind="simulation"),
+    Event("ev_p_drill", N + 2, "Operators who know the route", "The new operators walk the exit route without being told. Marta Ilves raises an eyebrow, impressed.", (("flag", "prep_drill"),), {}, kind="simulation"),
+    Event("ev_p_lena", N + 3, "Lena reports it herself", "It is Lena Okafor who reports the leak, within the hour, and without hesitation. The habit you built is working.", (("flag", "prep_reporting"),), {"trust": 3}, kind="simulation"),
+    Event("ev_p_aydin", N + 4, "Mrs. Aydin offers help", "Mrs. Aydin offers to gather her street for the joint drill. She has already explained the siren to half of them.", (("flag", "prep_community"),), {"community": 6}, kind="simulation"),
+    Event("ev_p_marta", N + 5, "Marta's night log", "Marta Ilves' night log noted the first rise in temperature ten minutes before the alarm did.", (("flag", "prep_handover"),), {"hazard": -3}, kind="simulation"),
+)
+
 ENDINGS = (
     Ending("release", "Simulated off-site release", "In this fictional plant the safeguards, staffing and warnings were not strong enough, and people nearby were harmed. The lesson is not blame but how the warning signs added up.", (("gte", "hazard", 80),), "bad"),
     Ending("lucky", "Near miss: the delay was luck", "Serious harm was avoided, but only because earlier choices had strengthened the plant. Waiting while readings climbed was still a gamble, and it is not a plan.", (("flag", "waited"),), "neutral"),
@@ -294,7 +324,7 @@ BHOPAL = Scenario(
            "Part 2 is a fictional plant created for practice. Your decisions change its simulated state. It does not rewrite or replace what happened in Bhopal.",
            "Real accounts of the disaster differ in places. Where sources disagree, or where a detail is reported rather than established, the text says so."),
     disclaimer="Part 1 is historical and respects the people affected; it is not a game and nothing in it can be changed. Part 2 is a fictional exercise, not a prediction or a reconstruction.",
-    meters=METERS, rounds=ROUNDS, events=EVENTS, endings=ENDINGS,
+    meters=METERS, rounds=ROUNDS, events=EVENTS + EVENTS_PREP, endings=ENDINGS,
     lessons=("A hazardous process needs several independent safeguards, and each one must be maintained and tested.",
              "Cost and schedule pressure are safety decisions in disguise; make them visible and own them.",
              "Treat warnings, leaks and audit findings as information that must lead to tracked action.",
@@ -303,5 +333,5 @@ BHOPAL = Scenario(
     sources=((SRC_WIKI, "https://en.wikipedia.org/wiki/Bhopal_disaster"),
              (SRC_TTU, "https://ethicalengineer.ttu.edu/studies/case-study-bhopal-gas-tragedy"),
              (SRC_EBSCO, "https://www.ebsco.com/research-starters/science/bhopal-disaster")),
-    next_up=("covid", "blackout"),
+    next_up=("covid", "blackout"), profession="bhopal", prep=PREP, interval=INTERVAL,
 )

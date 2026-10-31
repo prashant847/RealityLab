@@ -8,6 +8,7 @@ from typing import Any
 from ..scenario.events import EVENTS
 from ..scenario.pages import page_for
 from ..scenario.rounds import ROUNDS, Choice, Round
+from .prep import apply_prep
 from .rules import apply_effects, clone, read, roll
 from .state import HIDDEN_FIELDS, LAST_ROUND, STAKEHOLDERS, WorldState
 
@@ -44,10 +45,13 @@ class SimulationFinished(EngineError):
     code = "simulation_finished"
 
 
-def new_simulation(seed: int | None = None, simulation_id: str | None = None) -> WorldState:
+def new_simulation(seed: int | None = None, simulation_id: str | None = None, prep=()) -> WorldState:
     if seed is None:
         seed = uuid.uuid4().int % (2**31)
-    return WorldState(simulation_id=simulation_id or uuid.uuid4().hex[:12], seed=seed)
+    state = WorldState(simulation_id=simulation_id or uuid.uuid4().hex[:12], seed=seed)
+    if prep:
+        apply_prep(state, prep)   # head starts earned in the workday; see engine/prep.py
+    return state
 
 
 # ----------------------------------------------------------------------------- scene view

@@ -10,20 +10,11 @@ from sqlalchemy.orm import Session, sessionmaker
 from ..db.models import Report, Run, Simulation
 from ..services.simulations import BadRequest, Conflict, NotFound
 from . import engine as E
-from .bhopal import BHOPAL
-from .covid import COVID
 from .models import Profile, SimRun
+from .phases import PhasesMixin
+from .registry import BLACKOUT_META, PROFESSIONS, SCENARIOS
 from ..db.models import utcnow
 
-SCENARIOS = {"bhopal": BHOPAL, "covid": COVID}
-BLACKOUT_META = {
-    "id": "blackout", "title": "BLACKOUT: The NotPetya Incident", "tagline": "Lead a terminal through the first ten days of a cyberattack.",
-    "role": "Recovery lead at a container terminal", "domain": "Operations · Cybersecurity · Crisis leadership", "minutes": 35,
-    "description": "Ten rounds based on the documented 2017 NotPetya attack on Maersk, with reconstructed scenes and simulated decisions, told as a comic.",
-    "objectives": ["Decide under pressure with incomplete, changing information.", "Balance safety, customers, evidence and speed.",
-                   "Communicate honestly with staff, customers and the public."],
-    "style": "comic",
-}
 ORDER = ("blackout", "bhopal", "covid")
 PROFILE_ID = 1
 
@@ -33,7 +24,7 @@ def _meta(sc: E.Scenario) -> dict[str, Any]:
             "description": sc.description, "objectives": list(sc.objectives), "style": sc.id}
 
 
-class SimsService:
+class SimsService(PhasesMixin):
     def __init__(self, sf: sessionmaker):
         self.sf = sf
 
@@ -95,10 +86,23 @@ class SimsService:
                                                          percent=round(100 * (n - 1) / len(sc.rounds)))
                     elif done:
                         m.update(status="completed", run_id=done[0].id, progress="Completed", percent=100, ending=done[0].ending)
+                m["workday"] = self._phase(db, f"{sid}_workday")
                 out.append(m)
         return out
 
     # ------------------------------------------------------------------ runs
+    def _phase(self, db: Session, wid: str) -> dict[str, Any]:
+        sc = SCENARIOS[wid]
+        act = self._latest_generic(db, wid)
+        done = db.scalars(select(SimRun).where(SimRun.sim_id == wid, SimRun.status == "completed").order_by(SimRun.completed_at.desc())).first()
+        p: dict[str, Any] = {"id": wid, "title": sc.title, "tagline": sc.tagline, "minutes": sc.minutes, "rounds": len(sc.rounds), "status": "none"}
+        if act:
+            n = act.state["round"]
+            p.update(status="active", run_id=act.id, progress=f"Step {n} of {len(sc.rounds)}", percent=round(100 * (n - 1) / len(sc.rounds)))
+        elif done:
+            p.update(status="completed", run_id=done.id, progress="Completed", percent=100, ending=done.ending)
+        return p
+
     def _scenario(self, sim_id: str) -> E.Scenario:
         if sim_id not in SCENARIOS:
             raise NotFound(f"No simulation called '{sim_id}'.")
@@ -107,13 +111,13 @@ class SimsService:
     def _view(self, run: SimRun) -> dict[str, Any]:
         sc = SCENARIOS[run.sim_id]
         return {"run": {"id": run.id, "sim_id": run.sim_id, "status": run.status, "attempt": run.attempt},
-                "scenario": {"id": sc.id, "title": sc.title, "role": sc.role, "disclaimer": sc.disclaimer},
+                "scenario": {"id": sc.id, "title": sc.title, "role": sc.role, "disclaimer": sc.disclaimer, "kind": sc.kind, "profession": sc.profession},
                 "scene": E.scene_view(sc, run.state),
                 "decisions": [{k: d[k] for k in ("n", "title", "label", "rating", "consequence")} for d in run.state["decisions"]]}
 
     def intro(self, sim_id: str) -> dict[str, Any]:
         sc = self._scenario(sim_id)
-        return {**_meta(sc), "intro": list(sc.intro), "disclaimer": sc.disclaimer, "rounds": len(sc.rounds),
+        return {**_meta(sc), "kind": sc.kind, "profession": sc.profession, "intro": list(sc.intro), "disclaimer": sc.disclaimer, "rounds": len(sc.rounds),
                 "parts": sorted({r.part for r in sc.rounds if r.part}, key=lambda p: [r.part for r in sc.rounds].index(p))}
 
     def start(self, sim_id: str) -> dict[str, Any]:
@@ -122,7 +126,8 @@ class SimsService:
             attempt = len(db.scalars(select(SimRun.id).where(SimRun.sim_id == sim_id)).all()) + 1
             for r in db.scalars(select(SimRun).where(SimRun.sim_id == sim_id, SimRun.status == "active")).all():
                 r.status = "abandoned"
-            run = SimRun(id=uuid.uuid4().hex[:12], sim_id=sim_id, attempt=attempt, state=E.new_state(sc))
+            prep = self._prep_flags(db, sc.profession) if sc.kind == "crisis" else []
+            run = SimRun(id=uuid.uuid4().hex[:12], sim_id=sim_id, attempt=attempt, state=E.new_state(sc, prep))
             db.add(run); db.commit()
             return self._view(run)
 
@@ -159,11 +164,20 @@ class SimsService:
                 run.status, run.ending, run.completed_at = "completed", new["ending"], utcnow()
                 run.report = E.build_report(sc, new, self._next(db, sc))
                 run.report["run_id"] = run.id
+                run.report["kind"], run.report["profession"] = sc.kind, sc.profession
+                if sc.kind == "workday":
+                    run.report["prep"] = self.prep_items(sc.profession, [f for f in new["flags"] if f.startswith("prep_")])
+                else:
+                    run.report["prepared"] = new.get("prepared", [])
                 run.report["completed_at"] = run.completed_at.isoformat()
             db.add(run); db.commit()
             return {"outcome": outcome, "view": self._view(run)}
 
     def _next(self, db: Session, sc: E.Scenario) -> dict[str, str]:
+        if sc.kind == "workday":
+            crisis = SCENARIOS.get(sc.profession)
+            return {"id": sc.profession, "to": "interval", "title": crisis.title if crisis else BLACKOUT_META["title"],
+                    "reason": "Your workday is done. Cross the interval and see what it set up for the crisis."}
         done = {r.sim_id for r in db.scalars(select(SimRun).where(SimRun.status == "completed")).all()}
         if db.scalars(select(Run.id).where(Run.status == "completed")).first():
             done.add("blackout")

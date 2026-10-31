@@ -107,3 +107,41 @@ html[data-large-text="true"] { font-size: 112.5%; }
 .hub-foot { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .1); }
 @media (min-height: 640px) { .hub-goals { display: block; } .hub-goals li { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } }
 @media (max-height: 700px) { .hub-goals li:nth-child(n+3) { display: none; } }
+/* the info button must stay above its own overlay so it can close it again */
+.hub-info { z-index: 6; cursor: pointer; } .hub-overlay { z-index: 5; cursor: pointer; }
+
+/* ===== phase strip on the library cards ===== */
+.hub-phases { display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: .78rem; margin: 2px 0; flex-wrap: wrap; } .hub-phases b { color: #8a8372; }
+.hp { display: inline-flex; gap: 6px; align-items: center; padding: 3px 10px 3px 4px; border-radius: 999px; border: 1px solid #d9ccb0; color: #4a5368; background: #fff; }
+.hp i { font-style: normal; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; background: #e6dcc6; font-weight: 700; font-size: .7rem; }
+.hp--completed { border-color: #2d7d62; color: #1f6a50; } .hp--completed i { background: #2d7d62; color: #fff; } .hp--active { border-color: var(--accent, #c4511a); color: var(--accent, #c4511a); } .hp--active i { background: var(--accent, #c4511a); color: #fff; }
+.hub-phases:hover .hp { border-color: var(--accent, #c4511a); }
+
+/* ===== career comparison ===== */
+.cc { gap: 10px; } .cc .hub-lede { margin-top: 2px; }
+.cc-pick { display: flex; gap: 10px; flex: none; } .cc-pick button { flex: 1; text-align: left; font: inherit; cursor: pointer; display: grid; padding: 8px 14px; border-radius: 12px; border: 2px solid #e6dcc6; background: #fff; color: #1f2638; transition: border-color .15s; }
+.cc-pick button b { font-size: .95rem; } .cc-pick button small { color: #6a7388; } .cc-pick button.on { border-color: var(--cc); box-shadow: 0 0 0 1px var(--cc) inset; } .cc-pick button:not(.on) { opacity: .65; }
+.cc-tabs { display: flex; gap: 6px; flex-wrap: wrap; flex: none; } .cc-tabs button { font: inherit; font-size: .85rem; cursor: pointer; padding: 5px 14px; border-radius: 999px; border: 1px solid #d9ccb0; background: #fff; color: #5b6479; } .cc-tabs button.on { background: #1f2638; color: #fff; border-color: #1f2638; font-weight: 700; }
+.cc-body { flex: 1; min-height: 0; overflow: auto; display: grid; gap: 10px; align-content: start; }
+.cc-cols { display: grid; gap: 14px; } .cc-head { background: #fff; border: 1px solid #e6dcc6; border-top: 5px solid; border-radius: 12px; padding: 6px 14px; display: grid; } .cc-head small { color: #6a7388; font-size: .78rem; }
+.cc-card { background: #fff; border: 1px solid #e6dcc6; border-radius: 12px; padding: 12px 16px; font-size: .88rem; color: #2a3247; min-width: 0; } .cc-card h4 { margin: 8px 0 3px; font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: #8a6a1f; } .cc-card h4:first-child { margin-top: 0; }
+.cc-card ul { margin: 0; padding-left: 1.1rem; } .cc-card li { margin: 2px 0; } .cc-card p { margin: 6px 0; } .cc-tag { font-style: italic; color: #5b6479; margin-top: 0 !important; }
+.cc-dl { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; margin: 6px 0; } .cc-dl dt { color: #5b6479; } .cc-dl dd { margin: 0; text-align: right; } .cc-dl small { color: #98a0b0; }
+.cc-dots { display: inline-flex; gap: 3px; vertical-align: middle; } .cc-dots i { width: 14px; height: 14px; border-radius: 50%; background: #e6dcc6; display: inline-block; }
+.cc-you { background: #f6f1e4; border-left: 4px solid #c4511a; border-radius: 0 8px 8px 0; padding: 6px 10px; font-size: .82rem; margin: 8px 0 !important; } .cc-you--none { border-left-color: #b5ab94; color: #5b6479; }
+.cc-link { font: inherit; background: none; border: 0; color: #c4511a; cursor: pointer; text-decoration: underline; padding: 0; }
+.cc-rc { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .cc-rc h4 { margin-top: 4px; }
+.cc-gauges { display: flex; justify-content: space-around; } .cc-gauges > div { display: grid; justify-items: center; gap: 4px; } .cc-gauges small { color: #6a7388; }
+.cc-t { width: 100%; border-collapse: collapse; font-size: .84rem; } .cc-t th, .cc-t td { padding: 4px 6px; text-align: left; border-bottom: 1px solid #eee4cf; } .cc-t thead th { font-size: .72rem; text-transform: uppercase; color: #8a6a1f; }
+.cc-skills { background: #fff; border: 1px solid #e6dcc6; border-radius: 12px; padding: 8px 14px; } .cc-row { display: grid; gap: 14px; align-items: center; padding: 5px 0; border-bottom: 1px solid #eee4cf; font-size: .86rem; color: #2a3247; } .cc-row:last-child { border-bottom: 0; }
+.cc-row--h { font-weight: 700; font-size: .78rem; text-transform: uppercase; color: #8a6a1f; } .cc-row--h small { display: block; text-transform: none; font-weight: 400; color: #6a7388; }
+.cc-cell { display: flex; align-items: center; gap: 8px; min-width: 0; } .cc-cell small { color: #98a0b0; } .cc-cell b { font-size: .78rem; min-width: 34px; }
+.cc-bar { flex: 1; height: 8px; border-radius: 4px; background: #eadfc9; overflow: hidden; display: block; min-width: 40px; } .cc-bar i { display: block; height: 100%; border-radius: 4px; }
+.cc-hl { background: #fff; border: 1px solid #e6dcc6; border-left: 5px solid #c4511a; border-radius: 12px; padding: 12px 18px; color: #2a3247; } .cc-hl h4 { margin: 0 0 6px; } .cc-hl ul { margin: 0; padding-left: 1.2rem; } .cc-hl li { margin: 5px 0; }
+.cc-note { flex: none; margin: 0; color: #6a7388; font-size: .78rem; }
+@media (max-height: 760px) { .cc .hub-lede { display: none; } .cc-pick button { padding: 5px 12px; } .cc-card { padding: 8px 12px; font-size: .84rem; } .cc-dl { gap: 2px 8px; } }
+.cc-dl small, .cc-cell small { color: #5b6479; }
+.cc-card .cc-rc { margin-top: 4px; } .cc-card .cc-rc ul { font-size: .82rem; } .cc-dl { margin: 4px 0; }
+@media (max-height: 800px) { .cc-card .cc-tag { display: none; } .cc-you { margin: 5px 0 !important; padding: 4px 10px; } .cc-card .cc-rc h4 { margin-top: 0; } }
+@media (max-height: 740px) { .cc-note { display: none; } .cc-pick button small { display: none; } }
+.cc-hl h4, .cc-card h4 { color: #8a6a1f; }

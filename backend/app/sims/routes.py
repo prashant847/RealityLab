@@ -19,6 +19,13 @@ class DecisionBody(BaseModel):
     choice_id: str = Field(min_length=1, max_length=40)
 
 
+class ReflectionBody(BaseModel):
+    enjoyment: int = Field(ge=1, le=5)
+    stress: int = Field(ge=1, le=5)
+    daily_interest: int = Field(ge=1, le=5)
+    note: str = Field("", max_length=400)
+
+
 class ProfileBody(BaseModel):
     name: str | None = Field(None, max_length=60)
     large_text: bool | None = None
@@ -78,3 +85,23 @@ def run_decide(run_id: str, body: DecisionBody, s: SimsService = S):
 @router.get("/runs/{run_id}/report")
 def run_report(run_id: str, s: SimsService = S):
     return s.report(run_id)
+
+
+@router.get("/sims/{profession}/interval", summary="Between the workday and the crisis: what the workday set up, and what it missed")
+def interval(profession: str, s: SimsService = S):
+    return s.interval(profession)
+
+
+@router.get("/runs/{run_id}/reflection")
+def get_reflection(run_id: str, s: SimsService = S):
+    return s.get_reflection(run_id)
+
+
+@router.post("/runs/{run_id}/reflection", summary="How the student felt about a finished workday or crisis (feeds Career Comparison)")
+def post_reflection(run_id: str, body: ReflectionBody, s: SimsService = S):
+    return s.save_reflection(run_id, body.enjoyment, body.stress, body.daily_interest, body.note)
+
+
+@router.get("/careers", summary="Career Comparison: each profession's profile next to what the student experienced")
+def careers(s: SimsService = S):
+    return s.careers()

@@ -3,9 +3,17 @@ import type { Intro, Outcome, RunView, SimsApi } from "../api/sims";
 import { BhopalStage } from "./BhopalStage";
 import { CovidStage } from "./CovidStage";
 import { Preview } from "./Previews";
+import { TerminalStage } from "./TerminalStage";
 import "./sims.css";
 
-const KIND_LABEL = { documented: "Documented record", hypothetical: "Fictional exercise", simulation: "Simulation" } as const;
+const KIND_LABEL = { documented: "Documented record", hypothetical: "Fictional exercise", simulation: "Simulation", workday: "A normal day" } as const;
+
+type Theme = "bhopal" | "covid" | "blackout";
+function Stage({ theme, scene, decision, log }: { theme: Theme; scene: import("../api/sims").Scene; decision: React.ReactNode; log?: { title: string; label: string; rating: string }[] }) {
+  if (theme === "covid") return <CovidStage scene={scene} decision={decision} log={log} />;
+  if (theme === "blackout") return <TerminalStage scene={scene} decision={decision} />;
+  return <BhopalStage scene={scene} decision={decision} />;
+}
 
 type Phase =
   | { k: "loading" } | { k: "error"; message: string }
@@ -37,7 +45,7 @@ export function SimPlayer({ api, simId, onHome, onReport }: { api: SimsApi; simI
     setPhase({ k: "outcome", view: next, outcome, prev: view });
   });
 
-  const theme = simId === "covid" ? "covid" : "bhopal";
+  const theme = simId.split("_")[0] as Theme;           // covid | bhopal | blackout, for both the workday and the crisis
   const title = phase.k === "intro" ? phase.intro.title : phase.k === "step" || phase.k === "outcome" ? phase.view.scenario.title : "";
   const scene = phase.k === "step" || phase.k === "outcome" ? phase.view.scene : null;
   const pct = scene ? Math.round((100 * (scene.status === "completed" ? scene.total_rounds : scene.round - 1)) / scene.total_rounds) : 0;
@@ -72,9 +80,11 @@ export function SimPlayer({ api, simId, onHome, onReport }: { api: SimsApi; simI
 function IntroScreen({ simId, intro, current, onBegin }: { simId: string; intro: Intro; current: RunView | null; onBegin: (fresh: boolean) => void }) {
   return (
     <section className="sim-intro" aria-labelledby="intro-h">
-      <div className="sim-intro-art"><Preview id={simId as "bhopal" | "covid"} />
+      <div className="sim-intro-art"><Preview id={(intro.profession ?? simId) as Theme} />
         <div className="sim-intro-meta"><span>{intro.minutes} min</span><span>{intro.rounds} steps</span><span>{intro.domain.split("·")[0].trim()}</span></div></div>
       <div className="sim-intro-body">
+        {intro.kind === "workday" && <p className="sim-phase"><b>Part 1 of 2 · A normal day.</b> Nothing is on fire. What you set up today carries into the crisis that follows.</p>}
+        {intro.kind === "crisis" && <p className="sim-phase sim-phase--crisis"><b>Part 2 of 2 · The crisis.</b> Whatever your workday set up is already in place.</p>}
         <p className="sim-kicker">{intro.domain}</p>
         <h1 id="intro-h">{intro.title}</h1>
         <p className="sim-lede">{intro.tagline}</p>
@@ -116,6 +126,7 @@ function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: s
         <div className="sim-body" role="tabpanel">
           <p className="sim-brief">{step.brief}</p>
           <ul className="sim-facts">{step.facts.map((f, i) => <li key={i}>{f}</li>)}</ul>
+          {view.scene.round === 1 && (view.scene.prepared?.length ?? 0) > 0 && <div className="sim-prep" role="note"><b>From your normal day:</b><ul>{view.scene.prepared!.map((p) => <li key={p.flag}>{p.label}{p.full ? "" : " (half)"}</li>)}</ul></div>}
           {events.map((e) => <div key={e.event_id} className="sim-event" role="status"><b>{theme === "covid" ? "Situation update: " : "Development: "}{e.title}</b><p>{e.text}</p></div>)}
           {step.sources.length > 0 && <p className="sim-fine">Sources consulted: {step.sources.join("; ")}.</p>}
         </div>
@@ -140,7 +151,7 @@ function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: s
       </>)}
     </section>
   );
-  return theme === "covid" ? <CovidStage scene={view.scene} decision={decisionPanel} log={view.decisions} /> : <BhopalStage scene={view.scene} decision={decisionPanel} />;
+  return <Stage theme={theme as Theme} scene={view.scene} decision={decisionPanel} log={view.decisions} />;
 }
 
 function OutcomeScreen({ theme, outcome, prev, view, onNext }: { theme: string; outcome: Outcome; prev: RunView; view: RunView; onNext: () => void }) {
@@ -169,5 +180,5 @@ function OutcomeScreen({ theme, outcome, prev, view, onNext }: { theme: string; 
     </section>
   );
   const shown = { ...view.scene, step: prev.scene.step };   // the picture stays on the step you just decided
-  return theme === "covid" ? <CovidStage scene={shown} decision={card} log={view.decisions} /> : <BhopalStage scene={shown} decision={card} />;
+  return <Stage theme={theme as Theme} scene={shown} decision={card} log={view.decisions} />;
 }

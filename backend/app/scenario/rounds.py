@@ -7,7 +7,7 @@ of time left before the reopening deadline (`window_min`).
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from ..engine.rules import Cond, Fx, eq, gt, gte, has, lacks, lt, ne
 
@@ -373,4 +373,20 @@ R10 = Round(
     ),
 )
 
-ROUNDS: dict[int, Round] = {r.number: r for r in (R1, R2, R3, R4, R5, R6, R7, R8, R9, R10)}
+# Extra story lines for players who did the ordinary-day workday first. They only appear when the matching `prep_*` flag is set,
+# so a game without a workday reads exactly as before.
+PREP_INFO: dict[int, tuple[tuple[tuple[Cond, ...], str], ...]] = {
+    1: (((has("prep_briefing"),), "The five of you met yesterday morning, so everyone already knows who owns what."),
+        ((has("prep_manual"),), "Yesterday's paper-process drill means the gate team knows the manual routine.")),
+    2: (((has("prep_manual"),), "The paper forms from the drill are in the gatehouse drawer, and the radio net has been tried."),),
+    3: (((has("prep_contacts"),), "The urgent-customer call list you set up works without the systems."),
+        ((has("prep_supplier"),), "The second carrier you called has a standby arrangement.")),
+    6: (((has("prep_backup"),), "Yesterday's restore test means you know the offline copies exist, and that a restore takes about fifty minutes."),
+        ((has("prep_segmentation"),), "The first separation point you approved is holding the yard network apart from the office network."),
+        ((has("prep_patch"),), "The servers you patched are not among the first to fall.")),
+    7: (((has("prep_contacts"),), "Urgent customers have your named contact, so they are calling the right number."),),
+}
+ROUNDS: dict[int, Round] = {
+    r.number: (replace(r, info=r.info + PREP_INFO[r.number]) if r.number in PREP_INFO else r)
+    for r in (R1, R2, R3, R4, R5, R6, R7, R8, R9, R10)
+}

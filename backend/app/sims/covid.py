@@ -4,7 +4,7 @@ Educational only. All patients, staff and the hospital are fictional. Decisions 
 resources. The simulation gives no clinical treatment advice and is not medical training."""
 from __future__ import annotations
 
-from .engine import Choice as C, Ending, Event, Meter, Round, Scenario
+from .engine import Choice as C, Ending, Event, Meter, PrepItem, Round, Scenario
 
 PART = "Riverside District Hospital (fictional)"
 
@@ -172,6 +172,37 @@ EVENTS = (
           (("flag", "structured_triage"),), {"trust": 5}),
 )
 
+PREP = (
+    PrepItem("prep_triage", "A written triage sheet", "On a quiet evening you and Dr. Hakim drafted simple, fair criteria for who is seen first. The whole team had seen them.",
+             "Nobody wrote down how to choose who is seen first, so the first days will run on habit and the senior doctor's judgement.", {"care": 6, "wellbeing": 2}, "prep_triage_part", "The whiteboard (17:30)"),
+    PrepItem("prep_stock", "Minimum stock levels and a standing order", "You counted the oxygen and mask stock and set minimum levels with a standing order.",
+             "Nobody owned the stock count, so the shelves will be thinner than anyone believes when demand rises.", {"oxygen": 10, "ppe": 8}, "prep_stock_part", "The cupboard count (10:30)"),
+    PrepItem("prep_surge", "A documented surge-bed plan", "You argued for keeping a surge plan, and it names which wards open first.",
+             "The stand-by beds were closed with no plan to reopen them, so capacity will have to be rebuilt in a hurry.", {"capacity": 8}, "", "The budget meeting (14:00)"),
+    PrepItem("prep_family", "Families who trust the updates", "Families already know Riverside tells the truth and keeps its update times.",
+             "Families have never been given a reliable update routine, so frightened people will fill the silence.", {"trust": 8}, "prep_family_part", "Mrs. Verma's questions (12:00)"),
+    PrepItem("prep_rota", "A rota with slack and swap rules", "The rota has slack, swap rules and protected breaks: people go into the surge rested.",
+             "The rota was already stretched, so the team starts the surge tired.", {"wellbeing": 8}, "", "Sister Anita's rota (15:30)"),
+    PrepItem("prep_mentor", "A resident who has led a round", "Dr. Priya Rao has practised leading a ward round, and she can run a triage bay.",
+             "Your resident never got to lead, so she will need hand-holding exactly when you cannot give it.", {"care": 4, "wellbeing": 3}, "prep_mentor_part", "Ward round with Dr. Priya Rao (09:00)"),
+    PrepItem("prep_handover", "Structured handovers", "The team already reads plans back at handover, so small worries get passed on.",
+             "Handovers are informal, so small signals will be lost in the noise.", {"care": 3}, "prep_handover_part", "Handover on Ward 4 (07:45)"),
+)
+INTERVAL = (
+    "Eleven weeks later. The news item in the staff room stopped being background noise. First it was a ward in another country, then a hospital two cities away, then a memo from the health authority with the word \u201csurge\u201d in it.",
+    "At 07:10 on a Monday morning, Dr. Farid Hakim finds you at the nurses' station. \u201cThe emergency department has thirty-one people waiting,\u201d he says. \u201cHalf of them are struggling to breathe. I need you.\u201d",
+    "You look at the ward as it is today: the people, the stock, the beds, the rota, and the pieces of paper pinned to the wall. Whatever you did on that ordinary Tuesday is now what you have.",
+)
+EVENTS_PREP = (
+    Event("ev_p_surge", 2, "The surge plan", "The surge plan you defended names which wards open first. For once nobody is arguing about it.", (("flag", "prep_surge"),), {}, kind="simulation"),
+    Event("ev_p_triage", 1, "The sheet on the wall", "The one-page sheet you drafted with Dr. Hakim is still pinned beside the nurses' station. He taps it and nods at you.", (("flag", "prep_triage"),), {}, kind="simulation"),
+    Event("ev_p_triage_miss", 1, "Who decides?", "Nobody remembers who was meant to decide who is seen first. The team looks at you.", (("no_flag", "prep_triage"), ("no_flag", "prep_triage_part")), {"wellbeing": -3}, kind="simulation"),
+    Event("ev_p_stock", 3, "The standing order lands", "Your standing order arrives before the supplier's backlog reaches the hospitals that did not place one.", (("flag", "prep_stock"),), {}, kind="simulation"),
+    Event("ev_p_family", 6, "Mrs. Verma calls", "Mrs. Verma phones to ask how the ward is, and tells the families she knows that Riverside tells the truth.", (("flag", "prep_family"),), {"trust": 3}, kind="simulation"),
+    Event("ev_p_mentor", 7, "Dr. Rao steps up", "Dr. Priya Rao has been quietly running the nights. She takes a shift so that you can sleep.", (("flag", "prep_mentor"),), {"wellbeing": 4}, kind="simulation"),
+    Event("ev_p_rota", 7, "The swap rules", "The swap rules you wrote are what keep the ward staffed. Sister Anita notices, and does not say so.", (("flag", "prep_rota"),), {"wellbeing": 3}, kind="simulation"),
+)
+
 ENDINGS = (
     Ending("held", "The hospital held", "Care stayed consistent, the team stayed standing, and families trusted what they were told. It was hard, and it was handled with structure and honesty.",
            (("gte", "care", 65), ("gte", "wellbeing", 55), ("gte", "trust", 60)), "good"),
@@ -193,11 +224,11 @@ COVID = Scenario(
            "Everything here is fictional: the hospital, the staff and the patients. The decisions are about organisation, priorities, communication and staff.",
            "This is not medical training and gives no treatment advice. Real clinical decisions need proper education, supervision and professional guidance."),
     disclaimer="Educational simulation only. It is not a substitute for medical education, clinical supervision or professional guidance. All patients and staff are fictional.",
-    meters=METERS, rounds=ROUNDS, events=EVENTS, endings=ENDINGS,
+    meters=METERS, rounds=ROUNDS, events=EVENTS + EVENTS_PREP, endings=ENDINGS,
     lessons=("Agree criteria before the peak; consistent, documented decisions are fairer and easier to defend.",
              "Be open about shortages: hidden rationing breaks trust faster than the shortage does.",
              "Staff rest and support are part of patient safety.",
              "Predictable, honest communication with families matters as much as speed.",
              "Learning and sharing after a surge prepares the next team."),
-    next_up=("bhopal", "blackout"),
+    next_up=("bhopal", "blackout"), profession="covid", prep=PREP, interval=INTERVAL,
 )

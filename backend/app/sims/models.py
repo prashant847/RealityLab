@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, Boolean, DateTime, Integer, String
+from sqlalchemy import JSON, Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..db.models import Base, utcnow
@@ -31,3 +31,16 @@ class Profile(Base):
     name: Mapped[str] = mapped_column(String(60), default="")
     large_text: Mapped[bool] = mapped_column(Boolean, default=False)
     reduce_motion: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class Reflection(Base):
+    """How the student felt about a finished workday or crisis (1 to 5). Feeds Career Comparison. Keyed by run id, so a replay never overwrites an earlier answer."""
+    __tablename__ = "reflections"
+    run_id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    profession: Mapped[str] = mapped_column(String(32), index=True)
+    phase: Mapped[str] = mapped_column(String(12))                      # workday | crisis
+    enjoyment: Mapped[int] = mapped_column(Integer)
+    stress: Mapped[int] = mapped_column(Integer)
+    daily_interest: Mapped[int] = mapped_column(Integer)                # "Would I want to do this kind of work every day?"
+    note: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

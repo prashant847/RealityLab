@@ -72,6 +72,7 @@ class SimulationService:
     def __init__(self, session_factory: sessionmaker, voice: Voice | None = None):
         self.sf = session_factory
         self.voice = voice or Voice(None)     # default: fully deterministic, no network
+        self.prep_provider = None            # set by the app: returns the prep flags earned in the latest workday
 
     # ------------------------------------------------------------------ lookups
     def _sim(self, db: Session, sim_id: str) -> Simulation:
@@ -93,7 +94,7 @@ class SimulationService:
     def create(self, seed: int | None = None, max_rewinds: int = DEFAULT_MAX_REWINDS) -> dict[str, Any]:
         with self.sf.begin() as db:
             sim_id, run_id = _id(), _id()
-            state = new_simulation(seed, sim_id)
+            state = new_simulation(seed, sim_id, prep=(self.prep_provider() if self.prep_provider else ()))
             sim = Simulation(id=sim_id, seed=state.seed, root_run_id=run_id, active_run_id=run_id,
                              max_rewinds=max_rewinds)
             db.add(sim)
@@ -298,13 +299,20 @@ class SimulationService:
                                       "stopped": stopped, "active_run_id": sim.active_run_id}
             return view
 
+    def _prep_of(self, db: Session, sim: Simulation) -> list[str]:
+        """The workday head starts this simulation began with (they are flags on its very first state)."""
+        cp = db.scalars(select(Checkpoint).where(Checkpoint.run_id == sim.root_run_id).order_by(Checkpoint.idx)).first()
+        root = db.get(Run, sim.root_run_id)
+        flags = (cp.state if cp else (root.state if root else {})).get("flags", [])
+        return [f for f in flags if f.startswith("prep_")]
+
     def restart(self, sim_id: str) -> dict[str, Any]:
         """Fresh run with the same seed. Does not consume a rewind."""
         with self.sf.begin() as db:
             sim = self._sim(db, sim_id)
             old = self._run(db, sim)
             n = db.scalars(select(Run).where(Run.simulation_id == sim.id)).all()
-            state = new_simulation(sim.seed, sim.id)
+            state = new_simulation(sim.seed, sim.id, prep=self._prep_of(db, sim))
             new = Run(id=_id(), simulation_id=sim.id, parent_run_id=None, kind="restart", attempt=len(n) + 1,
                       status="active", state=state.model_dump(), classification=_public_class(planner.classify(state)))
             db.add(new)

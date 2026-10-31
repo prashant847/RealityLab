@@ -3,27 +3,29 @@ export type Rating = "strong" | "mixed" | "weak";
 export interface LibraryItem {
   id: "blackout" | "bhopal" | "covid"; title: string; tagline: string; role: string; domain: string; minutes: number; description: string;
   objectives: string[]; style: string; status: "none" | "active" | "completed"; completed: number; progress?: string; percent?: number;
-  ending?: string; run_id?: string; disclaimer?: string;
+  ending?: string; run_id?: string; disclaimer?: string; workday?: Phase;
 }
+/** One half of a profession: the ordinary-day workday (the crisis is the library item itself). */
+export interface Phase { id: string; title: string; tagline: string; minutes: number; rounds: number; status: "none" | "active" | "completed"; run_id?: string; progress?: string; percent?: number; ending?: string }
 export interface Profile { name: string; large_text: boolean; reduce_motion: boolean }
 export interface Meter { id: string; label: string; value: number; good: "high" | "low"; hint: string }
 export interface Choice { id: string; label: string; summary: string; available: boolean; reason: string }
 export interface Step {
-  id: string; title: string; clock: string; kind: "documented" | "hypothetical" | "simulation"; brief: string; question: string;
+  id: string; title: string; clock: string; kind: "documented" | "hypothetical" | "simulation" | "workday"; brief: string; question: string;
   facts: string[]; choices: Choice[]; part: string; scene: string; sources: string[];
 }
 export interface SimEvent { event_id: string; title: string; text: string; kind: string; round: number; changes: Record<string, number[]> }
 export interface Scene {
-  meters: Meter[]; flags: string[]; round: number; total_rounds: number; status: "active" | "completed";
+  meters: Meter[]; flags: string[]; prepared?: { flag: string; label: string; text: string; full: boolean; effects: Record<string, number> }[]; round: number; total_rounds: number; status: "active" | "completed";
   step?: Step; events?: SimEvent[]; ending?: { id: string; title: string; text: string; tone: "good" | "neutral" | "bad" };
 }
 export interface RunView {
   run: { id: string; sim_id: string; status: string; attempt: number };
-  scenario: { id: string; title: string; role: string; disclaimer: string };
+  scenario: { id: string; title: string; role: string; disclaimer: string; kind?: "workday" | "crisis"; profession?: string };
   scene: Scene; decisions: { n: number; title: string; label: string; rating: Rating; consequence: string }[];
 }
 export interface Outcome { choice_id: string; label: string; rating: Rating; consequence: string; lesson: string; changes: Record<string, number[]>; completed: boolean; events: SimEvent[] }
-export interface Intro extends Omit<LibraryItem, "status" | "completed"> { intro: string[]; disclaimer: string; rounds: number; parts: string[] }
+export interface Intro extends Omit<LibraryItem, "status" | "completed" | "workday"> { intro: string[]; disclaimer: string; rounds: number; parts: string[]; kind?: "workday" | "crisis"; profession?: string }
 export interface SkillResult { id: string; label: string; percent: number; level: string; decisions_counted: number; explanation: string; evidence: { step: string; choice: string; points: number }[] }
 export interface SimReport {
   simulation: string; simulation_id: string; role: string; run_id: string; completed_at?: string;
@@ -34,7 +36,8 @@ export interface SimReport {
   challenges: { title: string; text: string; round: number }[];
   skills: SkillResult[]; improve: { step: string; chose: string; why: string; stronger_option: string | null; rating: Rating }[];
   focus_areas: string[]; lessons: string[]; sources: { label: string; url: string }[];
-  recommended_next: { id?: string; title?: string; reason?: string }; note: string;
+  recommended_next: { id?: string; title?: string; reason?: string; to?: string }; note: string;
+  kind?: "workday" | "crisis"; profession?: string; prep?: PrepItem[]; prepared?: { flag: string; label: string; text: string; full: boolean }[];
 }
 export interface Journey {
   completed: { kind: "report" | "blackout"; run_id: string; sim_id: string; title: string; attempt: number; outcome: string; tone: string; completed_at: string | null; decisions: number }[];
@@ -70,6 +73,10 @@ export interface SimsApi {
   start(sim: string): Promise<RunView>;
   decide(run: string, choice: string): Promise<{ outcome: Outcome; view: RunView }>;
   report(run: string): Promise<SimReport>;
+  interval(profession: string): Promise<IntervalView>;
+  reflection(run: string): Promise<ReflectionView | null>;
+  saveReflection(run: string, r: { enjoyment: number; stress: number; daily_interest: number; note: string }): Promise<ReflectionView>;
+  careers(): Promise<CareersView>;
 }
 
 export const simsApi: SimsApi = {
@@ -82,4 +89,23 @@ export const simsApi: SimsApi = {
   start: (s) => call("POST", `/sims/${s}/runs`),
   decide: (r, c) => call("POST", `/runs/${r}/decisions`, { choice_id: c }),
   report: (r) => call("GET", `/runs/${r}/report`),
+  interval: (p) => call("GET", `/sims/${p}/interval`),
+  reflection: (r) => call("GET", `/runs/${r}/reflection`),
+  saveReflection: (r, b) => call("POST", `/runs/${r}/reflection`, b),
+  careers: () => call("GET", "/careers"),
 };
+
+export interface PrepItem { flag: string; label: string; task: string; status: "full" | "part" | "missed"; text: string; effects: string[] }
+export interface IntervalView { profession: string; title: string; workday_title: string; workday_done: boolean; workday_run_id: string | null; narrative: string[]; items: PrepItem[]; earned: number; total: number }
+export interface ReflectionView { run_id: string; profession: string; phase: "workday" | "crisis"; enjoyment: number; stress: number; daily_interest: number; note: string }
+export interface CareerPhase { run_id: string; outcome: string; decisions: number; strong: number; mixed: number; weak: number; score?: number | null; reflection: ReflectionView | null }
+export interface Career {
+  id: "blackout" | "bhopal" | "covid"; title: string; field: string; setting: string; tagline: string;
+  daily: { workday: string[]; crisis: string[] }; problems: { workday: string[]; crisis: string[] };
+  decisions: { tempo: number[]; information: number[]; stakes: number[]; reversibility: number[]; text: { workday: string; crisis: string } };
+  pressure: { workday: number; crisis: number; text: { workday: string; crisis: string } };
+  communication: { with: string[]; text: { workday: string; crisis: string } };
+  rewards: string[]; costs: string[]; skills_required: Record<string, number>;
+  you: { phases: { workday: CareerPhase | null; crisis: CareerPhase | null }; skills: Record<string, number> };
+}
+export interface CareersView { careers: Career[]; skills: Record<string, string>; dimensions: { id: string; label: string }[]; note: string }

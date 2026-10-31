@@ -6,7 +6,7 @@ frontend); the same choices always give the same result. BLACKOUT keeps its own 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Iterable
 
 SKILLS = {
     "decision_making": "Decision-making", "problem_solving": "Problem-solving", "communication": "Communication",
@@ -78,6 +78,18 @@ class Ending:
 
 
 @dataclass(frozen=True)
+class PrepItem:
+    """Something a workday can set up for the crisis. `flag` = done well, `part_flag` = done halfway (half the effect)."""
+    flag: str
+    label: str
+    earned: str                  # shown when set up (interval page, crisis story)
+    missed: str                  # shown when not set up
+    effects: dict[str, int] = field(default_factory=dict)
+    part_flag: str = ""
+    task: str = ""               # the workday step that earns it, for the interval page
+
+
+@dataclass(frozen=True)
 class Scenario:
     id: str
     title: str
@@ -96,6 +108,10 @@ class Scenario:
     lessons: tuple[str, ...]
     sources: tuple[tuple[str, str], ...] = ()
     next_up: tuple[str, ...] = ()
+    kind: str = "crisis"                         # "workday" (an ordinary day) or "crisis" (the main simulation)
+    profession: str = ""                         # the career this scenario belongs to: blackout | bhopal | covid
+    prep: tuple[PrepItem, ...] = ()              # crisis only: what a workday can set up
+    interval: tuple[str, ...] = ()               # crisis only: the story that bridges workday and crisis
 
 
 class SimError(Exception):
@@ -110,9 +126,16 @@ class Finished(SimError):
     code = "simulation_finished"
 
 
-def new_state(sc: Scenario) -> dict[str, Any]:
+def new_state(sc: Scenario, prep: Iterable[str] = ()) -> dict[str, Any]:
     st: dict[str, Any] = {"round": 1, "status": "active", "meters": {m.id: m.start for m in sc.meters}, "flags": [],
-                          "decisions": [], "events": [], "ending": None}
+                          "decisions": [], "events": [], "ending": None, "prepared": []}
+    have = set(prep)
+    for item in sc.prep:
+        full = item.flag in have
+        if full or (item.part_flag and item.part_flag in have):
+            eff = item.effects if full else {k: v // 2 for k, v in item.effects.items()}
+            _apply(st, eff, (item.flag if full else item.part_flag,))
+            st["prepared"].append({"flag": item.flag, "label": item.label, "text": item.earned, "full": full, "effects": eff})
     _fire(sc, st)
     return st
 
@@ -191,7 +214,7 @@ def decide(sc: Scenario, st: dict[str, Any], choice_id: str) -> tuple[dict[str, 
 
 def scene_view(sc: Scenario, st: dict[str, Any]) -> dict[str, Any]:
     base = {"meters": [{"id": m.id, "label": m.label, "value": st["meters"][m.id], "good": m.good, "hint": m.hint} for m in sc.meters],
-            "flags": list(st["flags"]), "round": st["round"], "total_rounds": len(sc.rounds), "status": st["status"]}
+            "flags": list(st["flags"]), "prepared": st.get("prepared", []), "round": st["round"], "total_rounds": len(sc.rounds), "status": st["status"]}
     if st["status"] == "completed":
         end = next(e for e in sc.endings if e.id == st["ending"])
         return {**base, "ending": {"id": end.id, "title": end.title, "text": end.text, "tone": end.tone}}

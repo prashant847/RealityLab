@@ -3,6 +3,8 @@ import type { GameApi } from "../api/client";
 import type { FinalDispatch, Report, WorldView } from "../api/types";
 import { OutcomeReport } from "../ui/OutcomeReport";
 import { ScoreReport } from "../ui/ScoreReport";
+import { simsApi } from "../api/sims";
+import { ReflectionForm } from "../sims/Reflection";
 
 /** The ending plus the scored report (fetched from the server; scores are never computed here). */
 export function FinishedScreen({ api, simId, runId, final, state, onTryDifferent, onRewind, onRestart, onCompare }: {
@@ -19,7 +21,7 @@ export function FinishedScreen({ api, simId, runId, final, state, onTryDifferent
   }, [api, simId, runId]);
 
   return (
-    <OutcomeReport final={final} state={state} onReplay={onTryDifferent} onRewind={onRewind} onRestart={onRestart} onCompare={report && report.attempts.length > 1 ? onCompare : undefined}>
+    <OutcomeReport final={final} state={state} onReplay={onTryDifferent} onRewind={onRewind} onRestart={onRestart} onCompare={report && report.attempts.length > 1 ? onCompare : undefined} felt={<ReflectionForm api={simsApi} runId={runId} />}>
       {!report && !error && <p role="status" className="muted">Preparing your performance report…</p>}
       {error && <p className="alert" role="alert">The report could not be loaded: {error}</p>}
       {report && <ScoreReport report={report} />}

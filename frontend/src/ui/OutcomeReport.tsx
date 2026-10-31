@@ -15,12 +15,12 @@ function Bar({ label, value, need }: { label: string; value: number; need: numbe
   );
 }
 
-export function OutcomeReport({ final, state, children, onRewind, onReplay, onRestart, onCompare }: {
-  final: FinalDispatch; state: WorldView; children?: React.ReactNode;
+export function OutcomeReport({ final, state, children, onRewind, onReplay, onRestart, onCompare, felt }: {
+  final: FinalDispatch; state: WorldView; children?: React.ReactNode; felt?: React.ReactNode;
   onRewind?: () => void; onReplay?: () => void; onRestart?: () => void; onCompare?: () => void;
 }) {
   const good = final.ending === "full_recovery" || final.ending === "hospitals_served";
-  const [tab, setTab] = useState<"ending" | "score" | "full">("ending");
+  const [tab, setTab] = useState<"ending" | "score" | "full" | "felt">("ending");
   return (
     <section className={`outcome outcome--${good ? "good" : "poor"}`} aria-labelledby="outcome-title" data-tab={tab}>
       <header>
@@ -29,8 +29,8 @@ export function OutcomeReport({ final, state, children, onRewind, onReplay, onRe
         <p className="lede">{final.ending_text}</p>
       </header>
       <div className="out-tabs no-print" role="tablist" aria-label="Report sections">
-        {([["ending", "The ending"], ["score", "Score and lessons"], ["full", "Full report"]] as const).map(([k, label]) => (
-          <button key={k} role="tab" type="button" aria-selected={tab === k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{label}</button>))}
+        {([["ending", "The ending"], ["score", "Score and lessons"], ["full", "Full report"], ...(felt ? [["felt", "How it felt"]] : [])] as const).map(([k, label]) => (
+          <button key={k} role="tab" type="button" aria-selected={tab === k} className={tab === k ? "on" : ""} onClick={() => setTab(k as typeof tab)}>{label}</button>))}
         {onCompare && <button type="button" className="out-compare" onClick={onCompare}>Compare attempts side by side</button>}
       </div>
       <div className="outcome-grid">
@@ -56,6 +56,7 @@ export function OutcomeReport({ final, state, children, onRewind, onReplay, onRe
         </details>
       </div>
       <div className="out-children">{children}</div>
+      {felt && <div className="out-felt">{felt}</div>}
       <div className="actions out-actions">
         {onReplay && <button type="button" className="primary" onClick={onReplay}>Try a different decision</button>}
         {onRewind && <button type="button" className="ghost" onClick={onRewind}>Rewind to an earlier decision</button>}

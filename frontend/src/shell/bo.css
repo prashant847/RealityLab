@@ -207,3 +207,12 @@
   .bo-rail .hud { padding: .5rem .7rem; } .bo-rail .hud h2, .bo-rail .hud .hud-clock { margin-bottom: 2px; } .bo-rail .chips .chip { font-size: .66rem; padding: 0 6px; } .bo-rail .chips { gap: 3px; margin: 2px 0; }
   .bo-rail .decided { font-size: .95rem; margin-bottom: 4px; } .bo-rail .bo-decided-h { margin-bottom: 2px; } .bo-rail .decision-list { gap: 4px; } .bo-rail .decision { padding: 5px 8px; }
 }
+/* advisor opinion chips: stronger colour and weight so they read clearly on the light panels */
+.bo-root .endorse-chip, .bo-root .stance-chip { font-weight: 700; font-size: .76rem; background: #fff; }
+.bo-root .endorse-chip--support, .bo-root .stance-chip--support { color: #1b6a4c; border-color: #1b6a4c; } .bo-root .endorse-chip--oppose, .bo-root .stance-chip--oppose { color: #a3281a; border-color: #a3281a; }
+.bo-root .endorse-chip--caution, .bo-root .stance-chip--caution { color: #8a5200; border-color: #8a5200; } .bo-root .endorse-chip, .bo-root .stance-chip--neutral { color: #4d4636; }
+.bo-root .advice-avatar, .bo-root .stakeholder-avatar { border-color: var(--line); }
+
+/* BLACKOUT final report: the "How it felt" tab */
+.outcome .out-felt { display: none; flex: 1; min-height: 0; overflow: auto; } .outcome[data-tab="felt"] .out-felt { display: block; }
+.outcome[data-tab="felt"] .outcome-grid, .outcome[data-tab="felt"] .out-children, .outcome[data-tab="felt"] .out-actions { display: none; }
