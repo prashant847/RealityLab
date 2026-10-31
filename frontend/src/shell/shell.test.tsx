@@ -484,8 +484,35 @@ describe("accessibility and sound", () => {
     setA11y({ readAloud: true });
     const read = await screen.findByRole("button", { name: /Read this aloud/ });
     await userEvent.click(read);
-    expect(speak).toHaveBeenCalled();
+    await waitFor(() => expect(speak).toHaveBeenCalled());
     expect((speak.mock.calls[0][0] as { text: string }).text).toContain("Two of them worried me last night");
     expect((speak.mock.calls[0][0] as { text: string }).text).toContain("brief");
+  });
+  it("pressing R reads whatever screen is open, not only the step screens", async () => {
+    const speak = vi.fn();
+    (window as unknown as { speechSynthesis: unknown }).speechSynthesis = { speak, cancel: vi.fn(), getVoices: () => [] };
+    class U { constructor(public text: string) {} rate = 1; lang = ""; voice: unknown = null; onstart: unknown; onend: unknown; onerror: unknown; }
+    (globalThis as unknown as { SpeechSynthesisUtterance: unknown }).SpeechSynthesisUtterance = U;
+    setA11y({ readAloud: true });
+    window.location.hash = "#/";
+    render(<Shell api={fake()} />);
+    await screen.findAllByRole("article");
+    document.getElementById("main")!.innerText = "Choose a world to step into. Hello.";       // jsdom has no layout, so give it text to read
+    await userEvent.keyboard("r");
+    await waitFor(() => expect(speak).toHaveBeenCalled());
+    expect((speak.mock.calls[0][0] as { text: string }).text).toContain("Choose a world to step into");
+    expect(await screen.findByText(/Reading this screen aloud/)).toBeInTheDocument();
+  });
+  it("pressing R with read aloud off explains how to turn it on, and reads nothing", async () => {
+    const speak = vi.fn();
+    (window as unknown as { speechSynthesis: unknown }).speechSynthesis = { speak, cancel: vi.fn(), getVoices: () => [] };
+    class U { constructor(public text: string) {} rate = 1; lang = ""; }
+    (globalThis as unknown as { SpeechSynthesisUtterance: unknown }).SpeechSynthesisUtterance = U;
+    window.location.hash = "#/";
+    render(<Shell api={fake()} />);
+    await screen.findAllByRole("article");
+    await userEvent.keyboard("r");
+    expect(await screen.findByText(/Read aloud is off\. Turn it on in Settings/)).toBeInTheDocument();
+    expect(speak).not.toHaveBeenCalled();
   });
 });

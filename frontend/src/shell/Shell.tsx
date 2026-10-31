@@ -7,6 +7,7 @@ import { CareerCompare } from "./CareerCompare";
 import { Welcome, WELCOME_KEY } from "./Welcome";
 import { Settings } from "./Settings";
 import { applyA11y, listenForDesktopZoom } from "../a11y/a11y";
+import { installReadAloudKey } from "../a11y/speak";
 import { audio, type Mood } from "../audio/audio";
 import { SoundToggle } from "../audio/useAudio";
 import { markFresh, setIntent, takeIntent } from "./intent";
@@ -54,6 +55,7 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
   // sound and accessibility: start once, follow the screen with the music mood, and give every button a soft click
   useEffect(() => {
     applyA11y(); listenForDesktopZoom(); audio.start();
+    const removeKey = installReadAloudKey();
     const click = (e: MouseEvent) => {
       const t = e.target as HTMLElement | null; if (!t || t.tagName === "INPUT" || t.closest(".snd-toggle")) return;
       if (t.closest(".sim-choice, .decision, [role=radio]")) audio.sfx("select");
@@ -61,7 +63,14 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
       else if (t.closest("button, a[href], [role=tab], summary")) audio.sfx("click");
     };
     document.addEventListener("click", click);
-    return () => document.removeEventListener("click", click);
+    return () => { document.removeEventListener("click", click); removeKey(); };
+  }, []);
+  const [toast, setToast] = useState<string | null>(null);
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout>;
+    const on = (e: Event) => { setToast((e as CustomEvent<string>).detail); clearTimeout(t); t = setTimeout(() => setToast(null), 3200); };
+    window.addEventListener("rl:toast", on);
+    return () => { window.removeEventListener("rl:toast", on); clearTimeout(t); };
   }, []);
   const moodNow: Mood = (["sim", "workday", "crisis", "play", "interval"].includes(parts[0] ?? "") && (["covid", "bhopal", "blackout"] as string[]).includes(parts[1] ?? "")) ? (parts[1] as Mood) : "hub";
   useEffect(() => { audio.setMood(moodNow); }, [moodNow]);
@@ -85,21 +94,24 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
     document.title = page ? `${page} — RealityLab AI` : "RealityLab AI";
   }, [hash]);   // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (dev) return <App />;
+  const toastEl = toast ? <div className="rl-toast" role="status" aria-live="polite">{toast}</div> : null;
+  if (dev) return <>{toastEl}<App /></>;
   if (blackout) return (
     <div className="bo-root">
+      {toastEl}
       <nav className="back-bar" aria-label="Application"><button type="button" onClick={() => go("#/sim/blackout")}>← Your path</button><span className="back-right"><SoundToggle className="snd-toggle--dark" />RealityLab AI</span></nav>
       <BlackoutGate api={api}><App /></BlackoutGate>
     </div>);
   const prof = (["blackout", "bhopal", "covid"] as const).find((x) => x === parts[1]);
-  if (parts[0] === "sim" && prof) return <PathPage key={prof} api={api} profession={prof} onHome={() => go("#/")} />;
-  if (parts[0] === "workday" && prof) return <SimPlayer key={`${prof}_workday`} api={api} simId={`${prof}_workday`} onHome={() => go("#/")} onReport={(id) => go(`#/report/${id}`)} />;
-  if (parts[0] === "crisis" && (prof === "bhopal" || prof === "covid")) return <SimPlayer key={prof} api={api} simId={prof} onHome={() => go("#/")} onReport={(id) => go(`#/report/${id}`)} />;
-  if (parts[0] === "report" && parts[1]) return <ReportView api={api} runId={parts[1]} onHome={() => go("#/")} onOpen={(sim, to) => go(to === "crisis" ? (sim === "blackout" ? "#/play/blackout" : `#/crisis/${sim}`) : `#/sim/${sim}`)} />;
+  if (parts[0] === "sim" && prof) return <>{toastEl}<PathPage key={prof} api={api} profession={prof} onHome={() => go("#/")} /></>;
+  if (parts[0] === "workday" && prof) return <>{toastEl}<SimPlayer key={`${prof}_workday`} api={api} simId={`${prof}_workday`} onHome={() => go("#/")} onReport={(id) => go(`#/report/${id}`)} /></>;
+  if (parts[0] === "crisis" && (prof === "bhopal" || prof === "covid")) return <>{toastEl}<SimPlayer key={prof} api={api} simId={prof} onHome={() => go("#/")} onReport={(id) => go(`#/report/${id}`)} /></>;
+  if (parts[0] === "report" && parts[1]) return <>{toastEl}<ReportView api={api} runId={parts[1]} onHome={() => go("#/")} onOpen={(sim, to) => go(to === "crisis" ? (sim === "blackout" ? "#/play/blackout" : `#/crisis/${sim}`) : `#/sim/${sim}`)} /></>;
 
   const tab = parts[0] === "journey" ? "journey" : parts[0] === "compare" ? "compare" : parts[0] === "settings" ? "settings" : "home";
   return (
     <div className="hub">
+      {toastEl}
       <aside className="hub-side">
         <div className="hub-brand"><span className="hub-mark" aria-hidden="true">R</span><div><strong>RealityLab AI</strong><small>Career simulations</small></div></div>
         <nav aria-label="Main" className="hub-nav">
