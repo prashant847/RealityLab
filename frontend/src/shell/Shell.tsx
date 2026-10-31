@@ -117,6 +117,7 @@ function SimCard({ s }: { s: LibraryItem }) {
         <h2 id={`t-${s.id}`}>{s.title}</h2>
         <p className="hub-tag">{s.tagline}</p>
         <p className="hub-meta" title={s.role}><span>⏱ {s.minutes} min</span><span className="hub-role">{s.role}</span></p>
+        <ul className="hub-goals" aria-label="What you will practise">{s.objectives.map((o) => <li key={o}>{o}</li>)}</ul>
         {s.progress && <div className="hub-progress"><div className="hub-bar" role="progressbar" aria-label={`${s.title} progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={s.percent ?? 0}><span style={{ width: `${s.percent ?? 0}%` }} /></div><span>{s.progress}{s.completed > 0 && s.status === "active" ? ` · completed ${s.completed}×` : ""}</span></div>}
         <div className="hub-actions">
           <button type="button" className="hub-btn hub-btn--primary" onClick={() => go(`#/sim/${s.id}`)}>{verb}</button>

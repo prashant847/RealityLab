@@ -76,3 +76,6 @@ body.fit { overflow: hidden; }
 html[data-large-text="true"] { font-size: 112.5%; }
 @media (max-width: 1100px) { .hub { grid-template-columns: 76px 1fr; } .hub-side .hub-brand div, .hub-nav a { font-size: 0; } .hub-nav a svg { margin: 0 auto; } .hub-foot div { display: none; } .hub-grid { gap: 12px; } .hub-settings { grid-template-columns: 1fr; } .hub-skills { grid-template-columns: 1fr; justify-items: center; } .hub-skills > div:last-child { width: 100%; } }
 @media (max-height: 700px) { .hub-main { padding: 16px 24px 18px; gap: 12px; } .hub-lede { display: none; }  .hub-tag { -webkit-line-clamp: 1; } }
+
+.hub-goals { display: none; margin: 6px 0 0; padding-left: 1.1rem; color: #aebcce; font-size: .84rem; } .hub-goals li { margin: 3px 0; }
+@media (min-height: 800px) { .hub-goals { display: block; } }
