@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api as liveApi, type GameApi } from "./api/client";
 import { CharacterExport } from "./gallery/CharacterExport";
 import { Gallery } from "./gallery/Gallery";
+import { Defs, FIRST_SURGE_LAYOUTS } from "./sims/comic/firstSurge";
 import { NotPetyaPreview } from "./comic/notpetya/Preview";
 import { useGame } from "./game/useGame";
 import { BusyToast, ErrorBanner, PauseOverlay, Topbar } from "./screens/Chrome";
@@ -26,6 +27,10 @@ const useHash = () => {
 
 export default function App({ api = liveApi }: { api?: GameApi }) {
   const hash = useHash();
+  if (hash.startsWith("#/comic-layout/")) {                      // developer only: a page's backdrop on its own, the guide picture for the art pipeline
+    const Back = FIRST_SURGE_LAYOUTS[hash.slice("#/comic-layout/".length)];
+    return Back ? <svg id="layout" xmlns="http://www.w3.org/2000/svg" viewBox="24 176 1232 520" width="1232" height="520" style={{ display: "block", background: "#fff" }}><Defs /><Back /></svg> : null;
+  }
   if (hash === "#/gallery") return <Gallery />;
   if (hash === "#/preview-notpetya") return <NotPetyaPreview />;
   if (hash === "#/char-export") return <CharacterExport />;

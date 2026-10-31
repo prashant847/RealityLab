@@ -83,7 +83,7 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
     }, 80);
     return () => clearTimeout(t);
   }, [hash]);
-  const dev = ["gallery", "preview-notpetya", "char-export"].includes(parts[0] ?? "");
+  const dev = ["gallery", "preview-notpetya", "char-export", "comic-layout"].includes(parts[0] ?? "");
   const blackout = parts[0] === "play" && parts[1] === "blackout";            // the comic crisis; everything else is a themed screen
   // Every screen of the app except the developer galleries fits the window without page scrolling (long lists scroll inside their own panel).
   useEffect(() => { document.body.classList.toggle("fit", !dev); }, [dev]);

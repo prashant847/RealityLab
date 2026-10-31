@@ -141,16 +141,21 @@ export function Sfx({ x, y, text, size = 96, rotate = -6, fill = "#ff4a2a" }: { 
   );
 }
 
+/** The setting of a page. A finished picture, if there is one, replaces it; the characters, signs and text drawn after it stay on top. */
+export function Backdrop({ children }: { children: ReactNode }) {
+  const art = useContext(ArtContext);
+  return art ? <image href={art} x="24" y="176" width="1232" height="520" preserveAspectRatio="xMidYMid slice" /> : <g>{children}</g>;
+}
+
 /** A page: tinted strip with bubbles on top, the picture inside a black frame, then the caption. Pages are 1280 by 720, like a video frame. */
 export function Page({ tint, bubbles, caption, captionWidth, children }: { tint: string; bubbles: ReactNode; caption?: string[]; captionWidth?: number; children: ReactNode }) {
-  const art = useContext(ArtContext);
   return (
     <svg viewBox="0 0 1280 720" className="ck-page" role="img" preserveAspectRatio="xMidYMid meet">
       <Defs />
       <rect width="1280" height="720" fill="#f3ead2" />
       <rect x="24" y="22" width="1232" height="146" fill={tint} stroke={INK} strokeWidth="6" />
       <rect x="24" y="22" width="1232" height="146" fill="url(#ck-dots-s)" opacity="0.07" />
-      <svg x="24" y="176" width="1232" height="520" viewBox="24 176 1232 520" overflow="hidden">{art ? <image href={art} x="24" y="176" width="1232" height="520" preserveAspectRatio="xMidYMid slice" /> : <g>{children}</g>}</svg>
+      <svg x="24" y="176" width="1232" height="520" viewBox="24 176 1232 520" overflow="hidden"><g>{children}</g></svg>
       <rect x="24" y="176" width="1232" height="520" fill="none" stroke={INK} strokeWidth="6" />
       {bubbles}
       {caption && <Caption lines={caption} w={captionWidth} />}
