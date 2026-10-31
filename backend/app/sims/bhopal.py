@@ -290,11 +290,6 @@ PREP = (
     PrepItem("prep_riskreg", "A risk register head office has read", "Jonas Berg has read your risk register and knows what each saving would cost.",
              "Head office has never seen what its savings risk, so the next target will arrive without that conversation.", {"trust": 4, "hazard": -2}, "prep_riskreg_part", "Head office on the line (13:30)"),
 )
-INTERVAL = (
-    "Six weeks later. Head office announces an external safety audit of Kestrel Works, to take place over four weeks. Nobody calls it an inspection, and everybody uses the word.",
-    "Hollis Grant, the plant director, calls you in. \u201cBefore the auditors arrive,\u201d she says, \u201cI want you to read the history of Bhopal. Not to frighten us. Because every incident like it started the way our ordinary Thursdays go.\u201d",
-    "You open the record, and then you will walk the plant with its lessons in mind. Whatever you did on that Thursday is what you have now: the alarms, the people, the neighbours, and the habits.",
-)
 EVENTS_PREP = (
     Event("ev_p_alarm", N + 1, "The alarm you tested", "The cooling alarm tripped correctly in your logged test last month. You know what it should do.", (("flag", "prep_alarm_test"),), {}, kind="simulation"),
     Event("ev_p_alarm_miss", N + 1, "An overdue sticker", "The auditors point at the cooling alarm's overdue test sticker. You remember seeing it.", (("no_flag", "prep_alarm_test"),), {}, kind="simulation"),
@@ -333,5 +328,5 @@ BHOPAL = Scenario(
     sources=((SRC_WIKI, "https://en.wikipedia.org/wiki/Bhopal_disaster"),
              (SRC_TTU, "https://ethicalengineer.ttu.edu/studies/case-study-bhopal-gas-tragedy"),
              (SRC_EBSCO, "https://www.ebsco.com/research-starters/science/bhopal-disaster")),
-    next_up=("covid", "blackout"), profession="bhopal", prep=PREP, interval=INTERVAL,
+    next_up=("covid", "blackout"), profession="bhopal", prep=PREP,
 )

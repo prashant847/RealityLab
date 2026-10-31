@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import App from "../App";
 import { simsApi, type Journey, type LibraryItem, type Profile, type SimsApi } from "../api/sims";
-import { IntervalPage, PathPage } from "../sims/Phases";
+import { PathPage } from "../sims/Phases";
 import { SimPlayer } from "../sims/Player";
 import { CareerCompare } from "./CareerCompare";
 import { Preview } from "../sims/Previews";
@@ -46,7 +46,7 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
   useEffect(() => {
     const names: Record<string, string> = { blackout: "BLACKOUT", bhopal: "Bhopal", covid: "COVID-era Hospital" };
     const name = names[parts[1] ?? ""];
-    const page = ["sim", "play", "crisis"].includes(parts[0] ?? "") ? name : parts[0] === "workday" ? name && `${name}: a normal day` : parts[0] === "interval" ? name && `${name}: the interval`
+    const page = ["sim", "play", "crisis"].includes(parts[0] ?? "") ? name : parts[0] === "workday" ? name && `${name}: a normal day`
       : parts[0] === "report" ? "Career experience report" : parts[0] === "journey" ? "My journey" : parts[0] === "compare" ? "Compare careers" : parts[0] === "settings" ? "Settings" : "";
     document.title = page ? `${page} — RealityLab AI` : "RealityLab AI";
   }, [hash]);   // eslint-disable-line react-hooks/exhaustive-deps
@@ -59,10 +59,9 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
     </div>);
   const prof = (["blackout", "bhopal", "covid"] as const).find((x) => x === parts[1]);
   if (parts[0] === "sim" && prof) return <PathPage key={prof} api={api} profession={prof} onHome={() => go("#/")} />;
-  if (parts[0] === "interval" && prof) return <IntervalPage key={prof} api={api} profession={prof} onHome={() => go("#/")} />;
   if (parts[0] === "workday" && prof) return <SimPlayer key={`${prof}_workday`} api={api} simId={`${prof}_workday`} onHome={() => go("#/")} onReport={(id) => go(`#/report/${id}`)} />;
   if (parts[0] === "crisis" && (prof === "bhopal" || prof === "covid")) return <SimPlayer key={prof} api={api} simId={prof} onHome={() => go("#/")} onReport={(id) => go(`#/report/${id}`)} />;
-  if (parts[0] === "report" && parts[1]) return <ReportView api={api} runId={parts[1]} onHome={() => go("#/")} onOpen={(sim, to) => go(to === "interval" ? `#/interval/${sim}` : `#/sim/${sim}`)} />;
+  if (parts[0] === "report" && parts[1]) return <ReportView api={api} runId={parts[1]} onHome={() => go("#/")} onOpen={(sim, to) => go(to === "crisis" ? (sim === "blackout" ? "#/play/blackout" : `#/crisis/${sim}`) : `#/sim/${sim}`)} />;
 
   const tab = parts[0] === "journey" ? "journey" : parts[0] === "compare" ? "compare" : parts[0] === "settings" ? "settings" : "home";
   return (
@@ -119,7 +118,7 @@ function nextStep(s: LibraryItem): { label: string; to: string } {
   if (s.status === "active") return { label: "Continue the crisis", to: s.id === "blackout" ? "#/play/blackout" : `#/crisis/${s.id}` };
   if (wd === "active") return { label: "Continue the day", to: `#/workday/${s.id}` };
   if (wd === "none" && s.status === "none") return { label: "Start with a normal day", to: `#/workday/${s.id}` };
-  if (wd === "completed" && s.status === "none") return { label: "Go to the interval", to: `#/interval/${s.id}` };
+  if (wd === "completed" && s.status === "none") return { label: "Begin the crisis", to: s.id === "blackout" ? "#/play/blackout" : `#/crisis/${s.id}` };
   return { label: "Play again", to: `#/sim/${s.id}` };
 }
 

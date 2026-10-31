@@ -44,3 +44,12 @@ class Reflection(Base):
     daily_interest: Mapped[int] = mapped_column(Integer)                # "Would I want to do this kind of work every day?"
     note: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class CareerChoice(Base):
+    """The one career the student says they would opt for after comparing (id = 1). Their own decision, recorded with their reason."""
+    __tablename__ = "career_choice"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    career: Mapped[str] = mapped_column(String(32), default="")
+    reason: Mapped[str] = mapped_column(Text, default="")
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)

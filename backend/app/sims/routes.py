@@ -26,6 +26,11 @@ class ReflectionBody(BaseModel):
     note: str = Field("", max_length=400)
 
 
+class ChoiceBody(BaseModel):
+    career: str = Field("", max_length=32)            # empty clears the choice
+    reason: str = Field("", max_length=600)
+
+
 class ProfileBody(BaseModel):
     name: str | None = Field(None, max_length=60)
     large_text: bool | None = None
@@ -87,11 +92,6 @@ def run_report(run_id: str, s: SimsService = S):
     return s.report(run_id)
 
 
-@router.get("/sims/{profession}/interval", summary="Between the workday and the crisis: what the workday set up, and what it missed")
-def interval(profession: str, s: SimsService = S):
-    return s.interval(profession)
-
-
 @router.get("/runs/{run_id}/reflection")
 def get_reflection(run_id: str, s: SimsService = S):
     return s.get_reflection(run_id)
@@ -105,3 +105,13 @@ def post_reflection(run_id: str, body: ReflectionBody, s: SimsService = S):
 @router.get("/careers", summary="Career Comparison: each profession's profile next to what the student experienced")
 def careers(s: SimsService = S):
     return s.careers()
+
+
+@router.get("/career-choice", summary="The career the student says they would opt for, if they have decided")
+def get_choice(s: SimsService = S):
+    return s.get_choice()
+
+
+@router.put("/career-choice", summary="Record the student's own choice (it is not computed or recommended by the app)")
+def put_choice(body: ChoiceBody, s: SimsService = S):
+    return s.save_choice(body.career, body.reason)

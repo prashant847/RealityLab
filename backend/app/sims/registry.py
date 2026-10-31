@@ -15,8 +15,3 @@ BLACKOUT_META = {
                    "Communicate honestly with staff, customers and the public."],
     "style": "comic",
 }
-BLACKOUT_INTERVAL = (
-    "Tuesday 27 June 2017. The routine update that was queued yesterday runs in the morning, like any other. Nobody notices.",
-    "A little before eleven, a PC at the gate shows a red message. Then another one, across the yard. Within minutes the Terminal Supervisor is on the radio, and the IT Lead is walking fast toward your office.",
-    "You look at the room. The five people you briefed on Monday morning. The servers you patched, or did not. The backup you restored, or did not. Whatever you did on that ordinary Monday is what you have now.",
-)

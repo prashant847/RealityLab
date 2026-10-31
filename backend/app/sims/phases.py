@@ -10,8 +10,8 @@ from ..db.models import Report, Run
 from ..engine.prep import ITEMS as BLACKOUT_PREP
 from ..services.simulations import NotFound
 from .careers import CAREERS, DIMENSIONS, SKILL_LABELS
-from .models import Reflection, SimRun
-from .registry import BLACKOUT_INTERVAL, BLACKOUT_META, PROFESSIONS, SCENARIOS
+from .models import CareerChoice, Reflection, SimRun
+from .registry import PROFESSIONS, SCENARIOS
 from .workdays import WORKDAYS
 
 MINUS = "−"
@@ -20,6 +20,12 @@ MINUS = "−"
 def _fmt(label: str, v: float) -> str:
     sign = "+" if v > 0 else MINUS
     return f"{label} {sign}{abs(v):g}"
+
+
+def quality(strong: int, mixed: int, weak: int) -> int | None:
+    """Share of the best possible decision quality, 0 to 100: a strong decision counts 2, a mixed one 1, a weak one 0."""
+    n = strong + mixed + weak
+    return round(100 * (2 * strong + mixed) / (2 * n)) if n else None
 
 
 def refl_view(r: Reflection) -> dict[str, Any]:
@@ -62,18 +68,12 @@ class PhasesMixin:
                         "text": it.earned if (full or part) else it.missed, "effects": [_fmt(labels[k], v) for k, v in eff.items() if v]})
         return out
 
-    def interval(self, profession: str) -> dict[str, Any]:
-        if profession not in PROFESSIONS:
-            raise NotFound(f"No simulation called '{profession}'.")
+    def prep_summary(self, profession: str) -> dict[str, Any]:
+        """What the latest workday set up: shown on the crisis intro and the path page. Empty if no workday has been finished."""
         with self.sf() as db:
             wd = self._done_workday(db, profession)
-            flags = [f for f in wd.state["flags"] if f.startswith("prep_")] if wd else []
-            items = self.prep_items(profession, flags)
-            crisis = SCENARIOS.get(profession)
-            return {"profession": profession, "title": crisis.title if crisis else BLACKOUT_META["title"], "workday_done": wd is not None,
-                    "workday_run_id": wd.id if wd else None, "workday_title": WORKDAYS[profession].title,
-                    "narrative": list(crisis.interval) if crisis else list(BLACKOUT_INTERVAL), "items": items,
-                    "earned": sum(1 for i in items if i["status"] != "missed"), "total": len(items)}
+            items = self.prep_items(profession, [f for f in wd.state["flags"] if f.startswith("prep_")] if wd else [])
+            return {"workday_done": wd is not None, "items": items, "earned": sum(1 for i in items if i["status"] != "missed"), "total": len(items)}
 
     # ------------------------------------------------------------------ reflections
     def save_reflection(self, run_id: str, enjoyment: int, stress: int, daily_interest: int, note: str) -> dict[str, Any]:
@@ -125,8 +125,29 @@ class PhasesMixin:
                         phases["crisis"] = {"run_id": r.id, "outcome": r.state.get("final", {}).get("ending_title") or (r.ending or "Completed"), "decisions": len(r.state.get("decisions", [])),
                                             "strong": q.get("sound", 0), "mixed": q.get("questionable", 0), "weak": q.get("poor", 0), "score": rep.score if rep else None,
                                             "reflection": refl_view(refl) if refl else None}
+                for ph in phases.values():
+                    if ph:
+                        ph["quality"] = quality(ph["strong"], ph["mixed"], ph["weak"])
                 skills = {k: round(sum(v) / len(v)) for k, v in skill_pts.items()}
+                complete = phases["workday"] is not None and phases["crisis"] is not None
                 out.append({"id": cid, **{k: static[k] for k in ("title", "field", "setting", "tagline", "daily", "problems", "decisions", "pressure", "communication", "rewards", "costs")},
-                            "skills_required": static["skills"], "you": {"phases": phases, "skills": skills}})
+                            "skills_required": static["skills"], "you": {"phases": phases, "skills": skills, "complete": complete}})
         return {"careers": out, "skills": SKILL_LABELS, "dimensions": [{"id": i, "label": label} for i, label in DIMENSIONS],
-                "note": "This compares what the simulations show of each job, and what you did and felt in them. It is not career advice, and it does not say what you are suited to."}
+                "choice": self.get_choice(),
+                "note": "This compares how you did and felt in each simulated job. It is not career advice, and it does not say what you are suited to: the choice is yours."}
+
+    # ------------------------------------------------------------------ the student's own choice
+    def get_choice(self) -> dict[str, Any] | None:
+        with self.sf() as db:
+            c = db.get(CareerChoice, 1)
+            return {"career": c.career, "reason": c.reason, "updated_at": c.updated_at.isoformat()} if c and c.career else None
+
+    def save_choice(self, career: str, reason: str) -> dict[str, Any] | None:
+        if career and career not in PROFESSIONS:
+            raise NotFound(f"No career called '{career}'.")
+        with self.sf() as db:
+            c = db.get(CareerChoice, 1) or CareerChoice(id=1)
+            c.career, c.reason = career, reason.strip()[:600]
+            db.add(c)
+            db.commit()
+        return self.get_choice()

@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { CareersView, Career, Intro, IntervalView, LibraryItem, Outcome, RunView, SimReport, SimsApi } from "../api/sims";
+import type { CareersView, Career, CareerPhase, Intro, PrepItem, LibraryItem, Outcome, RunView, SimReport, SimsApi } from "../api/sims";
 import { Shell } from "./Shell";
 
 const item = (id: LibraryItem["id"], over: Partial<LibraryItem> = {}): LibraryItem => ({
@@ -18,21 +18,22 @@ const view = (n: number, status = "active"): RunView => ({
 });
 const outcome: Outcome = { choice_id: "c1_strong", label: "Structured plan", rating: "strong", consequence: "It went well.", lesson: "Agree a method.", changes: { capacity: [55, 60] }, completed: false, events: [] };
 
-const intervalView: IntervalView = {
-  profession: "covid", title: "COVID-era Hospital", workday_title: "A Day at Riverside", workday_done: true, workday_run_id: "w1", narrative: ["Eleven weeks later.", "The wards fill."],
-  items: [{ flag: "prep_stock", label: "Minimum stock levels", task: "The cupboard count (10:30)", status: "full", text: "You set minimum levels.", effects: ["Oxygen reserve +10"] },
-          { flag: "prep_rota", label: "A rota with slack", task: "Sister Anita's rota (15:30)", status: "missed", text: "The rota was already stretched.", effects: [] }], earned: 1, total: 2,
-};
-const career = (id: Career["id"], title: string, w: number, c: number, you: Career["you"]): Career => ({
+const prepItems: PrepItem[] = [
+  { flag: "prep_stock", label: "Minimum stock levels", task: "The cupboard count (10:30)", status: "full", text: "You set minimum levels.", effects: ["Oxygen reserve +10"] },
+  { flag: "prep_rota", label: "A rota with slack", task: "Sister Anita's rota (15:30)", status: "missed", text: "The rota was already stretched.", effects: [] },
+];
+const phase = (quality: number, enjoyment: number, stress: number, run = "r"): CareerPhase => ({ run_id: run, outcome: `Outcome ${quality}`, decisions: 7, strong: 5, mixed: 1, weak: 1, quality,
+  reflection: { run_id: run, profession: "covid", phase: "workday", enjoyment, stress, daily_interest: enjoyment, note: "" } });
+const career = (id: Career["id"], title: string, w: CareerPhase | null, c: CareerPhase | null, skills: Record<string, number> = {}): Career => ({
   id, title, field: "Field", setting: "A setting", tagline: "A tagline", daily: { workday: ["ordinary task"], crisis: ["crisis task"] }, problems: { workday: ["small problem"], crisis: ["big problem"] },
-  decisions: { tempo: [2, 5], information: [4, 2], stakes: [3, 5], reversibility: [4, 2], text: { workday: "Calm choices.", crisis: "Hard choices." } }, pressure: { workday: w, crisis: c, text: { workday: "Steady.", crisis: "Intense." } },
-  communication: { with: ["Families"], text: { workday: "Talking.", crisis: "Telling the truth." } }, rewards: ["Impact"], costs: ["Hours"], skills_required: { teamwork: 5, communication: 4 }, you,
+  decisions: { tempo: [2, 5], information: [4, 2], stakes: [3, 5], reversibility: [4, 2], text: { workday: "Calm choices.", crisis: "Hard choices." } }, pressure: { workday: 2, crisis: 5, text: { workday: "Steady.", crisis: "Intense." } },
+  communication: { with: ["Families"], text: { workday: "Talking.", crisis: "Telling the truth." } }, rewards: ["Impact"], costs: ["Hours"], skills_required: { teamwork: 5, communication: 4 },
+  you: { phases: { workday: w, crisis: c }, skills, complete: Boolean(w && c) },
 });
 const careersView: CareersView = {
-  careers: [career("blackout", "Operations lead", 3, 5, { phases: { workday: null, crisis: null }, skills: {} }),
-            career("bhopal", "Safety manager", 2, 5, { phases: { workday: null, crisis: null }, skills: {} }),
-            career("covid", "Hospital doctor", 2, 5, { phases: { workday: { run_id: "w1", outcome: "Ready for what comes", decisions: 7, strong: 5, mixed: 1, weak: 1, reflection: { run_id: "w1", profession: "covid", phase: "workday", enjoyment: 5, stress: 2, daily_interest: 4, note: "" } }, crisis: null }, skills: { teamwork: 80 } })],
-  skills: { teamwork: "Teamwork", communication: "Communication" }, dimensions: [], note: "This compares what the simulations show of each job. It is not career advice.",
+  careers: [career("blackout", "Operations lead", phase(60, 3, 4, "b1"), null), career("bhopal", "Safety manager", phase(80, 4, 3, "h1"), phase(90, 4, 4, "h2"), { teamwork: 70 }),
+            career("covid", "Hospital doctor", phase(100, 5, 2, "c1"), phase(40, 5, 5, "c2"), { teamwork: 80, communication: 60 })],
+  skills: { teamwork: "Teamwork", communication: "Communication" }, dimensions: [], choice: null, note: "This compares how you did and felt in each simulated job. It is not career advice.",
 };
 
 function fake(over: Partial<SimsApi> = {}): SimsApi {
@@ -44,9 +45,9 @@ function fake(over: Partial<SimsApi> = {}): SimsApi {
     intro: vi.fn().mockResolvedValue({ ...item("covid"), intro: ["You are the lead."], disclaimer: "Educational only.", rounds: 2, parts: [] } as unknown as Intro),
     current: vi.fn().mockResolvedValue(null), start: vi.fn().mockResolvedValue(view(1)),
     decide: vi.fn().mockResolvedValue({ outcome, view: view(2) }), report: vi.fn().mockRejectedValue(new Error("no report")),
-    interval: vi.fn().mockResolvedValue(intervalView), reflection: vi.fn().mockResolvedValue(null),
+    reflection: vi.fn().mockResolvedValue(null),
     saveReflection: vi.fn().mockImplementation(async (run: string, r) => ({ run_id: run, profession: "covid", phase: "workday", ...r })),
-    careers: vi.fn().mockResolvedValue(careersView), ...over,
+    careers: vi.fn().mockResolvedValue(careersView), saveChoice: vi.fn().mockImplementation(async (career: string, reason: string) => (career ? { career, reason, updated_at: "2026-01-01" } : null)), ...over,
   };
 }
 
@@ -146,51 +147,48 @@ describe("report, journey, settings", () => {
 });
 
 
-describe("workday, interval and career comparison", () => {
-  it("the library offers the ordinary day first, then the interval, then the crisis", async () => {
+describe("workday, crisis and career comparison", () => {
+  it("the library offers the normal day first, then the crisis", async () => {
     const wd = (status: "none" | "active" | "completed") => ({ id: "covid_workday", title: "A day", tagline: "t", minutes: 15, rounds: 7, status });
     const api = fake({ library: vi.fn().mockResolvedValue([item("blackout", { workday: wd("completed") }), item("bhopal", { workday: wd("active") }), item("covid", { workday: wd("none") })]) });
     render(<Shell api={api} />);
-    expect(await within(await screen.findByRole("article", { name: /blackout/i })).findByRole("button", { name: "Go to the interval" })).toBeInTheDocument();
+    expect(await within(await screen.findByRole("article", { name: /blackout/i })).findByRole("button", { name: "Begin the crisis" })).toBeInTheDocument();
     expect(within(screen.getByRole("article", { name: /bhopal/i })).getByRole("button", { name: "Continue the day" })).toBeInTheDocument();
     expect(within(screen.getByRole("article", { name: /covid/i })).getByRole("button", { name: "Start with a normal day" })).toBeInTheDocument();
   });
-  it("shows the path of one profession and starts the workday from it", async () => {
+  it("shows the path of one profession as two separate parts, with no interval between them", async () => {
     window.location.hash = "#/sim/covid";
     render(<Shell api={fake({ library: vi.fn().mockResolvedValue([item("covid", { workday: { id: "covid_workday", title: "A day", tagline: "A calm day", minutes: 15, rounds: 7, status: "none" } })]) })} />);
     expect(await screen.findByRole("heading", { name: "A normal day" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "The interval" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "The crisis" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "The interval" })).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Start the day" }));
     expect(window.location.hash).toBe("#/workday/covid");
   });
-  it("the interval says what the workday set up and what it missed, then begins the crisis", async () => {
-    window.location.hash = "#/interval/covid";
-    render(<Shell api={fake()} />);
-    expect(await screen.findByRole("heading", { name: "Some time later…" })).toBeInTheDocument();
+  it("the crisis intro says what the normal day set up", async () => {
+    window.location.hash = "#/crisis/covid";
+    const intro = { ...item("covid"), intro: ["You are the lead."], disclaimer: "Educational only.", rounds: 8, parts: [], kind: "crisis", profession: "covid", prep: { workday_done: true, items: prepItems, earned: 1, total: 2 } } as unknown as Intro;
+    render(<Shell api={fake({ intro: vi.fn().mockResolvedValue(intro) })} />);
+    expect(await screen.findByText(/Your normal day set up 1 of 2 things/)).toBeInTheDocument();
     expect(screen.getByText("Minimum stock levels")).toBeInTheDocument();
-    expect(screen.getByText("Oxygen reserve +10")).toBeInTheDocument();
-    expect(screen.getByLabelText("Not set up")).toBeInTheDocument();
-    expect(screen.getByLabelText("1 of 2 set up")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Begin the crisis" }));
-    expect(window.location.hash).toBe("#/crisis/covid");
+    expect(screen.queryByText("A rota with slack")).toBeNull();                         // only what was actually set up is listed
   });
-  it("without a workday the interval invites you to do it first, but lets you skip", async () => {
-    window.location.hash = "#/interval/blackout";
-    render(<Shell api={fake({ interval: vi.fn().mockResolvedValue({ ...intervalView, profession: "blackout", workday_done: false, earned: 0, items: intervalView.items.map((i) => ({ ...i, status: "missed" as const })) }) })} />);
-    expect(await screen.findByRole("button", { name: "Do the ordinary day first" })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Skip to the crisis" }));
-    expect(window.location.hash).toBe("#/play/blackout");
+  it("without a workday the crisis intro offers the day first, but the crisis can still be played", async () => {
+    window.location.hash = "#/crisis/covid";
+    const intro = { ...item("covid"), intro: ["x"], disclaimer: "d", rounds: 8, parts: [], kind: "crisis", profession: "covid", prep: { workday_done: false, items: [], earned: 0, total: 7 } } as unknown as Intro;
+    render(<Shell api={fake({ intro: vi.fn().mockResolvedValue(intro) })} />);
+    expect(await screen.findByText(/You have not played the normal day/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Play it first/ })).toHaveAttribute("href", "#/workday/covid");
+    expect(screen.getByRole("button", { name: "Begin" })).toBeEnabled();
   });
-  it("saves a reflection from the report and shows what the workday set up", async () => {
+  it("saves a reflection from the report, then goes straight to the crisis", async () => {
     window.location.hash = "#/report/w1";
     const rep = { simulation: "A Day at Riverside", simulation_id: "covid_workday", profession: "covid", kind: "workday", role: "Lead", run_id: "w1", outcome: { id: "ready", title: "Ready for what comes", text: "Good.", tone: "good" },
       final_meters: [], summary: { decisions: 7, strong: 7, mixed: 0, weak: 0 }, major_decisions: [], challenges: [], skills: [], improve: [], focus_areas: [], lessons: ["Rehearse."], sources: [],
-      recommended_next: { id: "covid", title: "COVID-era Hospital", reason: "Cross the interval.", to: "interval" }, note: "n", prep: intervalView.items } as unknown as SimReport;
+      recommended_next: { id: "covid", title: "COVID-era Hospital", reason: "Now the crisis.", to: "crisis" }, note: "n", prep: prepItems } as unknown as SimReport;
     const api = fake({ report: vi.fn().mockResolvedValue(rep) });
     render(<Shell api={api} />);
     expect(await screen.findByRole("heading", { name: "What this day set up for the crisis" })).toBeInTheDocument();
-    expect(screen.getByText("Minimum stock levels")).toBeInTheDocument();
     const save = screen.getByRole("button", { name: "Save my answers" });
     expect(save).toBeDisabled();
     for (const q of ["How much did you enjoy this?", "How stressful did it feel?", "Could you see yourself doing this kind of work, day to day?"])
@@ -198,25 +196,50 @@ describe("workday, interval and career comparison", () => {
     await userEvent.click(save);
     expect(api.saveReflection).toHaveBeenCalledWith("w1", { enjoyment: 4, stress: 4, daily_interest: 4, note: "" });
     expect(await screen.findByText(/Saved\. You can compare careers/)).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Continue to the interval" }));
-    expect(window.location.hash).toBe("#/interval/covid");
+    await userEvent.click(screen.getByRole("button", { name: "Begin the crisis" }));
+    expect(window.location.hash).toBe("#/crisis/covid");
   });
-  it("compares careers: needs two, and puts what you experienced beside each job", async () => {
+  it("comparison needs both parts of at least two jobs, and says what is left to play", async () => {
+    window.location.hash = "#/compare";
+    const one = { ...careersView, careers: careersView.careers.map((c) => (c.id === "bhopal" ? career("bhopal", "Safety manager", phase(80, 4, 3), null) : c.id === "covid" ? career("covid", "Hospital doctor", null, null) : c)) };
+    render(<Shell api={fake({ careers: vi.fn().mockResolvedValue(one) })} />);
+    expect(await screen.findByText(/Finish both parts of at least two jobs to compare how you did/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Play the normal day" })).toBeInTheDocument();      // hospital doctor: nothing played yet
+    expect(screen.getAllByRole("button", { name: "Play the crisis" }).length).toBe(2);            // the others have only the normal day
+  });
+  it("compares how you did: both parts side by side, honest signals, and your own saved choice", async () => {
+    window.location.hash = "#/compare";
+    const api = fake();
+    render(<Shell api={api} />);
+    expect(await screen.findByRole("heading", { name: "How did you do in each job?" })).toBeInTheDocument();
+    const group = screen.getByRole("group", { name: "Careers to compare" });
+    expect(within(group).getByRole("button", { name: /Operations lead/ })).toHaveTextContent("Finish both parts to compare");   // not complete: cannot be compared
+    expect(screen.getByRole("article", { name: "Hospital doctor" })).toHaveTextContent("Outcome 100");
+    expect(screen.getByRole("article", { name: "Hospital doctor" })).toHaveTextContent("Outcome 40");
+    expect(screen.getByRole("article", { name: "Hospital doctor" })).toHaveTextContent("decisions dropped by 60 points");
+    expect(screen.getByRole("article", { name: "Safety manager" })).toHaveTextContent("decisions improved by 10 points");
+    const signalsBox = screen.getByRole("region", { name: "What your results show" });
+    expect(signalsBox).toHaveTextContent("Under pressure, you did best as: Safety manager (90%)");
+    expect(signalsBox).toHaveTextContent("Your results point in different directions");           // hospital: best average quality; safety: best under pressure
+    const choice = screen.getByRole("region", { name: "Your choice" });
+    expect(within(choice).getByRole("button", { name: "Save my choice" })).toBeDisabled();
+    await userEvent.click(within(choice).getByRole("radio", { name: "Safety manager" }));
+    await userEvent.type(within(choice).getByLabelText(/Why\?/), "I liked the walk-rounds");
+    await userEvent.click(within(choice).getByRole("button", { name: "Save my choice" }));
+    expect(api.saveChoice).toHaveBeenCalledWith("bhopal", "I liked the walk-rounds");
+    expect(await within(choice).findByRole("status")).toHaveTextContent("You said: Safety manager");
+    await userEvent.click(within(choice).getByRole("button", { name: "Clear" }));
+    expect(api.saveChoice).toHaveBeenLastCalledWith("", "");
+  });
+  it("keeps the plain comparison of the jobs as a second view", async () => {
     window.location.hash = "#/compare";
     render(<Shell api={fake()} />);
+    await userEvent.click(await screen.findByRole("tab", { name: "About the jobs" }));
     expect(await screen.findByRole("heading", { name: "What is each job really like?" })).toBeInTheDocument();
-    const group = screen.getByRole("group", { name: "Careers to compare" });
-    expect(within(group).getAllByRole("button", { pressed: true })).toHaveLength(3);
-    await userEvent.click(within(group).getByRole("button", { name: /Operations lead/ }));
-    await userEvent.click(within(group).getByRole("button", { name: /Safety manager/ }));       // the last two cannot be deselected
-    expect(within(group).getAllByRole("button", { pressed: true })).toHaveLength(2);
-    expect(screen.getByText(/an ordinary day with 7 decisions/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("tab", { name: "Workplace pressure" }));
     expect(screen.getAllByRole("img", { name: "5 out of 5" }).length).toBeGreaterThan(0);
     await userEvent.click(screen.getByRole("tab", { name: "Skills required" }));
-    expect(screen.getByRole("meter", { name: "Teamwork shown in Hospital doctor" })).toHaveAttribute("aria-valuenow", "80");
-    await userEvent.click(screen.getByRole("tab", { name: "What stood out" }));
-    expect(screen.getByText(/Highest pressure in a crisis|Biggest jump/)).toBeInTheDocument();
+    expect(screen.getAllByRole("img", { name: "5 out of 5" }).length).toBeGreaterThan(0);
     expect(screen.getByRole("note")).toHaveTextContent("not career advice");
   });
 });

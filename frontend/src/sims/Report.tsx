@@ -110,7 +110,7 @@ export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId
               {rep.sources.length > 0 && <><h3>Sources</h3><ul className="rep-src">{rep.sources.map((x) => <li key={x.url}>{x.label} <span className="sim-fine">({x.url})</span></li>)}</ul>
                 <p className="sim-fine">These are summaries consulted when writing this simulation. Check primary reports before quoting any detail.</p></>}</div>
             {nx.id && <div className="rep-next no-print"><h2>Recommended next</h2><p><b>{nx.title}</b></p><p>{nx.reason}</p>
-              <button type="button" className="sim-btn sim-btn--primary" onClick={() => onOpen(nx.id!, nx.to)}>{nx.to === "interval" ? "Continue to the interval" : nx.id === rep.simulation_id ? "Replay this simulation" : "Open it"}</button></div>}
+              <button type="button" className="sim-btn sim-btn--primary" onClick={() => onOpen(nx.id!, nx.to)}>{nx.to === "crisis" ? "Begin the crisis" : nx.id === rep.simulation_id ? "Replay this simulation" : "Open it"}</button></div>}
           </div>
         </section>
       </div>

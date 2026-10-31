@@ -145,3 +145,33 @@ html[data-large-text="true"] { font-size: 112.5%; }
 @media (max-height: 800px) { .cc-card .cc-tag { display: none; } .cc-you { margin: 5px 0 !important; padding: 4px 10px; } .cc-card .cc-rc h4 { margin-top: 0; } }
 @media (max-height: 740px) { .cc-note { display: none; } .cc-pick button small { display: none; } }
 .cc-hl h4, .cc-card h4 { color: #8a6a1f; }
+
+/* ===== career comparison: performance view (the main one) ===== */
+.cc .hub-head { align-items: flex-end; }
+.cc-views { display: flex; gap: 4px; background: #efe7d3; padding: 4px; border-radius: 999px; flex: none; }
+.cc-views button { font: inherit; cursor: pointer; border: 0; background: none; padding: 7px 18px; border-radius: 999px; color: #5b6479; } .cc-views button.on { background: #1f2638; color: #fff; font-weight: 700; }
+.cc-perf { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 16px; }
+.cc-main { min-height: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.cc-main .cc-cols { flex: 1; min-height: 0; overflow: auto; align-items: start; }
+.cc-pick button.locked { border-style: dashed; opacity: .75; cursor: pointer; } .cc-pick button.locked small { display: block; color: #8a6a1f; }
+.cc-perfcard { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; } .cc-perfcard h3 { margin: 0 0 2px; font-size: 1rem; color: #1f2638; }
+.cc-phase { border-top: 1px solid #eee4cf; padding-top: 6px; } .cc-phase h4 { margin: 0 0 2px; } .cc-out { margin: 0 0 4px !important; font-weight: 600; color: #1f2638; font-size: .85rem; }
+.cc-q { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; font-size: .78rem; color: #5b6479; } .cc-q b { color: #1f2638; }
+.cc-counts { margin: 2px 0 4px !important; font-size: .76rem; color: #5b6479; }
+.cc-dl--sm { margin: 2px 0 !important; font-size: .78rem; gap: 2px 8px !important; } .cc-dl--sm .cc-dots i { width: 11px; height: 11px; }
+.cc-norate { margin: 2px 0 !important; font-size: .78rem; color: #5b6479; }
+.cc-delta, .cc-skl { margin: 4px 0 0 !important; font-size: .8rem; background: #f6f1e4; border-radius: 8px; padding: 5px 9px; color: #2a3247; }
+.cc-side { min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+.cc-side .cc-hl { flex: 1; min-height: 0; overflow: auto; padding: 10px 14px; } .cc-side .cc-hl li { font-size: .83rem; margin: 4px 0; }
+.cc-choice { flex: none; background: #fff; border: 1px solid #e6dcc6; border-left: 5px solid #1f2638; border-radius: 12px; padding: 10px 14px; color: #2a3247; } .cc-choice h4 { margin: 0 0 4px; color: #1f2638; }
+.cc-saved { margin: 0 0 6px !important; font-size: .82rem; background: #e6f4ec; border-radius: 8px; padding: 5px 9px; color: #1f6a50; }
+.cc-radios { display: grid; gap: 4px; } .cc-radios label { display: flex !important; align-items: center; gap: 8px; margin: 0 !important; padding: 5px 9px; border: 1px solid #e6dcc6; border-radius: 8px; cursor: pointer; font-size: .85rem; color: #2a3247 !important; } .cc-radios label.on { border-color: #1f2638; background: #f4efe3; font-weight: 700; } .cc-radios input { accent-color: #1f2638; }
+.hub .cc-why { margin: 6px 0 !important; font-size: .8rem; } .hub .cc-why input { padding: 6px 9px; }
+.cc-btns { display: flex; gap: 8px; }
+.cc-gate { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; } .cc-gate-msg { margin: 0; background: #fff; border: 1px solid #e6dcc6; border-left: 5px solid #c4511a; border-radius: 12px; padding: 10px 16px; color: #2a3247; }
+.cc-gate-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; } .cc-gate .cc-card { display: flex; flex-direction: column; gap: 8px; } .cc-gate .cc-card h3 { margin: 0; color: #1f2638; } .cc-gate .cc-card small { color: #5b6479; }
+.cc-steps { list-style: none; padding: 0 !important; margin: 4px 0 auto !important; display: grid; gap: 8px; } .cc-steps li { display: flex; gap: 10px; align-items: center; font-size: .9rem; margin: 0 !important; }
+.cc-steps span { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: #e6dcc6; font-weight: 700; flex: none; } .cc-steps li.done span { background: #2d7d62; color: #fff; }
+.cc-ready { color: #1f6a50; font-weight: 700; margin: 0; }
+@media (max-width: 1100px) { .cc-perf { grid-template-columns: minmax(0, 1fr) 260px; } .cc-gate-grid { gap: 8px; } }
+@media (max-height: 760px) { .cc-perfcard { padding: 8px 12px; } .cc-phase { padding-top: 4px; } .cc-dl--sm .cc-dots i { width: 9px; height: 9px; } .cc-choice { padding: 8px 12px; } .cc-radios label { padding: 3px 8px; } }

@@ -222,22 +222,23 @@ def test_preparation_helps_but_cannot_win_the_game_on_its_own():
         assert _play_from(sc, flags, ["strong"] * n)["ending"] in ("held", "controlled")
 
 
-def test_workday_then_crisis_through_the_api_and_the_interval_page(db_url):
+def test_workday_then_crisis_are_separate_parts_and_the_crisis_carries_the_head_start(db_url):
     with TestClient(create_app(db_url)) as c:
-        before = c.get("/api/sims/covid/interval").json()
-        assert before["workday_done"] is False and before["earned"] == 0 and before["total"] == 7 and len(before["narrative"]) == 3
+        assert c.get("/api/sims/covid/interval").status_code == 404                      # there is no interval step between the two parts
         lib = {x["id"]: x for x in c.get("/api/library").json()}
         assert all(lib[k]["workday"]["status"] == "none" for k in ("blackout", "bhopal", "covid"))
+        before = c.get("/api/sims/covid/intro").json()
+        assert before["kind"] == "crisis" and before["prep"]["workday_done"] is False and before["prep"]["earned"] == 0 and before["prep"]["total"] == 7
         run, v = _finish(c, "covid_workday", "strong")
         assert v["scene"]["ending"]["id"] == "ready"
         rep = c.get(f"/api/runs/{run}/report").json()
-        assert rep["kind"] == "workday" and rep["recommended_next"]["to"] == "interval" and len(rep["prep"]) == 7 and all(i["status"] == "full" for i in rep["prep"])
-        after = c.get("/api/sims/covid/interval").json()
+        assert rep["kind"] == "workday" and rep["recommended_next"]["to"] == "crisis" and len(rep["prep"]) == 7 and all(i["status"] == "full" for i in rep["prep"])
+        after = c.get("/api/sims/covid/intro").json()["prep"]
         assert after["workday_done"] and after["earned"] == 7 and after["items"][0]["effects"]
         crisis = c.post("/api/sims/covid/runs").json()
-        assert crisis["scene"]["prepared"] and len(crisis["scene"]["prepared"]) == 7          # the crisis opens with the workday's head start
+        assert len(crisis["scene"]["prepared"]) == 7                                       # the crisis opens with the workday's head start
         lib = {x["id"]: x for x in c.get("/api/library").json()}
-        assert lib["covid"]["workday"]["status"] == "completed"
+        assert lib["covid"]["workday"]["status"] == "completed" and lib["covid"]["workday"]["prep_earned"] == 7
 
 
 def test_blackout_workday_gives_the_comic_game_a_bounded_head_start_that_survives_restart(db_url):
@@ -274,7 +275,7 @@ def test_career_comparison_uses_what_the_student_did_and_felt(db_url):
     with TestClient(create_app(db_url)) as c:
         empty = c.get("/api/careers").json()
         assert [x["id"] for x in empty["careers"]] == ["blackout", "bhopal", "covid"] and len(empty["dimensions"]) == 6
-        assert all(x["you"]["phases"] == {"workday": None, "crisis": None} for x in empty["careers"])
+        assert all(x["you"]["phases"] == {"workday": None, "crisis": None} and x["you"]["complete"] is False for x in empty["careers"]) and empty["choice"] is None
         run, _ = _finish(c, "covid_workday", "strong")
         c.post(f"/api/runs/{run}/reflection", json={"enjoyment": 5, "stress": 2, "daily_interest": 4})
         crun, _ = _finish(c, "covid", "weak")
@@ -282,4 +283,17 @@ def test_career_comparison_uses_what_the_student_did_and_felt(db_url):
         covid = got["covid"]["you"]
         assert covid["phases"]["workday"]["strong"] == 7 and covid["phases"]["workday"]["reflection"]["enjoyment"] == 5
         assert covid["phases"]["crisis"]["weak"] == 8 and 0 < covid["skills"]["teamwork"] < 100       # averaged over the workday and the crisis
+        assert covid["complete"] is True and got["bhopal"]["you"]["complete"] is False         # a career can be compared on performance only when both parts are finished
+        assert covid["phases"]["workday"]["quality"] == 100 and covid["phases"]["crisis"]["quality"] == 0
         assert got["bhopal"]["you"]["skills"] == {} and got["covid"]["pressure"]["crisis"] > got["covid"]["pressure"]["workday"]
+
+
+def test_the_student_records_their_own_career_choice(db_url):
+    with TestClient(create_app(db_url)) as c:
+        assert c.get("/api/career-choice").json() is None
+        got = c.put("/api/career-choice", json={"career": "bhopal", "reason": "I liked the walk-rounds"}).json()
+        assert got["career"] == "bhopal" and got["reason"] == "I liked the walk-rounds"
+        assert c.put("/api/career-choice", json={"career": "astronaut"}).status_code == 404
+    with TestClient(create_app(db_url)) as c2:                                               # survives a restart
+        assert c2.get("/api/careers").json()["choice"]["career"] == "bhopal"
+        assert c2.put("/api/career-choice", json={"career": ""}).json() is None            # and can be cleared

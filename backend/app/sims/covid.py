@@ -188,11 +188,6 @@ PREP = (
     PrepItem("prep_handover", "Structured handovers", "The team already reads plans back at handover, so small worries get passed on.",
              "Handovers are informal, so small signals will be lost in the noise.", {"care": 3}, "prep_handover_part", "Handover on Ward 4 (07:45)"),
 )
-INTERVAL = (
-    "Eleven weeks later. The news item in the staff room stopped being background noise. First it was a ward in another country, then a hospital two cities away, then a memo from the health authority with the word \u201csurge\u201d in it.",
-    "At 07:10 on a Monday morning, Dr. Farid Hakim finds you at the nurses' station. \u201cThe emergency department has thirty-one people waiting,\u201d he says. \u201cHalf of them are struggling to breathe. I need you.\u201d",
-    "You look at the ward as it is today: the people, the stock, the beds, the rota, and the pieces of paper pinned to the wall. Whatever you did on that ordinary Tuesday is now what you have.",
-)
 EVENTS_PREP = (
     Event("ev_p_surge", 2, "The surge plan", "The surge plan you defended names which wards open first. For once nobody is arguing about it.", (("flag", "prep_surge"),), {}, kind="simulation"),
     Event("ev_p_triage", 1, "The sheet on the wall", "The one-page sheet you drafted with Dr. Hakim is still pinned beside the nurses' station. He taps it and nods at you.", (("flag", "prep_triage"),), {}, kind="simulation"),
@@ -230,5 +225,5 @@ COVID = Scenario(
              "Staff rest and support are part of patient safety.",
              "Predictable, honest communication with families matters as much as speed.",
              "Learning and sharing after a surge prepares the next team."),
-    next_up=("bhopal", "blackout"), profession="covid", prep=PREP, interval=INTERVAL,
+    next_up=("bhopal", "blackout"), profession="covid", prep=PREP,
 )

@@ -111,7 +111,6 @@ class Scenario:
     kind: str = "crisis"                         # "workday" (an ordinary day) or "crisis" (the main simulation)
     profession: str = ""                         # the career this scenario belongs to: blackout | bhopal | covid
     prep: tuple[PrepItem, ...] = ()              # crisis only: what a workday can set up
-    interval: tuple[str, ...] = ()               # crisis only: the story that bridges workday and crisis
 
 
 class SimError(Exception):

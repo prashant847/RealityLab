@@ -92,6 +92,12 @@ function IntroScreen({ simId, intro, current, onBegin }: { simId: string; intro:
         {intro.parts.length > 1 && <ol className="sim-parts">{intro.parts.map((p) => <li key={p}>{p}</li>)}</ol>}
         {intro.intro.map((t, i) => <p key={i} className="sim-intro-p">{t}</p>)}
         <div className="sim-intro-goals"><h2>What you will practise</h2><ul>{intro.objectives.map((o) => <li key={o}>{o}</li>)}</ul></div>
+        {intro.prep && (
+          <div className="sim-prep sim-prep--intro" role="note">
+            {intro.prep.workday_done
+              ? <><b>Your normal day set up {intro.prep.earned} of {intro.prep.total} things for this crisis.</b><ul>{intro.prep.items.filter((p) => p.status !== "missed").map((p) => <li key={p.flag}>{p.label}{p.status === "part" ? " (half)" : ""}</li>)}</ul></>
+              : <><b>You have not played the normal day.</b> The crisis starts with no head start. <a href={`#/workday/${intro.profession}`}>Play it first (about 15 minutes)</a>.</>}
+          </div>)}
         <p className="sim-disclaimer" role="note">{intro.disclaimer}</p>
         <div className="sim-actions">
           {current ? (<>
