@@ -1,4 +1,4 @@
-# Python
+﻿# Python
 backend/.venv/
 __pycache__/
 *.pyc
@@ -14,3 +14,10 @@ frontend/dist/
 .vscode/
 .idea/
 Thumbs.db
+
+# desktop packaging
+desktop/node_modules/
+desktop/.cache/
+desktop/build/
+desktop/installer*/
+desktop/release*/

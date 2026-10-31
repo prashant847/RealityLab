@@ -1,0 +1,66 @@
+{
+  "name": "realitylab-ai",
+  "productName": "RealityLab AI",
+  "version": "1.0.0",
+  "description": "RealityLab AI: experience your future before you choose it.",
+  "author": "RealityLab AI",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "ai.realitylab.desktop",
+    "productName": "RealityLab AI",
+    "copyright": "RealityLab AI",
+    "directories": {
+      "output": "installer",
+      "buildResources": "assets"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "splash.html",
+      "assets/icon.ico",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build/backend-dist/realitylab-server",
+        "to": "backend"
+      },
+      {
+        "from": "../frontend/dist",
+        "to": "frontend"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "RealityLab AI",
+      "deleteAppDataOnUninstall": false
+    },
+    "artifactName": "RealityLab-AI-Setup-${version}.${ext}",
+    "afterPack": "afterPack.js"
+  }
+}

@@ -9,6 +9,9 @@ from fastapi.staticfiles import StaticFiles
 
 from .api.errors import install_error_handlers
 from .api.routes import router
+from .sims import models as _sim_models  # noqa: F401  (registers the tables before create_all)
+from .sims.routes import router as sims_router
+from .sims.service import SimsService
 from .db.session import make_engine, make_session_factory
 from .services.simulations import SimulationService
 from .stakeholders.llm import Voice, provider_from_env
@@ -42,11 +45,14 @@ def create_app(db_url: str | None = None, voice: Voice | None = None,
     from the environment (no key = deterministic dialogue); tests pass an explicit Voice.
     `frontend_dir` serves a built frontend at "/" (see find_frontend); off unless asked for."""
     app = FastAPI(title="RealityLab AI", version="0.1.0", description=DESCRIPTION)
-    app.state.service = SimulationService(make_session_factory(make_engine(db_url)), voice or Voice(provider_from_env()))
+    sessions = make_session_factory(make_engine(db_url))
+    app.state.service = SimulationService(sessions, voice or Voice(provider_from_env()))
+    app.state.sims = SimsService(sessions)
     app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                        allow_methods=["*"], allow_headers=["*"])
     install_error_handlers(app)
     app.include_router(router)
+    app.include_router(sims_router)
     dist = find_frontend(frontend_dir)
     if dist is not None:                         # mounted last, so every /api route wins
         app.mount("/", StaticFiles(directory=dist, html=True), name="frontend")

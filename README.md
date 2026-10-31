@@ -230,3 +230,12 @@ scripts/             setup.ps1 · start.ps1 · dev.ps1
 No licence has been chosen for this repository; add one before sharing it. All artwork and text are original to this
 project. No third-party artwork or text is included. Libraries: FastAPI, SQLAlchemy, Pydantic, React, Vite
 (see `backend/requirements.txt` and `frontend/package.json`).
+
+## Desktop app (Windows)
+
+RealityLab AI ships as an installable Windows app: an Electron window that starts and stops its own local service (the FastAPI backend, packaged with PyInstaller). Progress is saved in `%APPDATA%\RealityLab AI\realitylab.db`.
+
+- Build the installer: `powershell -ExecutionPolicy Bypass -File scripts\build-desktop.ps1` (add `-SkipTests` to skip the test suites). Output: `desktop\installer\RealityLab-AI-Setup-1.0.0.exe`.
+- Run from source without installing: `powershell -ExecutionPolicy Bypass -File scripts\dev-desktop.ps1`.
+- The installer is unsigned, so Windows SmartScreen may ask for confirmation on first run.
+- Simulations: BLACKOUT (comic, its own engine), Bhopal and the COVID-era hospital (generic scenario engine in `backend/app/sims`, themed interfaces in `frontend/src/sims`).
