@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { LibraryItem, SimsApi } from "../api/sims";
 import { Preview } from "./Previews";
 import { SoundToggle } from "../audio/useAudio";
+import { AppBar } from "../shell/AppBar";
 import { setIntent, type Intent } from "../shell/intent";
 import "./sims.css";
 
@@ -9,14 +10,8 @@ type Prof = "blackout" | "bhopal" | "covid";
 const THEME_TITLE = { blackout: "BLACKOUT", bhopal: "Bhopal", covid: "COVID-era Hospital" } as const;
 const crisisRoute = (p: string) => (p === "blackout" ? "#/play/blackout" : `#/crisis/${p}`);
 
-function Top({ profession, label, onHome }: { profession: Prof; label: string; onHome: () => void }) {
-  return (
-    <header className="sim-top">
-      <button type="button" className="sim-btn sim-btn--ghost" onClick={onHome}>← All simulations</button>
-      <strong className="sim-name">{THEME_TITLE[profession]}</strong>
-      <span className="sim-spacer" /><span className="sim-pill">{label}</span><SoundToggle />
-    </header>
-  );
+function Top({ profession, label }: { profession: Prof; label: string }) {
+  return <AppBar crumbs={[{ label: THEME_TITLE[profession] }]}><span className="sim-pill sim-pill--soft">{label}</span><SoundToggle /></AppBar>;
 }
 
 function useAsync<T>(fn: () => Promise<T>, deps: unknown[]) {
@@ -27,7 +22,7 @@ function useAsync<T>(fn: () => Promise<T>, deps: unknown[]) {
 }
 
 /** One profession's journey: a normal day first, then the crisis. They are two separate parts. */
-export function PathPage({ api, profession, onHome }: { api: SimsApi; profession: Prof; onHome: () => void }) {
+export function PathPage({ api, profession }: { api: SimsApi; profession: Prof; onHome?: () => void }) {
   const { data, err } = useAsync<LibraryItem | undefined>(() => api.library().then((l) => l.find((x) => x.id === profession)), [api, profession]);
   const go = (h: string) => { window.location.hash = h; };
   const open = (h: string, intent?: Intent) => { if (intent) setIntent(intent); go(h); };
@@ -36,7 +31,7 @@ export function PathPage({ api, profession, onHome }: { api: SimsApi; profession
   const clear = () => { if (profession === "blackout" && data?.status === "completed") { try { localStorage.removeItem("realitylab.simulationId"); } catch { /* ignore */ } } };
   return (
     <div className={`sim sim--${profession} pt`}>
-      <Top profession={profession} label="Your path" onHome={onHome} />
+      <Top profession={profession} label="Your path" />
       <main className="sim-main" id="main" tabIndex={-1}>
         {err && <div className="sim-card sim-center"><h2>Something went wrong</h2><p>{err}</p></div>}
         {!data && !err && <p className="sim-loading" role="status"><span className="sim-spin" aria-hidden="true" /> Loading…</p>}

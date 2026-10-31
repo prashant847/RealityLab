@@ -6,7 +6,7 @@ import { ScoreReport } from "../ui/ScoreReport";
 import { simsApi } from "../api/sims";
 import { ReflectionForm } from "../sims/Reflection";
 import { Debrief } from "../debrief/Debrief";
-import { scriptForBlackout } from "../debrief/script";
+import { newSeed, scriptForBlackout } from "../debrief/script";
 import { scriptForBlackoutHi } from "../debrief/hi";
 
 /** The ending plus the scored report (fetched from the server; scores are never computed here). */
@@ -17,7 +17,8 @@ export function FinishedScreen({ api, simId, runId, final, state, onTryDifferent
   const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [debrief, setDebrief] = useState(false);
-  const scenesFor = useCallback((lang: "en" | "hi") => (report ? (lang === "hi" ? scriptForBlackoutHi(report) : scriptForBlackout(report)) : []), [report]);
+  const [seed] = useState(newSeed);
+  const scenesFor = useCallback((lang: "en" | "hi") => (report ? (lang === "hi" ? scriptForBlackoutHi(report, seed) : scriptForBlackout(report, seed)) : []), [report, seed]);
   useEffect(() => {
     if (!debrief) return;
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setDebrief(false); };

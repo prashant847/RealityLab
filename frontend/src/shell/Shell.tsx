@@ -181,8 +181,7 @@ function SimCard({ s, i = 0 }: { s: LibraryItem; i?: number }) {
         <p className="hub-domain">{s.domain.split("·")[0]}</p>
         <h2 id={`t-${s.id}`}>{s.title}</h2>
         <p className="hub-tag">{s.tagline}</p>
-        <p className="hub-meta" title={s.role}><span>⏱ {(wd?.minutes ?? 0) + s.minutes} min in two parts</span><span className="hub-role">{s.role}</span></p>
-        <ul className="hub-goals" aria-label="What you will practise">{s.objectives.map((o) => <li key={o}>{o}</li>)}</ul>
+        <p className="hub-meta" title={s.role}><span>⏱ About {(wd?.minutes ?? 0) + s.minutes} minutes, in two parts</span></p>
         <a className="hub-phases" href={`#/sim/${s.id}`} aria-label={`Your path through ${s.title}`}>
           <span className={`hp hp--${wd?.status ?? "none"}`}><i>1</i>A normal day</span><b aria-hidden="true">→</b>
           <span className={`hp hp--${s.status}`}><i>2</i>The crisis</span></a>
@@ -207,9 +206,10 @@ function JourneyView({ api }: { api: SimsApi }) {
     <main id="main" tabIndex={-1} className="hub-main">
       <header className="hub-head"><div><p className="hub-eyebrow">Your progress</p><h1>My journey</h1></div><button type="button" className="hub-btn hub-btn--primary" onClick={() => go("#/compare")}>Compare careers</button></header>
       {badges.length > 0 && (
+        <details className="hub-badges-wrap"><summary>Milestones <b>{badges.filter((b) => b.earned).length} of {badges.length}</b></summary>
         <section className="hub-badges" aria-label="Milestones">
           {badges.map((b) => <div key={b.id} className={`hub-badge-card${b.earned ? " on" : ""}`} title={b.hint}><span aria-hidden="true">{b.earned ? "★" : "☆"}</span><b>{b.title}</b><small>{b.earned ? "Earned" : b.hint}</small></div>)}
-        </section>)}
+        </section></details>)}
       {data.completed.length === 0 ? (
         <div className="hub-panel hub-center"><h2>Nothing completed yet</h2><p>Finish a simulation and its career experience report will appear here.</p><button type="button" className="hub-btn hub-btn--primary" onClick={() => go("#/")}>Choose a simulation</button></div>
       ) : (

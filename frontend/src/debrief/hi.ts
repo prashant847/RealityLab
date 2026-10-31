@@ -1,6 +1,6 @@
 import type { SimReport } from "../api/sims";
 import type { Report, ReportDecision } from "../api/types";
-import type { Card, Scene, Tone } from "./script";
+import { newSeed, voice, type Card, type Scene, type Tone } from "./script";
 import SIMS from "./hi-sims.json";
 import BLACKOUT from "./hi-blackout.json";
 
@@ -38,7 +38,8 @@ const ok = (...parts: (string | undefined)[]): boolean => parts.every((p) => !!p
 const clock = (en: string): string | undefined => hiText(en);
 
 // -------------------------------------------------------------------------- the three professions
-export function scriptForSimHi(r: SimReport): Scene[] {
+export function scriptForSimHi(r: SimReport, seed: number = newSeed()): Scene[] {
+  const say = voice(seed);
   const out: Scene[] = [];
   const sum = r.summary;
   const role = hiText(r.role), title = hiText(r.outcome.title), text = hiText(r.outcome.text);
@@ -46,7 +47,7 @@ export function scriptForSimHi(r: SimReport): Scene[] {
   out.push({
     id: "open", chapter: "आपका खाता", mood: r.outcome.tone === "good" ? "warm" : r.outcome.tone === "bad" ? "grave" : "calm",
     lines: clean([
-      "भीतर आइए। बैठिए। मैं हर चुनाव का हिसाब रखता हूँ, और आपका खाता मेरे सामने खुला है।",
+      say("greet", ["भीतर आइए। बैठिए। मैं हर चुनाव का हिसाब रखता हूँ, और आपका खाता मेरे सामने खुला है।", "आइए, आराम से बैठिए। मैंने आपके सारे फ़ैसले पढ़ लिए हैं, और मैं चाहता हूँ कि हम इन्हें साथ मिलकर देखें।", "नमस्ते। बैठ जाइए। आपका पूरा खाता मेरे सामने है, और इसमें बात करने लायक़ बहुत कुछ है।", "अच्छा, आप आ गए। ज़रा आराम से बैठिए। आपके हर चुनाव की एक कहानी है, चलिए उसे सुनते हैं।"]),
       ok(role) && `आपने ${role} की भूमिका निभाई।`,
       ok(title) && `आपका अंत था: ${title}।`,
       text,
@@ -134,7 +135,7 @@ export function scriptForSimHi(r: SimReport): Scene[] {
     lines: clean([
       ...r.lessons.slice(0, 2).map((l, i) => hiText(l) && `${i === 0 ? "यह बात साथ ले जाइए:" : "और यह भी:"} ${hiText(l)}`),
       hiText(r.recommended_next.reason),
-      "यह केवल इस सिमुलेशन में आपके चुनावों का वर्णन है। यह आपकी योग्यता का, या किसी पेशे के आपके लिए उपयुक्त होने का फ़ैसला नहीं है। जाइए, शुभ हो।",
+      say("sign", ["यह केवल इस सिमुलेशन में आपके चुनावों का वर्णन है। यह आपकी योग्यता का, या किसी पेशे के आपके लिए उपयुक्त होने का फ़ैसला नहीं है। जाइए, शुभ हो।", "एक आख़िरी बात: यह सिर्फ़ इसी सिमुलेशन के आपके चुनावों की तस्वीर है। इससे आपकी योग्यता या किसी पेशे की उपयुक्तता तय नहीं होती। अपना ध्यान रखिएगा।", "बस इतना ही। यह आपके चुनावों का एक चित्र है, आपके बारे में कोई फ़ैसला नहीं। फिर मिलेंगे।"]),
     ]),
   });
   return out;
@@ -143,7 +144,8 @@ export function scriptForSimHi(r: SimReport): Scene[] {
 // -------------------------------------------------------------------------- BLACKOUT
 const pts = (n: number): number => Math.round(Math.abs(n));
 
-export function scriptForBlackoutHi(r: Report): Scene[] {
+export function scriptForBlackoutHi(r: Report, seed: number = newSeed()): Scene[] {
+  const say = voice(seed);
   const out: Scene[] = [];
   const q = r.quality;
   const d = (i: number): ReportDecision | undefined => r.decisions[i];
@@ -154,7 +156,7 @@ export function scriptForBlackoutHi(r: Report): Scene[] {
   out.push({
     id: "open", chapter: "आपका खाता", mood: r.overall.score >= 75 ? "warm" : r.overall.score >= 50 ? "calm" : "grave",
     lines: clean([
-      "भीतर आइए। बैठिए। हमले के दौरान आपके हर चुनाव का लेखा यहाँ दर्ज है, और अब मैं उसे आपको पढ़कर सुनाता हूँ।",
+      say("greet", ["भीतर आइए। बैठिए। हमले के दौरान आपके हर चुनाव का लेखा यहाँ दर्ज है, और अब मैं उसे आपको पढ़कर सुनाता हूँ।", "आइए, बैठिए। उस हमले के हर घंटे का हिसाब मेरे पास है, और चलिए, उसे साथ मिलकर देखते हैं।", "नमस्ते। आराम से बैठिए। मैंने पूरा हमला दोबारा पढ़ा है, और बात करने को बहुत कुछ है।"]),
       endTitle && `रिकॉर्ड आपके अंत को कहता है: ${endTitle}।`, endText,
       `आपकी तैयारी का अंक सौ में से ${hn(r.overall.score)} रहा${band ? `, जिसे मैं ${band} कहूँगा` : ""}।`,
       `आपके ${hn(r.decision_count)} फ़ैसलों में ${hn(q.sound)} सही थे, ${hn(q.questionable)} संदिग्ध और ${hn(q.poor)} ख़राब।${q.unlucky ? ` ${hn(q.unlucky)} में क़िस्मत ने साथ नहीं दिया, यह ग़लत सोच का नतीजा नहीं था।` : ""}`,
@@ -215,7 +217,7 @@ export function scriptForBlackoutHi(r: Report): Scene[] {
     card: { kicker: "आगे का ध्यान", heading: "कहाँ सुधार करें", chips: [], rows: focus.map((f) => ({ label: hiText(f.category) ?? f.category, value: String(Math.round(f.score)), tone: (f.score >= 50 ? "mid" : "bad") as Tone })) },
   });
 
-  out.push({ id: "close", chapter: "इसे साथ ले जाइए", mood: "warm", lines: ["मैंने आपको जो भी अंक पढ़कर सुनाया, वह आपके किए से ही गिना गया है। किसी मशीन ने अंदाज़ा नहीं लगाया।", "लिखित रिपोर्ट में हर ब्योरा है, और आप किसी भी फ़ैसले पर लौटकर दोबारा चुन सकते हैं। जाइए, शुभ हो।"] });
+  out.push({ id: "close", chapter: "इसे साथ ले जाइए", mood: "warm", lines: ["मैंने आपको जो भी अंक पढ़कर सुनाया, वह आपके किए से ही गिना गया है। किसी मशीन ने अंदाज़ा नहीं लगाया।", say("bsign", ["लिखित रिपोर्ट में हर ब्योरा है, और आप किसी भी फ़ैसले पर लौटकर दोबारा चुन सकते हैं। जाइए, शुभ हो।", "पूरा ब्योरा लिखित रिपोर्ट में है, और जब चाहें किसी भी फ़ैसले पर लौटकर दोबारा चुन सकते हैं। अपना ध्यान रखिएगा।", "आप किसी भी फ़ैसले पर लौटकर फिर से चुन सकते हैं। जब मन करे, आइएगा। फिर मिलेंगे।"])] });
   return out;
 }
 

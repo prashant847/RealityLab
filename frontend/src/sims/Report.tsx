@@ -2,9 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import type { PrepItem, SimReport, SimsApi } from "../api/sims";
 import { ReflectionForm } from "./Reflection";
 import { SoundToggle } from "../audio/useAudio";
+import { AppBar } from "../shell/AppBar";
 import { Radar } from "./Radar";
 import { Debrief } from "../debrief/Debrief";
-import { scriptForSim } from "../debrief/script";
+import { newSeed, scriptForSim } from "../debrief/script";
 import { scriptForSimHi } from "../debrief/hi";
 import "./sims.css";
 
@@ -12,6 +13,7 @@ const RATING = { strong: "Strong", mixed: "Mixed", weak: "Weak" } as const;
 const TABS = [["overview", "Overview"], ["decisions", "Decisions"], ["skills", "Skills"], ["improve", "Improve"], ["prep", "Preparation"], ["lessons", "Lessons & next"], ["felt", "How it felt"]] as const;
 type Tab = (typeof TABS)[number][0];
 
+const REPNAME: Record<string, string> = { blackout: "BLACKOUT", bhopal: "Bhopal", covid: "COVID-era Hospital" };
 const STATUS = { full: "Set up", part: "Half set up", missed: "Not set up" } as const;
 
 export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId: string; onHome: () => void; onOpen: (simId: string, to?: string) => void }) {
@@ -21,23 +23,26 @@ export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId
   const [skill, setSkill] = useState(0);
   const [open, setOpen] = useState<number | null>(null);
   const [view, setView] = useState<"debrief" | "written">("debrief");
-  const scenesFor = useCallback((lang: "en" | "hi") => (rep ? (lang === "hi" ? scriptForSimHi(rep) : scriptForSim(rep)) : []), [rep]);
+  const [seed] = useState(newSeed);                  // a different way of saying things each time a debrief is opened, the same within it
+  const scenesFor = useCallback((lang: "en" | "hi") => (rep ? (lang === "hi" ? scriptForSimHi(rep, seed) : scriptForSim(rep, seed)) : []), [rep, seed]);
   useEffect(() => { api.report(runId).then(setRep).catch((e: Error) => setErr(e.message)); }, [api, runId]);
 
   if (err) return <main className="rep"><div className="sim-card sim-center"><h2>Report not available</h2><p>{err}</p><button type="button" className="sim-btn sim-btn--primary" onClick={onHome}>Back to all simulations</button></div></main>;
   if (!rep) return <main className="rep"><p className="sim-loading" role="status"><span className="sim-spin" aria-hidden="true" /> Preparing your report…</p></main>;
+  const theme = (rep.profession ?? rep.simulation_id).split("_")[0];
   const nx = rep.recommended_next;
   const s = rep.summary;
   const sk = rep.skills[Math.min(skill, rep.skills.length - 1)];
   if (view === "debrief") return (
     <main className={`rep rep--${rep.profession ?? rep.simulation_id} rep--debrief`} id="main" tabIndex={-1}>
-      <header className="rep-deb-head"><div><p className="sim-kicker">Career experience report</p><h1>{rep.simulation}</h1></div>
-        <button type="button" className="rep-act" onClick={onHome}>← All simulations</button></header>
+      <AppBar crumbs={[{ label: REPNAME[theme] ?? rep.simulation, to: `#/sim/${theme}` }, { label: "Report" }]}><SoundToggle /></AppBar>
+      <header className="rep-deb-head"><div><p className="sim-kicker">Career experience report</p><h1>{rep.simulation}</h1></div></header>
       <Debrief scenesFor={scenesFor} title={rep.simulation} onWritten={() => setView("written")} />
     </main>
   );
   return (
     <main className={`rep rep--${rep.profession ?? rep.simulation_id}`} id="main" tabIndex={-1}>
+      <AppBar crumbs={[{ label: REPNAME[theme] ?? rep.simulation, to: `#/sim/${theme}` }, { label: "Report" }]}><button type="button" className="rep-act rep-act--archivist" onClick={() => setView("debrief")}>Hear the Archivist</button><button type="button" className="rep-act no-print" onClick={() => window.print()}>Print or save as PDF</button><SoundToggle /></AppBar>
       <section className={`rep-hero rep-hero--${rep.outcome.tone}`}>
         <div>
           <p className="sim-kicker">Career experience report</p>
@@ -53,17 +58,13 @@ export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId
       <nav className="rep-tabs no-print" role="tablist" aria-label="Report sections">
         {TABS.map(([k, label]) => <button key={k} role="tab" type="button" aria-selected={tab === k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{label}</button>)}
         <span className="sim-spacer" />
-        <button type="button" className="rep-act rep-act--archivist" onClick={() => setView("debrief")}>Hear the Archivist</button>
-        <SoundToggle className="snd-toggle--rep" />
-        <button type="button" className="rep-act" onClick={() => window.print()}>Print or save as PDF</button>
-        <button type="button" className="rep-act" onClick={onHome}>← All simulations</button>
       </nav>
 
       <div className="rep-panels">
         <section className={`rep-panel${tab === "overview" ? " on" : ""}`} aria-labelledby="r-ov">
           <div className="rep-cols">
             <div><h2 id="r-ov">{rep.outcome.title}</h2><p className="rep-big">{rep.outcome.text}</p>
-              {rep.challenges.length > 0 && <><h3>Key challenges you faced</h3><ul>{rep.challenges.map((c, i) => <li key={i}><b>{c.title}.</b> {c.text}</li>)}</ul></>}</div>
+              {rep.challenges.length > 0 && <><h3>Key challenges you faced</h3><ul>{rep.challenges.map((c, i) => <li key={i}><b>{/[.?!]$/.test(c.title) ? c.title : `${c.title}.`}</b> {c.text}</li>)}</ul></>}</div>
             <div className="rep-finals"><h3>Where things ended</h3>
               {rep.final_meters.filter((m) => m.label !== "Understanding of the record").map((m) => {
                 const good = m.good === "high" ? m.value : 100 - m.value;

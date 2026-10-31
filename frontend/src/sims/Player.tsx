@@ -10,6 +10,8 @@ import { ReadAloud } from "../a11y/speak";
 import { TerminalStage } from "./TerminalStage";
 import { ComicReader } from "./comic/ComicReader";
 import type { ComicPage } from "./comic/types";
+import { AppBar } from "../shell/AppBar";
+const NAMES: Record<string, string> = { blackout: "BLACKOUT", bhopal: "Bhopal", covid: "COVID-era Hospital" };
 import { ROUND1_STORY } from "./comic/round1Story";
 import "./sims.css";
 
@@ -33,7 +35,7 @@ type Phase =
   | { k: "step"; view: RunView; picked: string | null; busy: boolean }
   | { k: "outcome"; view: RunView; outcome: Outcome; prev: RunView };
 
-export function SimPlayer({ api, simId, onHome, onReport }: { api: SimsApi; simId: string; onHome: () => void; onReport: (runId: string) => void }) {
+export function SimPlayer({ api, simId, onReport }: { api: SimsApi; simId: string; onHome?: () => void; onReport: (runId: string) => void }) {
   const [phase, setPhase] = useState<Phase>({ k: "loading" });
   const [fail, setFail] = useState<string | null>(null);
 
@@ -66,15 +68,11 @@ export function SimPlayer({ api, simId, onHome, onReport }: { api: SimsApi; simI
   const pct = scene ? Math.round((100 * (scene.status === "completed" ? scene.total_rounds : scene.round - 1)) / scene.total_rounds) : 0;
   return (
     <div className={`sim sim--${theme}`}>
-      <header className="sim-top">
-        <button type="button" className="sim-btn sim-btn--ghost" onClick={onHome}>← All simulations</button>
-        <strong className="sim-name">{title}</strong>
-        <span className="sim-spacer" />
+      <AppBar crumbs={[{ label: NAMES[theme] ?? title, to: `#/sim/${theme}` }, { label: simId.endsWith("_workday") ? "A normal day" : "The crisis" }]} progress={scene ? pct : undefined}>
         {scene && <span className="sim-pill" aria-label="Progress">{scene.status === "completed" ? "Finished" : `Step ${scene.round} of ${scene.total_rounds}`}</span>}
         {scene && <span className="sim-pill sim-pill--soft">Saved automatically</span>}
         <SoundToggle />
-        {scene && <div className="sim-topbar" role="progressbar" aria-label="Simulation progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}><span style={{ width: `${pct}%` }} /></div>}
-      </header>
+      </AppBar>
       {fail && <div className="sim-alert" role="alert">{fail}</div>}
       <div className="sr-only" role="status" aria-live="polite">{phase.k === "step" && phase.view.scene.step ? `Step ${phase.view.scene.round} of ${phase.view.scene.total_rounds}: ${phase.view.scene.step.title}.` : phase.k === "outcome" ? `${phase.outcome.rating === "strong" ? "Strong" : phase.outcome.rating === "mixed" ? "Mixed" : "Weak"} decision. ${phase.outcome.consequence}` : ""}</div>
       <main className="sim-main" id="main" tabIndex={-1}>

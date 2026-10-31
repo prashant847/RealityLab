@@ -24,20 +24,31 @@ const sim = (over: Partial<SimReport> = {}): SimReport => ({
 describe("the Archivist's script is built from the report, never invented", () => {
   it("spoken() writes symbols out for the voice", () => {
     expect(spoken("Cost −5% & “quoted” — done")).toBe("Cost minus 5 percent and quoted, done");
+    expect(spoken("about 2-3 weeks, 2–3 days, 07:30, 3/10 beds, 40 → 55, ₹12.0 lakh")).toBe("about 2 to 3 weeks, 2 to 3 days, 7:30, 3 out of 10 beds, 40 to 55, 12 lakh rupees");
+    expect(spoken("Day 3, 06:00 AM (nurses) e.g. 24")).not.toMatch(/dash|zero/);
+  });
+
+  it("says things differently each time: the greeting and the closing rotate with the seed, and the facts stay", () => {
+    const opens = new Set(Array.from({ length: 12 }, (_, i) => scriptForSim(sim(), i * 977 + 5)[0].lines[0]));
+    const closes = new Set(Array.from({ length: 12 }, (_, i) => scriptForSim(sim(), i * 977 + 5).at(-1)!.lines.at(-1)!));
+    expect(opens.size).toBeGreaterThanOrEqual(3);
+    expect(closes.size).toBeGreaterThanOrEqual(2);
+    for (let i = 0; i < 12; i++) expect(scriptForSim(sim(), i).flatMap((s) => s.lines).join(" ")).toContain("Wait and see");
+    expect(scriptForSim(sim(), 9)).toEqual(scriptForSim(sim(), 9));                                   // the same seed always gives the same debrief
   });
 
   it("covers the ending, what went well, each mistake with the stronger option, skills and a close", () => {
-    const scenes = scriptForSim(sim());
+    const scenes = scriptForSim(sim(), 1);
     expect(scenes.map((s) => s.id)).toEqual(["open", "good-0", "turn", "fault-0", "fault-1", "prep", "skills", "close"]);
     const text = (id: string) => scenes.find((s) => s.id === id)!.lines.join(" ");
     expect(text("open")).toContain("Strained but functioning");
-    expect(text("open")).toContain("1 strong, 1 mixed, and 1 weak");
+    expect(text("open")).toMatch(/1 (of them were )?strong,? 1 (were )?mixed,? (and )?(1 (were )?)?weak|1 strong, 1 mixed, and 1 weak|1 of them were strong, 1 were mixed/);
     expect(text("good-0")).toContain("Structured plan");
     expect(text("fault-0")).toContain("Wait and see");                       // weak is told before mixed
-    expect(text("fault-0")).toContain("A stronger option was: Audit use today");
+    expect(text("fault-0")).toContain("Audit use today");
     expect(text("fault-0")).toContain("oxygen reserve from 80 to 60");
     expect(text("fault-1")).toContain("Hold a debrief");
-    expect(text("skills")).toContain("Teamwork sits at 40 percent");
+    expect(text("skills")).toMatch(/teamwork[^.]*40 percent/i);
     expect(scenes.find((s) => s.id === "fault-0")!.card).toMatchObject({ better: "Audit use today", chips: [{ text: "Weak", tone: "bad" }, { text: "You chose: Wait and see", tone: "plain" }] });
     expect(scenes.every((s) => s.lines.length > 0 && s.lines.every((l) => l.trim().length > 0))).toBe(true);
   });
@@ -49,7 +60,7 @@ describe("the Archivist's script is built from the report, never invented", () =
       { step: "Oxygen", part: "Day 3", chose: "Wait and see", rating: "weak", consequence: "Supplies ran low.", lesson: "", effects: [], stronger_option: "Audit use today", dilemma: false },
     ], improve: base.improve });
     const en = scriptForSim(dil);
-    expect(en.find((s) => s.id === "good-0")!.lines.join(" ")).toContain("a hard one, with no perfect answer");
+    expect(en.find((s) => s.id === "good-0")!.lines.join(" ")).toMatch(/no perfect answer|genuine dilemma/);
     expect(en.find((s) => s.id === "good-0")!.card!.chips[0].text).toBe("Best available");
     expect(en.filter((s) => s.id.startsWith("fault")).map((s) => s.lines.join(" "))).toEqual([expect.stringContaining("Wait and see")]);   // only the real mistake
     const hi = scriptForSimHi(dil);
@@ -65,7 +76,7 @@ describe("the Archivist's script is built from the report, never invented", () =
 
   it("a workday names what was left unprepared, and a crisis names the head start", () => {
     const wd = scriptForSim(sim({ kind: "workday", prep: [{ flag: "a", label: "Oxygen audit", text: "", effects: [], status: "missed" }, { flag: "b", label: "Triage drill", text: "", effects: [], status: "full" }] as never }));
-    expect(wd.find((s) => s.id === "prep")!.lines.join(" ")).toContain("did not set up oxygen audit");
+    expect(wd.find((s) => s.id === "prep")!.lines.join(" ")).toMatch(/(did not set up|left out|didn.t get around to) oxygen audit/);
     const cr = scriptForSim(sim({ prepared: [{ flag: "b", label: "Triage drill", text: "", full: true }] }));
     expect(cr.find((s) => s.id === "prep")!.lines.join(" ")).toContain("triage drill");
   });
@@ -85,11 +96,11 @@ describe("the Archivist's script is built from the report, never invented", () =
       quality: { sound: 1, questionable: 0, poor: 1, unlucky: 0, lucky: 0 }, attempts: [],
       reveal: { recorded_units: 100, true_units: 70, records_overstated_by: 30, verified_units: 40, existing_but_unverified: 30, note: "" },
     } as unknown as Report;
-    const scenes = scriptForBlackout(rep);
+    const scenes = scriptForBlackout(rep, 1);
     const all = scenes.flatMap((s) => s.lines).join(" ");
     expect(all).toContain("Restore from backup");
-    expect(all).toContain("had warned you");
-    expect(all).toContain("What you could have done: Verify the backup");
+    expect(all).toMatch(/had warned you|had spoken up/);
+    expect(all).toContain("Verify the backup");
     expect(all).toContain("records were overstated by 30");
     expect(all).toContain("trace that to decision 2");
     expect(scenes.map((s) => s.id)).toEqual(["open", "good-0", "turn", "fault-0", "losses", "reveal", "focus", "close"]);
@@ -280,7 +291,8 @@ describe("the debrief stage", () => {
       },
     }));
     const { Debrief } = await import("./Debrief");
-    const en = scriptForSim(sim()), hi = scriptForSimHi(hiSim());
+    const en = scriptForSim(sim(), 3), hi = scriptForSimHi(hiSim());
+    const hello = en[0].lines[0];
     const scenesFor = (l: "en" | "hi") => (l === "hi" ? hi : en);
     const onWritten = vi.fn();
     render(<Debrief scenesFor={scenesFor} title="COVID" onWritten={onWritten} />);
@@ -291,15 +303,15 @@ describe("the debrief stage", () => {
     await userEvent.click(screen.getByRole("button", { name: "Begin my debrief" }));
     expect(calls).toEqual(["play"]);
     expect(screen.getByRole("button", { name: "Pause" })).toBeInTheDocument();
-    expect(screen.getByText(/Come in\. Sit down\./)).toBeInTheDocument();                 // captions are on by default
+    expect(screen.getByText(hello)).toBeInTheDocument();                 // captions are on by default
     await userEvent.keyboard("{ArrowRight}");
     expect(calls).toContain("next");
     await userEvent.keyboard(" ");
     expect(calls).toContain("pause");
     await userEvent.keyboard("c");
-    expect(screen.queryByText(/Come in\. Sit down\./)).toBeNull();
+    expect(screen.queryByText(hello)).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Transcript" }));
-    expect(screen.getByRole("region", { name: "Transcript" })).toHaveTextContent("Come in. Sit down.");
+    expect(screen.getByRole("region", { name: "Transcript" })).toHaveTextContent(hello);
 
     // the language can be changed part-way through; it carries on from the same section, in Hindi, and is remembered
     await userEvent.click(screen.getAllByRole("radio", { name: "हिन्दी" })[0]);

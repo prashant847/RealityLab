@@ -264,3 +264,25 @@
 .rep-deb-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex: 0 0 auto; }
 .rep-deb-head h1 { margin: 0; font-size: 1.35rem; }
 .rep-act--archivist { border-color: #c9a24a; font-weight: 700; }
+
+/* ---- one top bar for every full-screen page: logo home, breadcrumb back, status on the right */
+.appbar { height: 52px; padding: 0 18px; gap: 14px; }
+.rep > .appbar { max-width: none; width: calc(100% + 48px); margin: -14px -24px 0; }
+.appbar-mark { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-weight: 800; background: linear-gradient(135deg, #f0b04a, #d9742b); color: #1b1004; text-decoration: none; flex: none; }
+.appbar-mark:hover { filter: brightness(1.08); }
+.appbar-crumbs ol { display: flex; align-items: center; list-style: none; margin: 0; padding: 0; gap: 0; font-size: .92rem; }
+.appbar-crumbs li { display: flex; align-items: center; color: var(--s-text); font-weight: 650; }
+.appbar-crumbs li + li::before { content: "\203A"; color: var(--s-muted); margin: 0 9px; font-weight: 400; font-size: 1.1rem; }
+.appbar-crumbs a { color: var(--s-muted); text-decoration: none; font-weight: 500; padding: 4px 6px; border-radius: 6px; margin: 0 -6px; } .appbar-crumbs a:hover { color: var(--s-accent); background: var(--s-panel-2); }
+.appbar-right { display: flex; align-items: center; gap: 8px; }
+.rep-act--archivist { background: var(--s-accent); color: var(--s-accent-ink); border-color: var(--s-accent); font-weight: 700; }
+
+/* path page: two parts, side by side, centred and compact instead of stretched cards */
+.pt-wrap { max-width: 940px; width: 100%; margin: 0 auto; justify-content: center; gap: 22px; }
+.pt-hero { gap: 22px; }
+.pt-steps { flex: none; grid-template-columns: 1fr 1fr; gap: 28px; }
+.pt-step { padding: 20px 22px; gap: 8px; } .pt-btns { margin-top: 12px; }
+.pt-step:not(:last-child)::after { right: -22px; }
+
+/* the hospital's ward board folds away so the decision gets the room */
+.cv-toggle { font: inherit; font-size: .78rem; cursor: pointer; border: 1px solid var(--s-line); background: var(--s-panel-2); color: var(--s-muted); border-radius: 999px; padding: 2px 10px; margin-left: 6px; } .cv-toggle:hover { border-color: var(--s-accent); color: var(--s-accent); }
