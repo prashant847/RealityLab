@@ -128,7 +128,8 @@ class SimsService(PhasesMixin):
             for r in db.scalars(select(SimRun).where(SimRun.sim_id == sim_id, SimRun.status == "active")).all():
                 r.status = "abandoned"
             prep = self._prep_flags(db, sc.profession) if sc.kind == "crisis" else []
-            run = SimRun(id=uuid.uuid4().hex[:12], sim_id=sim_id, attempt=attempt, state=E.new_state(sc, prep))
+            rid = uuid.uuid4().hex[:12]
+            run = SimRun(id=rid, sim_id=sim_id, attempt=attempt, state=E.new_state(sc, prep, rid))
             db.add(run); db.commit()
             return self._view(run)
 

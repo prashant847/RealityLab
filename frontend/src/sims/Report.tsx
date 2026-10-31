@@ -78,7 +78,7 @@ export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId
             <li key={i} className={open === i ? "open" : ""}>
               <button type="button" className="rep-dec-btn" aria-expanded={open === i} onClick={() => setOpen(open === i ? null : i)}>
                 <span className={`sim-rating sim-rating--${d.rating}`}>{RATING[d.rating]}</span><b>{d.step}</b><em>{d.chose}</em></button>
-              <div className="rep-dec-more"><span className="sim-fine">{d.part}</span><p>{d.consequence}</p></div>
+              <div className="rep-dec-more"><span className="sim-fine">{d.part}</span><p>{d.consequence}</p>{d.dilemma && !d.stronger_option && <p className="sim-fine"><b>A real dilemma:</b> no option here was free of cost, and this was the best one on offer.</p>}</div>
             </li>))}</ol>
         </section>
 

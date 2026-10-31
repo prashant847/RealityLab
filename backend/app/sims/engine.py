@@ -114,6 +114,14 @@ class Scenario:
     prep: tuple[PrepItem, ...] = ()              # crisis only: what a workday can set up
 
 
+RANK = {"strong": 2, "mixed": 1, "weak": 0}
+
+
+def best_choice(r: Round) -> Choice:
+    """The best option a round offers: the first one with the highest rating. Some rounds are dilemmas with no strong option; then it is a "mixed" one."""
+    return max(r.choices, key=lambda c: (RANK[c.rating], -r.choices.index(c)))
+
+
 class SimError(Exception):
     code = "sim_error"
 
@@ -126,8 +134,8 @@ class Finished(SimError):
     code = "simulation_finished"
 
 
-def new_state(sc: Scenario, prep: Iterable[str] = ()) -> dict[str, Any]:
-    st: dict[str, Any] = {"round": 1, "status": "active", "meters": {m.id: m.start for m in sc.meters}, "flags": [],
+def new_state(sc: Scenario, prep: Iterable[str] = (), seed: str = "") -> dict[str, Any]:
+    st: dict[str, Any] = {"seed": seed, "round": 1, "status": "active", "meters": {m.id: m.start for m in sc.meters}, "flags": [],
                           "decisions": [], "events": [], "ending": None, "prepared": []}
     have = set(prep)
     for item in sc.prep:
@@ -212,6 +220,15 @@ def decide(sc: Scenario, st: dict[str, Any], choice_id: str) -> tuple[dict[str, 
                "changes": changes, "completed": s["status"] == "completed", "events": list(s.get("round_events", []))}
 
 
+def _shown_order(r: Round, st: dict[str, Any]) -> list[Choice]:
+    """The options in the order the student sees them: shuffled for each run and round, so the careful option is not always first.
+    The choice ids and ratings never change; only the order on screen does, and the same run always sees the same order."""
+    import random
+    out = list(r.choices)
+    random.Random(f"{st.get('seed', '')}|{r.id}").shuffle(out)
+    return out
+
+
 def scene_view(sc: Scenario, st: dict[str, Any]) -> dict[str, Any]:
     base = {"meters": [{"id": m.id, "label": m.label, "value": st["meters"][m.id], "good": m.good, "hint": m.hint} for m in sc.meters],
             "flags": list(st["flags"]), "prepared": st.get("prepared", []), "round": st["round"], "total_rounds": len(sc.rounds), "status": st["status"]}
@@ -220,7 +237,7 @@ def scene_view(sc: Scenario, st: dict[str, Any]) -> dict[str, Any]:
         return {**base, "ending": {"id": end.id, "title": end.title, "text": end.text, "tone": end.tone}}
     r = current_round(sc, st)
     choices = []
-    for c in r.choices:
+    for c in _shown_order(r, st):
         ok, why = availability(st, c)
         choices.append({"id": c.id, "label": c.label, "summary": c.summary, "available": ok, "reason": why})
     return {**base, "step": {"id": r.id, "title": r.title, "clock": r.clock, "kind": r.kind, "brief": r.brief, "question": r.question,
@@ -240,9 +257,10 @@ def _decision_row(sc: Scenario, d: dict[str, Any]) -> dict[str, Any]:
     rnd = next(r for r in sc.rounds if r.id == d["round"])
     labels = {m.id: m for m in sc.meters}
     effects = [{"label": labels[k].label, "from": a, "to": b, "good": labels[k].good} for k, (a, b) in d["changes"].items() if k in labels]
-    best = next((c for c in rnd.choices if c.rating == "strong"), None)
+    best = best_choice(rnd)
     return {"step": d["title"], "part": d["part"], "chose": d["label"], "rating": d["rating"], "consequence": d["consequence"], "changes": d["changes"],
-            "lesson": d["lesson"], "effects": effects, "stronger_option": best.label if best and d["rating"] != "strong" else None}
+            "lesson": d["lesson"], "effects": effects, "stronger_option": best.label if RANK[best.rating] > RANK[d["rating"]] else None,
+            "dilemma": RANK[best.rating] < 2}
 
 
 def build_report(sc: Scenario, st: dict[str, Any], from_other: dict[str, str] | None = None) -> dict[str, Any]:
@@ -270,15 +288,18 @@ def build_report(sc: Scenario, st: dict[str, Any], from_other: dict[str, str] | 
     improve = []
     for d in weak + mixed:
         rnd = next(r for r in sc.rounds if r.id == d["round"])
-        best = next((c for c in rnd.choices if c.rating == "strong"), None)
+        best = best_choice(rnd)
+        if RANK[best.rating] <= RANK[d["rating"]]:
+            continue                                   # a dilemma: nothing better was on offer, so this is not a mistake to fix
         improve.append({"step": d["title"], "chose": d["label"], "why": d["lesson"] or d["consequence"],
-                        "stronger_option": best.label if best else None, "rating": d["rating"]})
+                        "stronger_option": best.label, "rating": d["rating"]})
     weakest = sorted(skills, key=lambda s: s["percent"])[:2]
     return {
         "simulation": sc.title, "simulation_id": sc.id, "role": sc.role,
         "outcome": {"id": end.id, "title": end.title, "text": end.text, "tone": end.tone},
         "final_meters": [{"label": m.label, "value": st["meters"][m.id], "good": m.good} for m in sc.meters],
-        "summary": {"decisions": len(decisions), "strong": len(strong), "mixed": len(mixed), "weak": len(weak)},
+        "summary": {"decisions": len(decisions), "strong": len(strong), "mixed": len(mixed), "weak": len(weak),
+                    "best": sum(1 for d in decisions if RANK[d["rating"]] >= RANK[best_choice(next(r for r in sc.rounds if r.id == d["round"])).rating])},
         "major_decisions": [_decision_row(sc, d) for d in decisions],
         "challenges": [{"title": e["title"], "text": e["text"], "round": e["round"]} for e in st["events"]],
         "skills": skills,

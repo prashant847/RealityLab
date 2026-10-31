@@ -330,3 +330,6 @@ BHOPAL = Scenario(
              (SRC_EBSCO, "https://www.ebsco.com/research-starters/science/bhopal-disaster")),
     next_up=("covid", "blackout"), profession="bhopal", prep=PREP,
 )
+
+from .difficulty import tune  # noqa: E402  (applied once, at load: see difficulty.py)
+BHOPAL = tune(BHOPAL)

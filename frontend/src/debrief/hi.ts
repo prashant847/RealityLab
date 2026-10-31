@@ -64,13 +64,15 @@ export function scriptForSimHi(r: SimReport): Scene[] {
   };
   const heading = (d: D): string => hiText(d.step) ?? d.step;
 
-  r.major_decisions.filter((d) => d.rating === "strong").slice(0, 2).forEach((d, i) => out.push({
-    id: `good-${i}`, chapter: "जो अच्छा हुआ", mood: "warm",
-    lines: clean([i === 0 ? "सबसे पहले, वह जो आपने अच्छा किया।" : "यह भी एक सही फ़ैसला था।", ok(hiText(d.step), hiText(d.chose)) && `${hiText(d.step)} में आपने चुना: ${hiText(d.chose)}।`, hiText(d.consequence), effectLine(d)]),
-    card: { kicker: d.part, heading: heading(d), chips: [{ text: "मज़बूत", tone: "good" }], rows: rows(d) },
+  const hard = (d: D): boolean => d.rating === "mixed" && !d.stronger_option;           // the best on offer in a dilemma: a round with no perfect option
+  r.major_decisions.filter((d) => d.rating === "strong" || hard(d)).slice(0, 2).forEach((d, i) => out.push({
+    id: `good-${i}`, chapter: hard(d) ? "एक कठिन फ़ैसला" : "जो अच्छा हुआ", mood: "warm",
+    lines: clean([hard(d) ? "यह एक कठिन फ़ैसला था, जिसका कोई पूरी तरह सही जवाब नहीं था।" : i === 0 ? "सबसे पहले, वह जो आपने अच्छा किया।" : "यह भी एक सही फ़ैसला था।",
+      ok(hiText(d.step), hiText(d.chose)) && `${hiText(d.step)} में आपने चुना: ${hiText(d.chose)}।${hard(d) ? " उपलब्ध विकल्पों में यही सबसे अच्छा था।" : ""}`, hiText(d.consequence), effectLine(d)]),
+    card: { kicker: d.part, heading: heading(d), chips: [{ text: hard(d) ? "सबसे अच्छा उपलब्ध" : "मज़बूत", tone: "good" }], rows: rows(d) },
   }));
 
-  const faults = [...r.major_decisions.filter((d) => d.rating === "weak"), ...r.major_decisions.filter((d) => d.rating === "mixed")].slice(0, 5);
+  const faults = [...r.major_decisions.filter((d) => d.rating === "weak"), ...r.major_decisions.filter((d) => d.rating === "mixed" && !hard(d))].slice(0, 5);
   if (!faults.length) {
     out.push({ id: "clean", chapter: "कोई चूक नहीं", mood: "warm", lines: ["मैंने चूकें ढूँढीं। मुझे एक भी नहीं मिली।", "हर फ़ैसला मज़बूत आँका गया। दूसरे चुनावों के साथ दोबारा खेलिए, तब दिखेगा कि विकल्प कैसे बदलते।"] });
   } else {

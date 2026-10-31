@@ -58,15 +58,18 @@ export function scriptForSim(r: SimReport): Scene[] {
     return `It moved ${top.map((e) => `${e.label.toLowerCase()} from ${e.from} to ${e.to}`).join(", and ")}.`;
   };
 
-  const strong = r.major_decisions.filter((d) => d.rating === "strong").slice(0, 2);
+  // a decision is done well if it was strong, or if it was the best on offer in a dilemma (a round with no perfect option)
+  const hard = (d: SimReport["major_decisions"][number]): boolean => d.rating === "mixed" && !d.stronger_option;
+  const strong = r.major_decisions.filter((d) => d.rating === "strong" || hard(d)).slice(0, 2);
   strong.forEach((d, i) => out.push({
-    id: `good-${i}`, chapter: "Done well", mood: "warm",
-    lines: [`${OPENERS[i % OPENERS.length]} At ${d.step}, you chose ${d.chose}.`, dot(clip(d.consequence)), effectLine(d), d.lesson ? dot(clip(d.lesson, 200)) : ""].filter(Boolean),
-    card: { kicker: d.part, heading: d.step, chips: [{ text: "Strong", tone: "good" }], rows: row(d) },
+    id: `good-${i}`, chapter: hard(d) ? "A hard call" : "Done well", mood: "warm",
+    lines: [hard(d) ? `Here is a hard one, with no perfect answer. At ${d.step}, you chose ${d.chose}. It was the best of what was on offer.` : `${OPENERS[i % OPENERS.length]} At ${d.step}, you chose ${d.chose}.`,
+      dot(clip(d.consequence, 300)), effectLine(d), !hard(d) && d.lesson ? dot(clip(d.lesson, 200)) : ""].filter(Boolean),
+    card: { kicker: d.part, heading: d.step, chips: [{ text: hard(d) ? "Best available" : "Strong", tone: "good" }], rows: row(d) },
   }));
 
   const improveBy = new Map(r.improve.map((m) => [m.step, m]));
-  const faults = [...r.major_decisions.filter((d) => d.rating === "weak"), ...r.major_decisions.filter((d) => d.rating === "mixed")].slice(0, 5);
+  const faults = [...r.major_decisions.filter((d) => d.rating === "weak"), ...r.major_decisions.filter((d) => d.rating === "mixed" && !hard(d))].slice(0, 5);
   if (!faults.length) {
     out.push({ id: "clean", chapter: "No mistakes", mood: "warm", lines: ["I looked for the mistakes. I could not find one.", "Every decision was rated strong. If you play again with different choices, you will see how the alternatives would have unfolded."] });
   } else {

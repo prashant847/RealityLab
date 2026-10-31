@@ -227,3 +227,6 @@ COVID = Scenario(
              "Learning and sharing after a surge prepares the next team."),
     next_up=("bhopal", "blackout"), profession="covid", prep=PREP,
 )
+
+from .difficulty import tune  # noqa: E402  (applied once, at load: see difficulty.py)
+COVID = tune(COVID)

@@ -276,4 +276,6 @@ BLACKOUT_WORKDAY = Scenario(
     next_up=("blackout",),
 )
 
+from .difficulty import tune  # noqa: E402  (applied once, at load: see difficulty.py)
+COVID_WORKDAY, BHOPAL_WORKDAY, BLACKOUT_WORKDAY = tune(COVID_WORKDAY), tune(BHOPAL_WORKDAY), tune(BLACKOUT_WORKDAY)
 WORKDAYS = {"covid": COVID_WORKDAY, "bhopal": BHOPAL_WORKDAY, "blackout": BLACKOUT_WORKDAY}

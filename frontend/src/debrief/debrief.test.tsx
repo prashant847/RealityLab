@@ -42,6 +42,20 @@ describe("the Archivist's script is built from the report, never invented", () =
     expect(scenes.every((s) => s.lines.length > 0 && s.lines.every((l) => l.trim().length > 0))).toBe(true);
   });
 
+  it("a dilemma's best available option is praised as a hard call, never listed as a mistake, in both languages", () => {
+    const base = sim();
+    const dil = sim({ summary: { decisions: 2, strong: 0, mixed: 1, weak: 1 }, major_decisions: [
+      { step: "No beds left", part: "Day 2", chose: "Reopen the outpatient wing as a monitored step-down area, move stable patients there with clear criteria, and coordinate transfers with the neighbouring hospital", rating: "mixed", consequence: "Space opens for the sickest. Transfers and moves are planned and recorded. It costs staff time you do not have, and a few patients still wait.", lesson: "", effects: [], stronger_option: null, dilemma: true },
+      { step: "Oxygen", part: "Day 3", chose: "Wait and see", rating: "weak", consequence: "Supplies ran low.", lesson: "", effects: [], stronger_option: "Audit use today", dilemma: false },
+    ], improve: base.improve });
+    const en = scriptForSim(dil);
+    expect(en.find((s) => s.id === "good-0")!.lines.join(" ")).toContain("a hard one, with no perfect answer");
+    expect(en.find((s) => s.id === "good-0")!.card!.chips[0].text).toBe("Best available");
+    expect(en.filter((s) => s.id.startsWith("fault")).map((s) => s.lines.join(" "))).toEqual([expect.stringContaining("Wait and see")]);   // only the real mistake
+    const hi = scriptForSimHi(dil);
+    expect(hi.find((s) => s.id === "good-0")!.lines.join(" ")).toContain("कोई पूरी तरह सही जवाब नहीं था");
+    expect(hi.filter((s) => s.id.startsWith("fault"))).toHaveLength(1);
+  });
   it("says plainly when there is nothing to fix, and never makes up a mistake", () => {
     const only = sim({ summary: { decisions: 1, strong: 1, mixed: 0, weak: 0 }, major_decisions: [sim().major_decisions[0]], improve: [] });
     const ids = scriptForSim(only).map((s) => s.id);

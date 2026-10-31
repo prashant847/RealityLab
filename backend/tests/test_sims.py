@@ -21,7 +21,8 @@ def test_scenario_is_well_formed(sc):
     flags_set = {f for r in sc.rounds for c in r.choices for f in c.flags} | {f for e in sc.events for f in e.flags}
     flags_set |= {i.flag for i in sc.prep} | {i.part_flag for i in sc.prep if i.part_flag}
     for r in sc.rounds:
-        assert {c.rating for c in r.choices} == {"strong", "mixed", "weak"}, r.id
+        assert len(r.choices) == 3 and {c.rating for c in r.choices} <= {"strong", "mixed", "weak"} and "weak" in {c.rating for c in r.choices}, r.id
+        assert E.best_choice(r).rating in ("strong", "mixed"), r.id                      # there is always at least a defensible option
         assert len({c.id for c in r.choices}) == len(r.choices)
         for c in r.choices:
             assert set(c.effects) <= ids and set(c.skills) <= set(E.SKILLS)
@@ -44,11 +45,17 @@ def test_engine_is_deterministic_and_does_not_mutate_input(sc):
     assert repr(st) == snapshot and a == b
 
 
+def _pick(r, which):
+    """Some rounds are dilemmas with no strong option, so "strong" means the best option on offer, "weak" the worst, and "mixed" the one in between."""
+    ranked = sorted(r.choices, key=lambda c: (-E.RANK[c.rating], r.choices.index(c)))
+    return {"strong": ranked[0], "mixed": ranked[len(ranked) // 2], "weak": ranked[-1]}[which]
+
+
 def _play(sc, picks):
     st = E.new_state(sc)
     for pick in picks:
         r = E.current_round(sc, st)
-        st, _ = E.decide(sc, st, next(c.id for c in r.choices if c.rating == pick))
+        st, _ = E.decide(sc, st, _pick(r, pick).id)
     return st
 
 
@@ -89,7 +96,7 @@ def test_invalid_and_finished():
 def test_report_is_generated_from_the_run():
     st = _play(COVID, ["strong", "weak"] * 4)
     rep = E.build_report(COVID, st)
-    assert rep["summary"] == {"decisions": 8, "strong": 4, "mixed": 0, "weak": 4}
+    assert rep["summary"] == {"decisions": 8, "strong": 3, "mixed": 1, "weak": 4, "best": 4}           # round 7 is a dilemma: its best option is rated mixed
     assert len(rep["major_decisions"]) == 8 and rep["improve"] and rep["lessons"]
     assert all(0 <= s["percent"] <= 100 for s in rep["skills"])
     assert all(s["evidence"] for s in rep["skills"])
@@ -111,7 +118,8 @@ def test_report_decisions_carry_labelled_meter_effects_and_the_stronger_option()
             assert d["stronger_option"] is None
         else:
             rnd = next(r for r in COVID.rounds if r.title == d["step"])
-            assert d["stronger_option"] == next(c.label for c in rnd.choices if c.rating == "strong")
+            best = E.best_choice(rnd)
+            assert d["stronger_option"] == (best.label if E.RANK[best.rating] > E.RANK[d["rating"]] else None)
     assert any(d["effects"] for d in rep["major_decisions"])
 
 
@@ -186,9 +194,10 @@ def test_new_run_closes_the_old_one_and_profile_roundtrips(db_url):
 @pytest.mark.parametrize("sc", SCENARIOS, ids=lambda s: s.id)
 def test_skill_points_never_reward_a_weaker_choice(sc):
     for r in sc.rounds:
+        ranked = sorted(r.choices, key=lambda c: (-E.RANK[c.rating], r.choices.index(c)))
         for s in {k for c in r.choices for k in c.skills}:
-            v = [next(c for c in r.choices if c.rating == k).skills.get(s, 0) for k in ("strong", "mixed", "weak")]
-            assert v[0] >= v[1] >= v[2] and v[0] > v[2], (r.id, s, v)
+            v = [c.skills.get(s, 0) for c in ranked]
+            assert v == sorted(v, reverse=True) and v[0] > v[-1], (r.id, s, v)
 
 
 def test_blackout_current_points_at_the_unfinished_game(db_url):
@@ -205,7 +214,7 @@ def test_workdays_have_three_distinct_endings_and_every_prep_flag_has_a_workday_
     for wd in WORKDAYS:
         assert {_play(wd, [p] * len(wd.rounds))["ending"] for p in ("strong", "mixed", "weak")} == {"ready", "partly", "unready"}
         assert all(r.kind == "workday" for r in wd.rounds) and wd.kind == "workday"
-    earned = {c.flags[0] for wd in WORKDAYS for r in wd.rounds for c in r.choices if c.rating == "strong"}
+    earned = {E.best_choice(r).flags[0] for wd in WORKDAYS for r in wd.rounds}
     for crisis in CRISES:
         assert {i.flag for i in crisis.prep} <= earned, crisis.id            # nothing in the crisis depends on something the workday cannot earn
 
@@ -227,7 +236,7 @@ def _play_from(sc, flags, picks):
     st = E.new_state(sc, flags)
     for pick in picks:
         r = E.current_round(sc, st)
-        st, _ = E.decide(sc, st, next(c.id for c in r.choices if c.rating == pick))
+        st, _ = E.decide(sc, st, _pick(r, pick).id)
     return st
 
 
@@ -298,7 +307,7 @@ def test_career_comparison_uses_what_the_student_did_and_felt(db_url):
         crun, _ = _finish(c, "covid", "weak")
         got = {x["id"]: x for x in c.get("/api/careers").json()["careers"]}
         covid = got["covid"]["you"]
-        assert covid["phases"]["workday"]["strong"] == 7 and covid["phases"]["workday"]["reflection"]["enjoyment"] == 5
+        assert covid["phases"]["workday"]["strong"] == 5 and covid["phases"]["workday"]["reflection"]["enjoyment"] == 5
         assert covid["phases"]["crisis"]["weak"] == 8 and 0 < covid["skills"]["teamwork"] < 100       # averaged over the workday and the crisis
         assert covid["complete"] is True and got["bhopal"]["you"]["complete"] is False         # a career can be compared on performance only when both parts are finished
         assert covid["phases"]["workday"]["quality"] == 100 and covid["phases"]["crisis"]["quality"] == 0
@@ -329,3 +338,50 @@ def test_every_playable_step_has_a_voice_and_it_reaches_the_scene(db_url):
         assert v["scene"]["step"]["voice"]["name"] == "Sister Anita Das"
         h = c.post("/api/sims/bhopal/runs").json()                   # Part 1 is documented history: nobody is quoted
         assert h["scene"]["step"]["voice"] is None
+
+
+# ------------------------------------------------------------------------------------------------- difficulty
+
+def _ladder(sc, skill, n=120):
+    """Ending tones for a player who picks the best option with probability `skill` (and otherwise guesses)."""
+    import random
+    from collections import Counter
+    out = Counter()
+    for i in range(n):
+        rnd = random.Random(i * 7 + 1)
+        st = E.new_state(sc)
+        while st["status"] != "completed":
+            r = E.current_round(sc, st)
+            best = E.best_choice(r)
+            st, _ = E.decide(sc, st, (best if rnd.random() < skill else rnd.choice(r.choices)).id)
+        out[next(e.tone for e in sc.endings if e.id == st["ending"])] += 1
+    return {k: out[k] / n for k in ("good", "neutral", "bad")}
+
+
+@pytest.mark.parametrize("sc", SCENARIOS, ids=lambda s: s.id)
+def test_the_best_choices_are_not_all_obvious_or_free(sc):
+    from app.sims import difficulty
+    from app.sims.engine import scene_view
+    # the careful option is no longer always first on screen, so choosing "A" every time does not win
+    first_best = 0
+    for seed in range(40):
+        st = E.new_state(sc, seed=f"run{seed}")
+        shown = scene_view(sc, st)["step"]["choices"]
+        first_best += shown[0]["id"] == E.best_choice(E.current_round(sc, st)).id
+    assert first_best < 25, first_best                                          # about a third of 40, not all of them
+    # and good options are the minority: fewer strong than weak options overall
+    ratings = [c.rating for r in sc.rounds if r.kind != "documented" for c in r.choices]
+    assert ratings.count("strong") < ratings.count("weak"), sc.id
+    # a dilemma round has no strong option, and its best option says what it costs
+    for r in sc.rounds:
+        if r.id in difficulty.DILEMMAS:
+            assert E.best_choice(r).rating == "mixed" and difficulty.DILEMMAS[r.id] in E.best_choice(r).consequence
+
+
+@pytest.mark.parametrize("sc", SCENARIOS, ids=lambda s: s.id)
+def test_the_top_ending_is_earned_not_given(sc):
+    perfect, careful, middling, random_ = _ladder(sc, 1.0, 40), _ladder(sc, 0.85), _ladder(sc, 0.7), _ladder(sc, 0.0)
+    assert perfect["good"] == 1.0                                               # it can be done
+    assert careful["good"] < 0.9 and middling["good"] < 0.6                     # but not by being mostly right
+    assert random_["good"] < 0.2 and random_["bad"] > 0.2                       # and guessing is more likely to end badly than well
+    assert random_["bad"] < 0.75                                                # without every mistake being punished to the floor

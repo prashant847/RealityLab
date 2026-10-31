@@ -113,7 +113,8 @@ class PhasesMixin:
                     rep = run.report
                     refl = db.get(Reflection, run.id)
                     phases[phase] = {"run_id": run.id, "outcome": rep["outcome"]["title"], "decisions": rep["summary"]["decisions"], "strong": rep["summary"]["strong"],
-                                     "mixed": rep["summary"]["mixed"], "weak": rep["summary"]["weak"], "reflection": refl_view(refl) if refl else None}
+                                     "mixed": rep["summary"]["mixed"], "weak": rep["summary"]["weak"], "best": rep["summary"].get("best", rep["summary"]["strong"]),
+                                     "reflection": refl_view(refl) if refl else None}
                     for sk in rep["skills"]:
                         skill_pts.setdefault(sk["id"], []).append(sk["percent"])
                 if cid == "blackout":
@@ -127,7 +128,8 @@ class PhasesMixin:
                                             "reflection": refl_view(refl) if refl else None}
                 for ph in phases.values():
                     if ph:
-                        ph["quality"] = quality(ph["strong"], ph["mixed"], ph["weak"])
+                        best = ph.get("best", ph["strong"])            # the best option on offer counts in full, even in a dilemma round where it is only rated "mixed"
+                        ph["quality"] = quality(best, ph["decisions"] - ph["weak"] - best, ph["weak"])
                 skills = {k: round(sum(v) / len(v)) for k, v in skill_pts.items()}
                 complete = phases["workday"] is not None and phases["crisis"] is not None
                 out.append({"id": cid, **{k: static[k] for k in ("title", "field", "setting", "tagline", "daily", "problems", "decisions", "pressure", "communication", "rewards", "costs")},

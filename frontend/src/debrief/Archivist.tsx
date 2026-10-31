@@ -143,9 +143,8 @@ export const Archivist = memo(function Archivist({ mood, getMouth, turn, active 
         <rect x="370" y="330" width="60" height="62" fill="#b97f58" />
         <path d="M370 372Q400 392 430 372V392H370Z" fill="#8f5f40" opacity="0.5" />
         <g ref={ref("head")}>
-          {/* long silver hair, falling past the shoulders */}
-          <g fill="#c7cbd3"><path d="M326 186C288 212 268 300 274 392C278 444 308 466 340 460C328 424 330 376 336 316C340 266 338 222 346 192Z" /><path transform="translate(800 0) scale(-1 1)" d="M326 186C288 212 268 300 274 392C278 444 308 466 340 460C328 424 330 376 336 316C340 266 338 222 346 192Z" /></g>
-          <g fill="none" stroke="#a3a9b3" strokeWidth="2" strokeLinecap="round" opacity="0.8"><path d="M312 230C298 290 296 360 306 430M326 240C316 300 318 370 328 440" /><path transform="translate(800 0) scale(-1 1)" d="M312 230C298 290 296 360 306 430M326 240C316 300 318 370 328 440" /></g>
+          {/* short, neat silver hair swept back: it ends behind the ears and at the nape, nothing hangs in front */}
+          <g fill="#c7cbd3"><path d="M326 190C306 206 298 238 302 276C304 296 312 308 324 312C322 292 324 268 330 244C334 224 338 206 344 194Z" /><path transform="translate(800 0) scale(-1 1)" d="M326 190C306 206 298 238 302 276C304 296 312 308 324 312C322 292 324 268 330 244C334 224 338 206 344 194Z" /></g>
           <ellipse cx="320" cy="262" rx="12" ry="22" fill="#c48d65" /><ellipse cx="480" cy="262" rx="12" ry="22" fill="#c48d65" />
           <path d="M322 235C322 170 360 148 400 148C440 148 478 170 478 235C478 300 462 350 400 364C338 350 322 300 322 235Z" fill="url(#a-skin)" />
           {/* hair swept straight back off the forehead: a high hairline, no bangs and nothing across the face */}
