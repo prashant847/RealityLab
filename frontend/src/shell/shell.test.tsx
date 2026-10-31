@@ -16,7 +16,7 @@ const meters = [{ id: "insight", label: "Understanding of the record", value: 20
 const view = (n: number, status = "active"): RunView => ({
   run: { id: "r1", sim_id: "covid", status, attempt: 1 }, scenario: { id: "covid", title: "COVID-era Hospital", role: "Lead", disclaimer: "d" },
   scene: { meters, flags: [], round: n, total_rounds: 2, status: status === "active" ? "active" : "completed",
-    step: { id: "c1", title: `Step ${n} title`, clock: "Day 3", kind: "hypothetical", brief: "brief", question: "What do you do?", facts: ["a fact"], part: "", scene: "triage", sources: [], voice: { name: "Sister Anita Das", role: "Ward nurse lead", line: "Two of them worried me last night." },
+    step: { id: `s${n}`, title: `Step ${n} title`, clock: "Day 3", kind: "hypothetical", brief: "brief", question: "What do you do?", facts: ["a fact"], part: "", scene: "triage", sources: [], voice: { name: "Sister Anita Das", role: "Ward nurse lead", line: "Two of them worried me last night." },
       choices: [{ id: "c1_strong", label: "Structured plan", summary: "", available: true, reason: "" }, { id: "c1_weak", label: "Wing it", summary: "", available: true, reason: "" }] } },
   decisions: [],
 });
@@ -80,6 +80,28 @@ describe("library", () => {
 });
 
 describe("player", () => {
+  it("opens the hospital's first step with a comic: once per run, always skippable, then the usual situation and decision", async () => {
+    window.location.hash = "#/crisis/covid";
+    const first = view(1);
+    first.scene.step = { ...first.scene.step!, id: "c1" };
+    const api = fake({ start: vi.fn().mockResolvedValue(first), current: vi.fn().mockResolvedValue(null) });
+    localStorage.removeItem("rl.comic.r1.c1");
+    const { unmount } = render(<Shell api={api} />);
+    await userEvent.click(await screen.findByRole("button", { name: "Begin" }));
+    expect(await screen.findByRole("group", { name: /Page 1 of 4/ })).toBeInTheDocument();     // the comic comes first
+    expect(screen.queryByRole("heading", { name: "Step 1 title" })).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "Skip the comic" }));
+    expect(await screen.findByRole("heading", { name: "Step 1 title" })).toBeInTheDocument();    // then the step, as before
+    await userEvent.click(screen.getByRole("button", { name: /make your decision/i }));
+    expect(screen.getByRole("button", { name: "Confirm decision" })).toBeInTheDocument();
+    unmount();
+    window.location.hash = "#/crisis/covid";
+    render(<Shell api={fake({ start: vi.fn().mockResolvedValue(first), current: vi.fn().mockResolvedValue(first) })} />);
+    await userEvent.click(await screen.findByRole("button", { name: /Continue where you left off/ }));
+    expect(await screen.findByRole("heading", { name: "Step 1 title" })).toBeInTheDocument();    // already seen in this run: not shown again
+    localStorage.removeItem("rl.comic.r1.c1");
+  });
+
   it("runs intro, decision, consequence and moves to the next step", async () => {
     window.location.hash = "#/crisis/covid";
     const api = fake();

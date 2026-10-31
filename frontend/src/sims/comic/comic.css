@@ -1,0 +1,10 @@
+/* the comic reader: a page is a 16:9 picture that fits the window, with the controls underneath */
+.ck { display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 0; width: 100%; height: 100%; padding: 4px 0; }
+.ck-stage { flex: 1 1 0; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; animation: ck-in .45s ease both; container-type: size; }
+.ck-page { width: min(100cqw, 177.78cqh); height: auto; aspect-ratio: 16 / 9; border-radius: 6px; box-shadow: 0 14px 34px rgba(0, 0, 0, .35); background: #f3ead2; }
+.ck-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; width: min(100%, 1100px); flex: 0 0 auto; }
+.ck-dots { list-style: none; margin: 0; padding: 0; display: flex; gap: 8px; }
+.ck-dots button { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; background: transparent; cursor: pointer; padding: 0; opacity: .55; }
+.ck-dots button.done { background: currentColor; opacity: .5; } .ck-dots button.on { background: currentColor; opacity: 1; transform: scale(1.25); }
+.ck-note { margin: 0; text-align: center; }
+@keyframes ck-in { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }

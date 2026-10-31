@@ -8,11 +8,18 @@ import { SoundToggle } from "../audio/useAudio";
 import { audio } from "../audio/audio";
 import { ReadAloud } from "../a11y/speak";
 import { TerminalStage } from "./TerminalStage";
+import { ComicReader } from "./comic/ComicReader";
+import { FIRST_SURGE, type ComicPage } from "./comic/firstSurge";
 import "./sims.css";
 
 const KIND_LABEL = { documented: "Documented record", hypothetical: "Fictional exercise", simulation: "Simulation", workday: "A normal day" } as const;
 
 type Theme = "bhopal" | "covid" | "blackout";
+
+/** Steps that open with a comic, by step id. Each is shown once per run (and can always be skipped). */
+const COMICS: Record<string, ComicPage[]> = { c1: FIRST_SURGE };
+const seenKey = (runId: string, stepId: string) => `rl.comic.${runId}.${stepId}`;
+const comicSeen = (runId: string, stepId: string): boolean => { try { return localStorage.getItem(seenKey(runId, stepId)) === "1"; } catch { return false; } };
 function Stage({ theme, scene, decision, log, deltas }: { theme: Theme; scene: import("../api/sims").Scene; decision: React.ReactNode; log?: { title: string; label: string; rating: string }[]; deltas?: Record<string, number> }) {
   if (theme === "covid") return <CovidStage scene={scene} decision={decision} log={log} deltas={deltas} />;
   if (theme === "blackout") return <TerminalStage scene={scene} decision={decision} deltas={deltas} />;
@@ -124,8 +131,12 @@ function IntroScreen({ simId, intro, current, onBegin }: { simId: string; intro:
 function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: string; view: RunView; picked: string | null; busy: boolean; onPick: (id: string) => void; onConfirm: () => void }) {
   const step = view.scene.step!;
   const [pane, setPane] = useState<"situation" | "decide">("situation");
+  const comic = COMICS[step.id];
+  const [reading, setReading] = useState(() => !!comic && !comicSeen(view.run.id, step.id));
+  const finishComic = () => { try { localStorage.setItem(seenKey(view.run.id, step.id), "1"); } catch { /* shown again next time */ } setReading(false); };
   const events = view.scene.events ?? [];
   useEffect(() => {
+    if (reading) return;
     const on = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
       if (e.ctrlKey || e.metaKey || e.altKey || (t && (t.tagName === "TEXTAREA" || (t.tagName === "INPUT" && (t as HTMLInputElement).type === "text")))) return;
@@ -138,7 +149,7 @@ function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: s
     };
     window.addEventListener("keydown", on);
     return () => window.removeEventListener("keydown", on);
-  }, [pane, picked, busy, step.choices, onPick, onConfirm]);
+  }, [reading, pane, picked, busy, step.choices, onPick, onConfirm]);
   const head = (
     <div className="sim-head">
       <p className={`sim-tag sim-tag--${step.kind}`}>{KIND_LABEL[step.kind]}</p>
@@ -183,6 +194,7 @@ function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: s
       </>)}
     </section>
   );
+  if (reading && comic) return <ComicReader pages={comic} title={step.title} onDone={finishComic} />;
   return <Stage theme={theme as Theme} scene={view.scene} decision={decisionPanel} log={view.decisions} />;
 }
 
