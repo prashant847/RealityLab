@@ -86,7 +86,11 @@ export const Archivist = memo(function Archivist({ mood, getMouth, turn, active 
       // the quill hand lifts to make a point
       const ex = 250, ey = 488, wx = 280 - cur.gesture * 40, wy = 526 - cur.gesture * 108;
       set("sleeveL", "d", `M ${ex} ${ey} L ${wx} ${wy}`);
-      set("handL", "transform", `translate(${wx.toFixed(1)},${wy.toFixed(1)}) rotate(${(-cur.gesture * 14).toFixed(1)})`);
+      const aim = (Math.atan2(wx - ex, -(wy - ey)) * 180) / Math.PI;                 // the hand continues the line of the forearm
+      set("handL", "transform", `translate(${wx.toFixed(1)},${wy.toFixed(1)}) rotate(${aim.toFixed(1)})`);
+      const hold = lerp(158, -6, cur.gesture) + (reduce ? 0 : Math.sin(now / 900) * 1.4 * (1 - cur.gesture));
+      const slide = lerp(0, -42, cur.gesture);                                        // the quill slides in the grip: nib out to write, nib tucked in to make a point
+      set("quill", "transform", `rotate(${hold.toFixed(1)} 0 -30) translate(0 ${slide.toFixed(1)})`);
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
@@ -133,12 +137,20 @@ export const Archivist = memo(function Archivist({ mood, getMouth, turn, active 
         <rect x="370" y="330" width="60" height="62" fill="#b97f58" />
         <path d="M370 372Q400 392 430 372V392H370Z" fill="#8f5f40" opacity="0.5" />
         <g ref={ref("head")}>
-          {/* hair behind the ears */}
-          <path d="M318 236C300 250 298 300 322 322L330 270Z" fill="#c9ccd1" /><path d="M482 236C500 250 502 300 478 322L470 270Z" fill="#c9ccd1" />
+          {/* hair behind the ears: silver, swept back and worn to the collar */}
+          <g fill="#aeb2ba"><path d="M330 196C300 214 286 262 290 312C292 338 306 356 324 362C318 344 322 322 330 304C336 274 334 238 340 212Z" /><path d="M470 196C500 214 514 262 510 312C508 338 494 356 476 362C482 344 478 322 470 304C464 274 466 238 460 212Z" /></g>
+          <g fill="none" stroke="#8d919a" strokeWidth="1.6" opacity="0.7" strokeLinecap="round"><path d="M318 224C304 252 300 292 308 332M326 232C316 262 314 296 320 336" /><path d="M482 224C496 252 500 292 492 332M474 232C484 262 486 296 480 336" /></g>
           <ellipse cx="320" cy="262" rx="12" ry="22" fill="#c48d65" /><ellipse cx="480" cy="262" rx="12" ry="22" fill="#c48d65" />
           <path d="M322 235C322 170 360 148 400 148C440 148 478 170 478 235C478 300 462 350 400 364C338 350 322 300 322 235Z" fill="url(#a-skin)" />
-          <path d="M318 246C306 172 346 118 400 118C454 118 494 172 482 246C478 206 462 176 400 172C338 176 322 206 318 246Z" fill="#d6d9de" />
-          <path d="M340 160Q400 128 460 160" stroke="#fff" strokeWidth="2" opacity="0.4" fill="none" />
+          {/* the hair: a receding, swept-back mane with a widow's peak, sideburns, strands and a few stray wisps */}
+          <path d="M316 254C296 174 338 106 400 106C462 106 504 174 484 254C482 234 478 214 466 198C458 188 446 181 432 178C420 186 410 194 400 204C390 194 380 186 368 178C354 181 342 188 334 198C322 214 318 234 316 254Z" fill="#dadde2" />
+          <path d="M316 254C312 272 314 292 322 308C326 294 326 278 330 264L330 242Z" fill="#cfd2d8" /><path d="M484 254C488 272 486 292 478 308C474 294 474 278 470 264L470 242Z" fill="#cfd2d8" />
+          <g fill="none" strokeLinecap="round">
+            <g stroke="#a9adb6" strokeWidth="2.4" opacity="0.85"><path d="M352 184C342 156 358 126 392 112" /><path d="M374 178C368 150 382 124 410 110" /><path d="M400 202C398 162 410 130 432 112" /><path d="M426 180C432 150 446 126 466 124" /><path d="M334 200C320 170 328 134 362 116" /><path d="M466 198C480 168 470 134 442 116" /><path d="M318 236C306 206 308 160 340 130" /><path d="M482 236C494 206 492 160 460 130" /></g>
+            <g stroke="#ffffff" strokeWidth="1.7" opacity="0.6"><path d="M358 182C350 158 364 132 396 118" /><path d="M380 178C376 152 390 128 416 116" /><path d="M432 182C438 154 450 132 470 130" /><path d="M342 196C330 170 340 140 368 124" /></g>
+            <path d="M334 198C344 187 356 181 368 178C380 186 390 194 400 204C410 194 420 186 432 178C444 181 456 187 466 198" stroke="#9b9fa9" strokeWidth="3" opacity="0.55" />
+            <g stroke="#d6d9de" strokeWidth="2.2"><path d="M372 112C366 102 358 98 350 100" /><path d="M432 110C440 100 450 98 458 102" /><path d="M404 106C406 96 414 90 422 90" /><path d="M334 134C326 128 318 128 312 132" /></g>
+          </g>
           {/* eyes */}
           {([["L", 368], ["R", 432]] as const).map(([s, cx]) => (
             <g key={s}>
@@ -180,15 +192,33 @@ export const Archivist = memo(function Archivist({ mood, getMouth, turn, active 
       </g>
       <g><rect x="92" y="520" width="92" height="22" fill="#5b2a2a" stroke="#1d0f0f" strokeWidth="2" /><rect x="100" y="540" width="84" height="22" fill="#2f4a45" stroke="#0f1d1b" strokeWidth="2" /></g>
       <g><rect x="652" y="500" width="26" height="40" rx="3" fill="#e8dcc0" /><g className="arch-flame"><path d="M665 468Q652 486 665 498Q678 486 665 468Z" fill="#ffb347" /><path d="M665 480Q660 488 665 494Q670 488 665 480Z" fill="#fff2c4" /></g></g>
-      {/* arms and the quill hand, drawn over the desk */}
+      {/* arms and hands, drawn over the desk. The quill hand points along its forearm; the quill is held in a pen grip. */}
       <path ref={ref("sleeveL")} d="M250 488L280 526" stroke="#2a2833" strokeWidth="46" strokeLinecap="round" fill="none" />
       <g ref={ref("handL")}>
-        <rect x="-18" y="-6" width="36" height="12" rx="5" fill="#efe8da" />
-        <ellipse cx="0" cy="10" rx="17" ry="15" fill="#c48d65" /><g fill="#c48d65" stroke="#a96d48" strokeWidth="1"><ellipse cx="-11" cy="24" rx="4" ry="8" /><ellipse cx="-4" cy="26" rx="4" ry="9" /><ellipse cx="4" cy="26" rx="4" ry="9" /><ellipse cx="11" cy="24" rx="4" ry="8" /></g>
-        <path d="M2 14L36 -78" stroke="#e8dcc0" strokeWidth="4" strokeLinecap="round" /><path d="M36 -78Q56 -100 58 -128Q36 -112 30 -92Z" fill="#f2ead6" stroke="#b8a77f" strokeWidth="1.5" />
+        <path d="M-15 -3C-19 -17-19 -31-15 -41C-8 -47 8 -47 15 -41C19 -31 19 -17 15 -3Z" fill="#c48d65" stroke="#a46a46" strokeWidth="1.5" />
+        <rect x="-21" y="-3" width="42" height="17" rx="7" fill="#efe8da" stroke="#cfc6b2" strokeWidth="1.3" />
+        <g ref={ref("quill")}>
+          <path d="M-3 24L5 -70" stroke="#a8987a" strokeWidth="6" strokeLinecap="round" /><path d="M-3 24L5 -70" stroke="#f1e8d0" strokeWidth="3.8" strokeLinecap="round" />
+          <path d="M-5.6 18L-3 33L-0.4 18Z" fill="#241a12" />
+          <path d="M5 -70C16 -88 20 -110 14 -136C34 -120 40 -94 28 -76C22 -70 12 -68 5 -70Z" fill="#f6efdc" stroke="#b3a37c" strokeWidth="1.4" />
+          <path d="M5 -70C13 -92 16 -116 14 -136" fill="none" stroke="#b3a37c" strokeWidth="1.4" />
+          <path d="M10 -86L26 -96M12 -100L30 -110M13 -114L26 -124M8 -78L24 -84" stroke="#cdbf9a" strokeWidth="1" fill="none" />
+        </g>
+        <g stroke="#a46a46" strokeWidth="1.3" fill="#c48d65" strokeLinejoin="round">
+          <rect x="-15" y="-19" width="30" height="9.5" rx="4.7" /><rect x="-15.5" y="-28" width="31" height="9.5" rx="4.7" /><rect x="-16" y="-37" width="32" height="9.5" rx="4.7" /><rect x="-16" y="-46" width="32" height="9.5" rx="4.7" />
+          <path d="M-12 -12C-22 -20-22 -34-12 -44C-8 -46-3 -43-5 -39C-9 -33-9 -26-8 -20Z" />
+        </g>
+        <g stroke="#a46a46" strokeWidth="1" fill="none" opacity="0.8" strokeLinecap="round"><path d="M10 -41L10 -38M10 -32L10 -29M9 -23L9 -20M8 -14L8 -11" /><path d="M-14 -36C-10 -34-8 -30-8 -26" /></g>
       </g>
       <path d="M542 482L506 526" stroke="#2a2833" strokeWidth="46" strokeLinecap="round" />
-      <g transform="translate(506 526)"><rect x="-18" y="-6" width="36" height="12" rx="5" fill="#efe8da" /><ellipse cx="0" cy="10" rx="17" ry="14" fill="#c48d65" /><g fill="#c48d65" stroke="#a96d48" strokeWidth="1"><ellipse cx="-11" cy="22" rx="4" ry="7" /><ellipse cx="-4" cy="24" rx="4" ry="8" /><ellipse cx="4" cy="24" rx="4" ry="8" /><ellipse cx="11" cy="22" rx="4" ry="7" /></g></g>
+      <g transform="translate(506 526) rotate(219)">
+        <rect x="-21" y="-3" width="42" height="17" rx="7" fill="#efe8da" stroke="#cfc6b2" strokeWidth="1.3" />
+        <path d="M-16 -3C-20 -16-19 -28-15 -36L15 -36C19 -28 20 -16 16 -3Z" fill="#c48d65" stroke="#a46a46" strokeWidth="1.5" />
+        <g fill="#c48d65" stroke="#a46a46" strokeWidth="1.4" strokeLinecap="round">
+          <rect x="-15" y="-60" width="7.4" height="28" rx="3.7" transform="rotate(-6 -11 -32)" /><rect x="-6" y="-66" width="7.6" height="33" rx="3.8" /><rect x="3" y="-64" width="7.6" height="31" rx="3.8" /><rect x="11.5" y="-56" width="7" height="25" rx="3.5" transform="rotate(8 15 -32)" />
+          <path d="M-14 -10C-24 -16-27 -28-22 -37C-18 -40-14 -36-15 -31C-16 -24-12 -20-8 -18Z" />
+        </g>
+      </g>
 
       <g className="arch-motes" fill="#ffe2b0">{MOTES.map((m, i) => <circle key={i} cx={m.x} cy={m.y} r={m.r} style={{ animationDuration: `${m.d}s`, animationDelay: `-${m.o}s` }} />)}</g>
       </g>

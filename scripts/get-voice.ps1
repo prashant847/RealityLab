@@ -1,5 +1,5 @@
 <#
- Downloads the offline neural voice used by "Read aloud": the Piper speech engine (MIT licence) and two Piper voice models, into desktop\voice.
+ Downloads the offline neural voice used by "Read aloud": the Piper speech engine (MIT licence) and three Piper voice models, into desktop\voice.
    powershell -ExecutionPolicy Bypass -File scripts\get-voice.ps1
  Everything runs on the student's computer; nothing is ever sent to a cloud service.
  Model files are verified against the SHA-256 that the Hugging Face repository publishes for them. The Piper engine zip is pinned to a hash recorded below.
@@ -11,10 +11,12 @@ New-Item -ItemType Directory -Force $dir | Out-Null
 
 $piperUrl = "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_windows_amd64.zip"
 $piperSha = "f3c58906402b24f3a96d92145f58acba6d86c9b5db896d207f78dc80811efcea"
-$base = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US"
+$base = "https://huggingface.co/rhasspy/piper-voices/resolve/main"
+# lessac: clear female read-aloud voice. alan: the deep British male voice (about 97 Hz) of the Archivist in English. pratham: the deep male Hindi voice (about 108 Hz).
 $voices = @(
-  @{ id = "en_US-lessac-medium"; path = "lessac/medium" },
-  @{ id = "en_US-ryan-medium";   path = "ryan/medium" }
+  @{ id = "en_US-lessac-medium"; path = "en/en_US/lessac/medium" },
+  @{ id = "en_GB-alan-medium";   path = "en/en_GB/alan/medium" },
+  @{ id = "hi_IN-pratham-medium"; path = "hi/hi_IN/pratham/medium" }
 )
 
 function Fetch($url, $out) { Write-Host "  downloading $(Split-Path $out -Leaf)"; Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $out }
@@ -30,9 +32,9 @@ if (-not (Test-Path "$dir\piper\piper.exe")) {
 foreach ($v in $voices) {
   foreach ($ext in @("onnx", "onnx.json")) {
     $out = Join-Path $dir "$($v.id).$ext"
-    if (Test-Path $out) { continue }
     $url = "$base/$($v.path)/$($v.id).$ext"
-    Fetch $url $out
+    if ((Test-Path $out) -and $ext -ne "onnx") { continue }
+    if (-not (Test-Path $out)) { Fetch $url $out }
     if ($ext -eq "onnx") {
       $head = Invoke-WebRequest -UseBasicParsing -Method Head -Uri $url
       $want = ($head.Headers["X-Linked-ETag"] -replace '"', '').ToLower()

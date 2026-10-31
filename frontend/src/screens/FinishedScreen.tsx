@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { GameApi } from "../api/client";
 import type { FinalDispatch, Report, WorldView } from "../api/types";
 import { OutcomeReport } from "../ui/OutcomeReport";
@@ -7,6 +7,7 @@ import { simsApi } from "../api/sims";
 import { ReflectionForm } from "../sims/Reflection";
 import { Debrief } from "../debrief/Debrief";
 import { scriptForBlackout } from "../debrief/script";
+import { scriptForBlackoutHi } from "../debrief/hi";
 
 /** The ending plus the scored report (fetched from the server; scores are never computed here). */
 export function FinishedScreen({ api, simId, runId, final, state, onTryDifferent, onRewind, onRestart, onCompare }: {
@@ -16,7 +17,7 @@ export function FinishedScreen({ api, simId, runId, final, state, onTryDifferent
   const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [debrief, setDebrief] = useState(false);
-  const scenes = useMemo(() => (report ? scriptForBlackout(report) : []), [report]);
+  const scenesFor = useCallback((lang: "en" | "hi") => (report ? (lang === "hi" ? scriptForBlackoutHi(report) : scriptForBlackout(report)) : []), [report]);
   useEffect(() => {
     if (!debrief) return;
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setDebrief(false); };
@@ -41,7 +42,7 @@ export function FinishedScreen({ api, simId, runId, final, state, onTryDifferent
           </aside>)}
         {report && debrief && (
           <div className="deb-modal" role="dialog" aria-modal="true" aria-label="Your debrief with the Archivist">
-            <div className="deb-modal-in"><Debrief scenes={scenes} title="BLACKOUT" onWritten={() => setDebrief(false)} /></div>
+            <div className="deb-modal-in"><Debrief scenesFor={scenesFor} title="BLACKOUT" onWritten={() => setDebrief(false)} /></div>
           </div>)}
       </>}>
       {!report && !error && <p role="status" className="muted">Preparing your performance report…</p>}

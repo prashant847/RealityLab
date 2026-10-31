@@ -78,6 +78,7 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
   useEffect(() => {
     const t = setTimeout(() => {
       const main = document.getElementById("main"); const active = document.activeElement;
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;                                                   // an open dialog (welcome tour, debrief) keeps focus
       if (main && !(active && active !== document.body && main.contains(active))) main.focus({ preventScroll: true });     // never take focus from a control the student is already using
     }, 80);
     return () => clearTimeout(t);

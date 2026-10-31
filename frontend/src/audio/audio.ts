@@ -111,10 +111,14 @@ class Engine {
     document.addEventListener("visibilitychange", () => { if (!this.ctx) return; if (document.hidden) void this.ctx.suspend(); else if (this.settings.music || this.settings.sfx) void this.ctx.resume(); });
   }
 
+  private ducked = false;
+  /** Lets a voice be heard: the music sits low while someone is speaking, then comes back. Not saved as a setting. */
+  duck(on: boolean): void { this.ducked = on; this.apply(); }
+
   private apply(): void {
     if (!this.ctx || !this.musicBus || !this.sfxBus) return;
     const t = this.ctx.currentTime;
-    this.musicBus.gain.cancelScheduledValues(t); this.musicBus.gain.linearRampToValueAtTime(this.settings.music ? this.settings.musicVolume * 0.24 : 0, t + 0.8);
+    this.musicBus.gain.cancelScheduledValues(t); this.musicBus.gain.linearRampToValueAtTime(this.settings.music ? this.settings.musicVolume * 0.24 * (this.ducked ? 0.3 : 1) : 0, t + (this.ducked ? 0.5 : 1.2));
     this.sfxBus.gain.cancelScheduledValues(t); this.sfxBus.gain.setValueAtTime(this.settings.sfxVolume * 0.9, t);
     if (this.settings.music && !this.playing) { this.playing = true; if (this.ctx.state === "suspended") void this.ctx.resume(); this.startDrone(); this.tick(); }
     if (!this.settings.music && this.playing) { this.playing = false; this.stopDrone(); if (this.timer) clearTimeout(this.timer); this.timer = null; }

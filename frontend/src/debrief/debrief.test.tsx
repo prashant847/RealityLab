@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SimReport } from "../api/sims";
 import type { Report } from "../api/types";
 import { scriptForBlackout, scriptForSim, spoken } from "./script";
+import { hn, hiText, scriptForBlackoutHi, scriptForSimHi } from "./hi";
 
 const sim = (over: Partial<SimReport> = {}): SimReport => ({
   simulation: "COVID-era Hospital", simulation_id: "covid", role: "Duty Medical Lead", run_id: "r1", kind: "crisis",
@@ -145,28 +146,102 @@ describe("the narrator plays the debrief with the natural voice", () => {
   });
 });
 
+// ---------------------------------------------------------------- Hindi
+const hiSim = (): SimReport => sim({
+  role: "Duty Medical Lead at a fictional district hospital",
+  outcome: { id: "held", title: "Strained but functioning", text: "The hospital kept going but at a cost: gaps in care, staff stretched or trust damaged. Some of those costs came from choices that could have been different.", tone: "neutral" },
+  final_meters: [{ label: "Oxygen reserve", value: 90, good: "high" }],
+  major_decisions: [
+    { step: "The first surge", part: "Day 1", chose: "Set up a structured triage process using agreed criteria, name a triage lead per shift, and brief the team on what is known and unknown", rating: "strong", consequence: "Patients are sorted in a consistent way, and staff know who decides. The team is steadier.", lesson: "", effects: [{ label: "Quality of care", from: 70, to: 80, good: "high" }], stronger_option: null },
+    { step: "No beds left", part: "Day 2", chose: "Stop admitting new patients until beds free up", rating: "weak", consequence: "People who needed help are turned away. Trust takes a hit.", lesson: "", effects: [{ label: "Family and community trust", from: 70, to: 58, good: "high" }, { label: "Quality of care", from: 83, to: 73, good: "high" }], stronger_option: "Reopen the outpatient wing as a monitored step-down area, move stable patients there with clear criteria, and coordinate transfers with the neighbouring hospital" },
+  ],
+  skills: [{ id: "t", label: "Teamwork", percent: 40, level: "Developing", decisions_counted: 2, explanation: "x", evidence: [{ step: "No beds left", choice: "Stop admitting new patients until beds free up", points: -2 }] }],
+  lessons: ["Agree criteria before the peak; consistent, documented decisions are fairer and easier to defend."],
+  recommended_next: { id: "bhopal", title: "Bhopal", reason: "Study how safeguards, cost pressure and warnings add up in industrial safety." },
+});
+
+describe("the Archivist in Hindi", () => {
+  it("writes numbers out in Hindi words, so the voice never has to guess", () => {
+    expect([0, 7, 21, 63, 100, 130, 220, 1250].map(hn)).toEqual(["शून्य", "सात", "इक्कीस", "तिरसठ", "एक सौ", "एक सौ तीस", "दो सौ बीस", "एक हज़ार दो सौ पचास"]);
+  });
+
+  it("tells the whole story from real, translated simulation text, in Hindi only", () => {
+    const scenes = scriptForSimHi(hiSim());
+    expect(scenes.map((s) => s.id)).toEqual(["open", "good-0", "turn", "fault-0", "prep", "skills", "close"]);
+    const all = scenes.flatMap((s) => s.lines);
+    expect(all.length).toBeGreaterThan(15);
+    expect(all.every((l) => !/[A-Za-z]/.test(l))).toBe(true);                    // never an English word for the Hindi voice to stumble over
+    const fault = scenes.find((s) => s.id === "fault-0")!.lines.join(" ");
+    expect(fault).toContain(hiText("No beds left")!);
+    expect(fault).toContain("मैंने इसे कमज़ोर आँका");
+    expect(fault).toContain("एक बेहतर विकल्प यह था");
+    expect(fault).toContain("परिवारों और समुदाय का भरोसा सत्तर से अट्ठावन हो गया");   // the biggest meter change, in Hindi words
+    expect(scenes[0].lines.join(" ")).toContain("आपने तीन फ़ैसले लिए");
+  });
+
+  it("leaves out a sentence it cannot say in Hindi, rather than reading English with a Hindi voice", () => {
+    const odd = hiSim();
+    odd.major_decisions[1] = { ...odd.major_decisions[1], chose: "A choice nobody translated", consequence: "Nor this.", stronger_option: null };
+    const lines = scriptForSimHi(odd).flatMap((s) => s.lines);
+    expect(lines.every((l) => !/[A-Za-z]/.test(l))).toBe(true);
+    expect(lines.join(" ")).not.toContain("A choice nobody translated");
+  });
+
+  it("BLACKOUT: sentences built from the numbers, names in Devanagari", () => {
+    const d = (i: number, label: string, rating: "sound" | "poor", delta: number, alt: string | null) => ({
+      index: i, round: i + 1, clock: i === 0 ? "Day 1 – 27 Jun" : "Days 2-3", choice_id: label, label, rating, outcome: "as_expected", verdict: "x", bad_luck: [], p_objective: 0.31, p_best: 0.74,
+      warned_by: rating === "poor" ? [{ stakeholder: "raghav", why: "x" }] : [], effects: [], known_info: [], impact: { score_delta: delta, by_category: {}, recovery_gain: 0 },
+      alternative: alt ? { choice_id: "x", label: alt, recommended_by: [], p_objective: 0.74, differences: [] } : null,
+    });
+    const rep = {
+      version: 1, run_id: "b", simulation_id: "b", seed: 1, decision_count: 2, ending: { id: "e", title: "CRITICAL SHORTFALL", text: "Too little cargo moved; urgent customers remain at risk." },
+      overall: { score: 41.2, band: "Poor", raw: 41.2, cap: null }, categories: [{ id: "safety", name: "Financial discipline", weight: 1, score: 40, weighted: 40, formula: "", measures: "", inputs: {} }],
+      decisions: [d(0, "Cut the affected connections and keep the evidence", "sound", 3, null), d(1, "Bring everything back online as fast as possible", "poor", -6, "Recover in stages while watching the spread")],
+      strongest_decisions: [0], most_damaging_decisions: [1], recovery_improvers: [],
+      avoidable_losses: [{ kind: "k", amount: 12, unit: "points of staff safety", event: "Systems fail again", round: 3, clock: "Days 5-8", probability: 1, chance: false, avoidable: true, alternative: "Recover in stages while watching the spread", caused_by: { index: 1, label: "Bring everything back online as fast as possible" }, earlier_chances: [] }],
+      unavoidable_losses: [], missed_opportunities: [], recommended_alternatives: [], focus_next: [{ category: "Financial discipline", score: 40, advice: "Stage spending and keep a reserve for the round-6 to round-8 contingencies; avoid deferred obligations you cannot meet." }],
+      quality: { sound: 1, questionable: 0, poor: 1, unlucky: 0, lucky: 0 }, attempts: [],
+      reveal: { recorded_units: 100, true_units: 70, records_overstated_by: 30, verified_units: 40, existing_but_unverified: 30, note: "" },
+    } as unknown as Report;
+    const scenes = scriptForBlackoutHi(rep);
+    const all = scenes.flatMap((s) => s.lines).join(" ");
+    expect(scenes.map((s) => s.id)).toEqual(["open", "good-0", "turn", "fault-0", "losses", "reveal", "focus", "close"]);
+    expect(scenes.flatMap((s) => s.lines).every((l) => !/[A-Za-z]/.test(l))).toBe(true);
+    expect(all).toContain("केवल इकतीस प्रतिशत में लक्ष्य पहुँच में रहता");
+    expect(all).toContain("चौहत्तर प्रतिशत");
+    expect(all).toContain("राघव ने आपको पहले ही चेताया था");
+    expect(all).toContain("कर्मचारी सुरक्षा के बारह अंक");
+    expect(all).toContain("रिकॉर्ड तीस बढ़ा-चढ़ाकर लिखे गए थे");
+  });
+});
+
 // ---------------------------------------------------------------- the stage
 describe("the debrief stage", () => {
-  it("offers the debrief or the written report, starts on request, and is controllable from the keyboard", async () => {
+  it("offers the debrief or the written report, starts on request, is controllable from the keyboard, and speaks English or Hindi", async () => {
     vi.resetModules();
+    localStorage.removeItem("rl.debriefLang");
     const calls: string[] = [];
+    const made: { lang: string; calls: string[] }[] = [];
     let state = { scene: 0, line: 0, playing: false, ended: false, engine: "natural" as const };
     const subs = new Set<() => void>();
     vi.doMock("./narrator", () => ({
       Narrator: class {
-        rate = 1; constructor(public scenes: unknown[]) {}
+        rate = 1; mine: string[] = [];
+        constructor(public scenes: unknown[], public lang = "en") { made.push({ lang: this.lang, calls: this.mine }); }
         getState = () => state; subscribe = (l: () => void) => { subs.add(l); return () => subs.delete(l); };
         mouth = () => ({ open: 0, wide: 0.5 });
-        play() { calls.push("play"); state = { ...state, playing: true }; subs.forEach((l) => l()); }
+        play() { calls.push("play"); this.mine.push("play"); state = { ...state, playing: true }; subs.forEach((l) => l()); }
         pause() { calls.push("pause"); state = { ...state, playing: false }; subs.forEach((l) => l()); }
         toggle() { if (state.playing) this.pause(); else this.play(); }
-        goto(i: number) { calls.push(`goto${i}`); state = { ...state, scene: i }; subs.forEach((l) => l()); }
+        goto(i: number) { calls.push(`goto${i}`); this.mine.push(`goto${i}`); state = { ...state, scene: i }; subs.forEach((l) => l()); }
         next() { calls.push("next"); } prev() { calls.push("prev"); } destroy() { /* done */ }
       },
     }));
     const { Debrief } = await import("./Debrief");
+    const en = scriptForSim(sim()), hi = scriptForSimHi(hiSim());
+    const scenesFor = (l: "en" | "hi") => (l === "hi" ? hi : en);
     const onWritten = vi.fn();
-    render(<Debrief scenes={scriptForSim(sim())} title="COVID" onWritten={onWritten} />);
+    render(<Debrief scenesFor={scenesFor} title="COVID" onWritten={onWritten} />);
     expect(screen.getByRole("heading", { name: "The Archivist has read your ledger" })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Read the written report instead" }));
     expect(onWritten).toHaveBeenCalledTimes(1);
@@ -182,9 +257,17 @@ describe("the debrief stage", () => {
     await userEvent.keyboard("c");
     expect(screen.queryByText(/Come in\. Sit down\./)).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Transcript" }));
-    expect(screen.getByRole("region", { name: "Transcript of the debrief" })).toHaveTextContent("Come in. Sit down.");
-    await userEvent.click(screen.getByRole("button", { name: "Written report" }));
+    expect(screen.getByRole("region", { name: "Transcript" })).toHaveTextContent("Come in. Sit down.");
+
+    // the language can be changed part-way through; it carries on from the same section, in Hindi, and is remembered
+    await userEvent.click(screen.getAllByRole("radio", { name: "हिन्दी" })[0]);
+    expect(made.at(-1)!.lang).toBe("hi");
+    expect(made.at(-1)!.calls).toEqual(["goto0", "play"]);
+    expect(localStorage.getItem("rl.debriefLang")).toBe("hi");
+    expect(screen.getByRole("button", { name: "लिखित रिपोर्ट" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "लिखित रिपोर्ट" }));
     expect(onWritten).toHaveBeenCalledTimes(2);
+    localStorage.removeItem("rl.debriefLang");
     vi.doUnmock("./narrator");
   });
 });

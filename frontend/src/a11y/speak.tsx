@@ -31,7 +31,7 @@ export function stopSpeaking(): void {
 export function chunkText(text: string, max = 260): string[] {
   const out: string[] = [];
   let cur = "";
-  for (const sentence of text.replace(/\s+/g, " ").trim().match(/[^.!?]+[.!?]+["')\]]*\s*|[^.!?]+$/g) ?? []) {
+  for (const sentence of text.replace(/\s+/g, " ").trim().match(/[^.!?।]+[.!?।]+["')\]]*\s*|[^.!?।]+$/g) ?? []) {
     if (cur && cur.length + sentence.length > max) { out.push(cur.trim()); cur = ""; }
     cur += sentence;
     while (cur.length > max) { const i = cur.lastIndexOf(" ", max); const cut = i > 40 ? i : max; out.push(cur.slice(0, cut).trim()); cur = cur.slice(cut); }

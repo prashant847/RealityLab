@@ -36,7 +36,7 @@ class ChoiceBody(BaseModel):
 
 class TtsBody(BaseModel):
     text: str = Field(min_length=1, max_length=tts.MAX_CHARS)
-    voice: str = Field("female", pattern="^(female|male)$")
+    voice: str = Field("female", pattern="^(female|male|hindi)$")
     rate: float = Field(1.0, ge=0.5, le=2.0)
 
 

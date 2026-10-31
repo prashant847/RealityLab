@@ -50,12 +50,14 @@ def test_with_voice_files_the_engine_is_called_and_a_wav_comes_back(client, tmp_
         return R()
 
     monkeypatch.setattr(tts.subprocess, "run", fake_run)
-    assert client.get("/api/tts/status").json() == {"voices": ["female", "male"]}
+    assert client.get("/api/tts/status").json() == {"voices": ["female", "male", "hindi"]}
     r = client.post("/api/tts", json={"text": "Hello   there.", "voice": "male", "rate": 0.5})
     assert r.status_code == 200 and r.headers["content-type"] == "audio/wav" and r.content[:4] == b"RIFF"
-    assert "ryan" in seen["cmd"][seen["cmd"].index("--model") + 1]
+    assert "alan" in seen["cmd"][seen["cmd"].index("--model") + 1]
     assert seen["cmd"][seen["cmd"].index("--length_scale") + 1] == "2.000"        # half speed = twice as long
     assert seen["text"] == "Hello there."
     seen.clear()
     assert client.post("/api/tts", json={"text": "Hello   there.", "voice": "male", "rate": 0.5}).status_code == 200
     assert seen == {}                                                              # second request is served from the cache
+    r = client.post("/api/tts", json={"text": "नमस्ते।", "voice": "hindi"})
+    assert r.status_code == 200 and "pratham" in seen["cmd"][seen["cmd"].index("--model") + 1] and seen["text"] == "नमस्ते।"

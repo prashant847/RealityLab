@@ -1,5 +1,6 @@
 import { chunkText, fetchPiece, naturalVoiceReady, stopSpeaking } from "../a11y/speak";
 import { getA11y } from "../a11y/a11y";
+import { audio } from "../audio/audio";
 import { spoken, type Scene } from "./script";
 
 export interface NarratorState { scene: number; line: number; playing: boolean; ended: boolean; engine: "natural" | "browser" | "timed" | "starting" }
@@ -7,8 +8,15 @@ export interface Mouth { open: number; wide: number }
 
 interface Unit { scene: number; line: number; text: string; caption: string }
 
-const BEAT = 650;                                  // a breath between scenes
+export type Lang = "en" | "hi";
+const BEAT = 900;                                  // a breath between scenes
+const LINE_GAP = 380;                              // and a pause between lines, so each one lands
+const DEPTH = 0.88;                                // played back at 88% speed with the pitch allowed to drop: about two and a half semitones deeper, a bigger and older voice
+const TEMPO = 0.93;                                // and spoken a little slower than normal, unhurried
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+/** The voice of each language: English is the deep British voice (about 97 Hz), Hindi the deep Hindi male voice (about 108 Hz). */
+export const ARCHIVIST_VOICE: Record<Lang, string> = { en: "male", hi: "hindi" };
 
 /**
  * Plays a debrief scene by scene. The voice is the offline natural voice when it is installed, otherwise the computer's own voice, otherwise a
@@ -33,7 +41,7 @@ export class Narrator {
   private prefetch = new Map<number, Promise<string>>();
   rate = 1;
 
-  constructor(readonly scenes: Scene[]) {
+  constructor(readonly scenes: Scene[], readonly lang: Lang = "en") {
     scenes.forEach((s, si) => {
       this.firstOf[si] = this.units.length;
       s.lines.forEach((line, li) => chunkText(spoken(line)).forEach((text, ci) => this.units.push({ scene: si, line: li, text, caption: ci === 0 ? line : "" })));
@@ -44,6 +52,7 @@ export class Narrator {
   subscribe = (l: () => void): (() => void) => { this.listeners.add(l); return () => { this.listeners.delete(l); }; };
   private set(patch: Partial<NarratorState>): void {
     this.state = { ...this.state, ...patch };
+    if ("playing" in patch) audio.duck(this.state.playing);
     this.listeners.forEach((l) => l());
   }
 
@@ -94,7 +103,7 @@ export class Narrator {
   }
   next(): void { this.goto(this.state.scene + 1); }
   prev(): void { this.goto(this.state.scene > 0 && this.cursor - this.firstOf[this.state.scene] < 2 ? this.state.scene - 1 : this.state.scene); }
-  destroy(): void { this.halt(); this.listeners.clear(); void this.ctx?.close().catch(() => undefined); this.ctx = null; this.analyser = null; }
+  destroy(): void { audio.duck(false); this.halt(); this.listeners.clear(); void this.ctx?.close().catch(() => undefined); this.ctx = null; this.analyser = null; }
 
   private halt(): void {
     this.token++;
@@ -113,26 +122,37 @@ export class Narrator {
   private fetchUnit(i: number): Promise<string> {
     const hit = this.prefetch.get(i);
     if (hit) return hit;
-    const { voice, speechRate } = getA11y();
-    const p = fetchPiece(this.units[i].text, voice, Math.max(0.5, Math.min(1.5, speechRate * this.rate * 0.95)));
+    const tempo = getA11y().speechRate * this.rate * TEMPO;
+    const p = fetchPiece(this.units[i].text, ARCHIVIST_VOICE[this.lang], Math.max(0.5, Math.min(2, tempo / DEPTH)));   // generated faster, because it is played back slower
     p.catch(() => undefined);
     this.prefetch.set(i, p);
     return p;
   }
 
+  /** The Archivist's voice chain: measure the mouth first, then weight the low end, darken the top, even out the dynamics and place it in a stone hall. */
   private wire(el: HTMLAudioElement): void {
     if (typeof AudioContext === "undefined" || this.wired.has(el)) return;
     try {
-      this.ctx ??= new AudioContext();
+      const ctx = (this.ctx ??= new AudioContext());
       if (!this.analyser) {
-        this.analyser = this.ctx.createAnalyser(); this.analyser.fftSize = 1024; this.analyser.smoothingTimeConstant = 0.35;
-        this.analyser.connect(this.ctx.destination);
-        this.td = new Uint8Array(this.analyser.fftSize); this.fd = new Uint8Array(this.analyser.frequencyBinCount);
+        const an = (this.analyser = ctx.createAnalyser()); an.fftSize = 1024; an.smoothingTimeConstant = 0.35;
+        this.td = new Uint8Array(an.fftSize); this.fd = new Uint8Array(an.frequencyBinCount);
+        const low = ctx.createBiquadFilter(); low.type = "lowshelf"; low.frequency.value = 180; low.gain.value = 7;
+        const body = ctx.createBiquadFilter(); body.type = "peaking"; body.frequency.value = 95; body.Q.value = 0.9; body.gain.value = 3;
+        const dark = ctx.createBiquadFilter(); dark.type = "highshelf"; dark.frequency.value = 4800; dark.gain.value = -4;
+        const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -22; comp.knee.value = 18; comp.ratio.value = 3; comp.attack.value = 0.01; comp.release.value = 0.25;
+        const dry = ctx.createGain(); dry.gain.value = 0.6;
+        const hall = ctx.createConvolver(); hall.buffer = impulse(ctx, 1.7);
+        const wet = ctx.createGain(); wet.gain.value = 0.1;
+        const master = ctx.createGain(); master.gain.value = 1;
+        const limit = ctx.createDynamicsCompressor(); limit.threshold.value = -6; limit.knee.value = 0; limit.ratio.value = 20; limit.attack.value = 0.002; limit.release.value = 0.12;
+        an.connect(low); low.connect(body); body.connect(dark); dark.connect(comp); comp.connect(dry); dry.connect(master);
+        comp.connect(hall); hall.connect(wet); wet.connect(master); master.connect(limit); limit.connect(ctx.destination);
       }
-      this.ctx.createMediaElementSource(el).connect(this.analyser);
+      ctx.createMediaElementSource(el).connect(this.analyser);
       this.wired.add(el);
-      void this.ctx.resume();
-    } catch { /* no analysis available: the mouth falls back to a rhythm */ }
+      void ctx.resume();
+    } catch { /* no analysis or effects available: plain playback, and the mouth falls back to a rhythm */ }
   }
 
   private async run(mine: number): Promise<void> {
@@ -161,6 +181,8 @@ export class Narrator {
       if (mine !== this.token) return;
       this.prefetch.delete(i);
       this.cursor = i + 1;
+      const nx = this.units[i + 1];
+      if (nx && nx.scene === u.scene && nx.line !== u.line) { await sleep(LINE_GAP); if (mine !== this.token) return; }
     }
     if (mine === this.token) { this.set({ playing: false, ended: true }); }
   }
@@ -168,6 +190,8 @@ export class Narrator {
   private playUrl(url: string, mine: number): Promise<void> {
     return new Promise((resolve, reject) => {
       const el = new Audio(url);
+      el.preservesPitch = false;                                          // slowing the playback lowers the pitch, as for a bigger, older voice
+      el.playbackRate = DEPTH;
       this.audio = el;
       this.wire(el);
       const done = () => { if (this.audio === el) this.audio = null; };
@@ -185,9 +209,10 @@ export class Narrator {
       setTimeout(() => {
         if (mine !== this.token) { resolve(); return; }
         const u = new SpeechSynthesisUtterance(text);
-        u.rate = Math.max(0.6, getA11y().speechRate * this.rate * 0.95);
-        const en = (synth.getVoices?.() ?? []).find((v) => /^en/i.test(v.lang));
-        if (en) { u.voice = en; u.lang = en.lang; }
+        u.rate = Math.max(0.5, getA11y().speechRate * this.rate * TEMPO); u.pitch = 0.4;
+        if (this.lang === "hi") u.lang = "hi-IN";
+        const voice = (synth.getVoices?.() ?? []).find((v) => v.lang.toLowerCase().startsWith(this.lang === "hi" ? "hi" : "en"));
+        if (voice) { u.voice = voice; u.lang = voice.lang; }
         u.onstart = () => { this.synthSpeaking = true; this.speakingSince = performance.now(); };
         u.onend = () => { this.synthSpeaking = false; resolve(); };
         u.onerror = (e) => { this.synthSpeaking = false; if ((e as SpeechSynthesisErrorEvent).error === "canceled" || (e as SpeechSynthesisErrorEvent).error === "interrupted") resolve(); else reject(new Error("speech failed")); };
@@ -204,4 +229,16 @@ export class Narrator {
       if (!this.state.playing) { while (!this.state.playing && mine === this.token) await sleep(150); }
     }
   }
+}
+
+/** A short, dark hall: decaying noise, so the voice sounds as if spoken in a stone library. */
+function impulse(ctx: AudioContext, seconds: number): AudioBuffer {
+  const n = Math.floor(ctx.sampleRate * seconds);
+  const buf = ctx.createBuffer(2, n, ctx.sampleRate);
+  let seed = 12345;
+  for (let c = 0; c < 2; c++) {
+    const d = buf.getChannelData(c);
+    for (let i = 0; i < n; i++) { seed = (seed * 1664525 + 1013904223) % 4294967296; d[i] = ((seed / 4294967296) * 2 - 1) * Math.pow(1 - i / n, 3.2); }
+  }
+  return buf;
 }

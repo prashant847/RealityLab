@@ -248,6 +248,7 @@ describe("workday, crisis and career comparison", () => {
 
 describe("polish: welcome, keyboard play, voices, feedback, milestones", () => {
   it("shows a short welcome tour on first launch, saves the name, and never again", async () => {
+    window.location.hash = "#/";                                   // not whatever route the previous test left behind
     localStorage.removeItem(WELCOME_KEY);
     const api = fake();
     const { unmount } = render(<Shell api={api} />);
@@ -265,6 +266,14 @@ describe("polish: welcome, keyboard play, voices, feedback, milestones", () => {
     render(<Shell api={fake()} />);
     await screen.findAllByRole("article");
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+  it("an open dialog keeps keyboard focus: the screen-change focus move never steals it", async () => {
+    window.location.hash = "#/";
+    localStorage.removeItem(WELCOME_KEY);
+    render(<Shell api={fake()} />);
+    const dialog = await screen.findByRole("dialog");
+    await new Promise((r) => setTimeout(r, 250));                      // well past the 80 ms the shell waits before moving focus to the new screen
+    expect(dialog.contains(document.activeElement)).toBe(true);
   });
   it("can be skipped with Escape", async () => {
     localStorage.removeItem(WELCOME_KEY);

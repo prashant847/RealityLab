@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { PrepItem, SimReport, SimsApi } from "../api/sims";
 import { ReflectionForm } from "./Reflection";
 import { SoundToggle } from "../audio/useAudio";
 import { Radar } from "./Radar";
 import { Debrief } from "../debrief/Debrief";
 import { scriptForSim } from "../debrief/script";
+import { scriptForSimHi } from "../debrief/hi";
 import "./sims.css";
 
 const RATING = { strong: "Strong", mixed: "Mixed", weak: "Weak" } as const;
@@ -20,7 +21,7 @@ export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId
   const [skill, setSkill] = useState(0);
   const [open, setOpen] = useState<number | null>(null);
   const [view, setView] = useState<"debrief" | "written">("debrief");
-  const scenes = useMemo(() => (rep ? scriptForSim(rep) : []), [rep]);
+  const scenesFor = useCallback((lang: "en" | "hi") => (rep ? (lang === "hi" ? scriptForSimHi(rep) : scriptForSim(rep)) : []), [rep]);
   useEffect(() => { api.report(runId).then(setRep).catch((e: Error) => setErr(e.message)); }, [api, runId]);
 
   if (err) return <main className="rep"><div className="sim-card sim-center"><h2>Report not available</h2><p>{err}</p><button type="button" className="sim-btn sim-btn--primary" onClick={onHome}>Back to all simulations</button></div></main>;
@@ -32,7 +33,7 @@ export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId
     <main className={`rep rep--${rep.profession ?? rep.simulation_id} rep--debrief`} id="main" tabIndex={-1}>
       <header className="rep-deb-head"><div><p className="sim-kicker">Career experience report</p><h1>{rep.simulation}</h1></div>
         <button type="button" className="rep-act" onClick={onHome}>← All simulations</button></header>
-      <Debrief scenes={scenes} title={rep.simulation} onWritten={() => setView("written")} />
+      <Debrief scenesFor={scenesFor} title={rep.simulation} onWritten={() => setView("written")} />
     </main>
   );
   return (

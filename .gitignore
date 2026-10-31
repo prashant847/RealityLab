@@ -22,3 +22,4 @@ desktop/build/
 desktop/installer*/
 desktop/release*/
 desktop/voice/
+desktop/voice-test/

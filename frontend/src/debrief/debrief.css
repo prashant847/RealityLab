@@ -81,3 +81,11 @@
 .deb .deb-card h3, .deb .deb-open h2 { color: #fff6e0 !important; }
 .deb .deb-transcript h3 { color: var(--gold); }
 .deb-bar .snd-toggle { color: var(--cream); border-color: #5a432a; background: #261a10; }
+
+/* English / Hindi */
+.deb-lang { display: inline-flex; gap: 0; margin: 0 0 12px; border: 1px solid #5a432a; border-radius: 999px; overflow: hidden; background: #1a130d; }
+.deb-lang button { border: 0; background: transparent; color: var(--cream); padding: 6px 16px; font: inherit; font-weight: 600; cursor: pointer; }
+.deb-lang button.on { background: var(--gold); color: #1a1008; }
+.deb-lang--bar { margin: 0; }
+.deb [lang="hi"] .deb-caption, .deb[lang="hi"] .deb-caption, .deb[lang="hi"] .deb-card, .deb[lang="hi"] .deb-open, .deb[lang="hi"] .deb-transcript { font-family: "Nirmala UI", "Noto Sans Devanagari", "Mangal", system-ui, sans-serif; }
+.deb[lang="hi"] .deb-caption { line-height: 1.6; }
