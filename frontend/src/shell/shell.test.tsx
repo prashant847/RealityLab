@@ -61,6 +61,7 @@ describe("player", () => {
     render(<Shell api={api} />);
     await userEvent.click(await screen.findByRole("button", { name: "Begin" }));
     expect(await screen.findByRole("heading", { name: "Step 1 title" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /make your decision/i }));
     const confirm = screen.getByRole("button", { name: "Confirm decision" });
     expect(confirm).toBeDisabled();
     await userEvent.click(screen.getByLabelText(/structured plan/i));
@@ -84,6 +85,7 @@ describe("player", () => {
     const api = fake({ decide: vi.fn().mockResolvedValue({ outcome: { ...outcome, completed: true }, view: view(2, "completed") }) });
     render(<Shell api={api} />);
     await userEvent.click(await screen.findByRole("button", { name: "Begin" }));
+    await userEvent.click(await screen.findByRole("button", { name: /make your decision/i }));
     await userEvent.click(await screen.findByLabelText(/structured plan/i));
     await userEvent.click(screen.getByRole("button", { name: "Confirm decision" }));
     await userEvent.click(await screen.findByRole("button", { name: /career experience report/i }));

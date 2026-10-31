@@ -38,44 +38,51 @@ export function PlantSchematic({ scene }: { scene: Scene }) {
   const meter = (id: string) => scene.meters.find((m) => m.id === id)?.value ?? 0;
   const ls = lamps(scene);
   const hazard = meter("hazard"), community = meter("community");
-  const gas = historical && ["night", "response", "aftermath"].includes(step?.scene ?? "") || (!historical && hazard >= 85);
+  const night = ["night", "response", "night_anomaly"].includes(step?.scene ?? "");
+  const gas = (historical && ["night", "response", "aftermath"].includes(step?.scene ?? "")) || (!historical && hazard >= 85);
   const alt = historical
     ? `Schematic of the plant: a storage tank, four protective layers (${LAYERS.map((l, i) => `${l.label}: ${ls[i].note || LAMP_TEXT[ls[i].lamp]}`).join("; ")}) and the neighbourhood beside the plant.`
     : `Schematic of the fictional Kestrel Works: a storage tank at hazard level ${hazard} of 100, four protective layers and the neighbouring housing, community preparedness ${community} of 100.`;
+  const sky = night ? ["#05080f", "#141c28"] : ["#1a2433", "#3a3f48"];
   return (
     <figure className="bh-fig">
-      <svg viewBox="0 0 560 300" role="img" aria-label={alt}>
-        <rect width="560" height="300" rx="6" fill="#141a22" />
-        <rect y="238" width="560" height="62" fill="#1b232d" />
-        <g stroke="#2d3946" strokeWidth="1">{[60, 120, 180, 240, 300, 360, 420, 480].map((x) => <line key={x} x1={x} y1="238" x2={x - 24} y2="300" />)}</g>
-        {/* tank */}
-        <rect x="40" y="108" width="120" height="130" rx="18" fill="#2a3644" stroke="#74879c" strokeWidth="2" />
-        <text x="100" y="98" textAnchor="middle" fill="#cfd8e3" fontSize="12">{historical ? "MIC storage (tank 610)" : "Storage tank"}</text>
+      <svg viewBox="0 0 560 430" role="img" aria-label={alt} preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={sky[0]} /><stop offset="1" stopColor={sky[1]} /></linearGradient>
+          <radialGradient id="glow"><stop offset="0" stopColor="#e0a43a" stopOpacity=".55" /><stop offset="1" stopColor="#e0a43a" stopOpacity="0" /></radialGradient>
+        </defs>
+        <rect width="560" height="430" rx="10" fill="url(#sky)" /><g transform="translate(0 52)">
+        {night && [[40, 30], [100, 60], [170, 22], [240, 48], [330, 24], [410, 58], [500, 32], [60, 90]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="1.5" fill="#d8e0ee" opacity=".75" />)}
+        <circle cx="492" cy="48" r="14" fill={night ? "#e7dcb4" : "#c9b98a"} opacity={night ? 0.95 : 0.5} />
+        <rect y="262" width="560" height="140" fill="#171e28" /><path d="M0 262 H560" stroke="#34424f" strokeWidth="2" />
+        <ellipse cx="102" cy="268" rx="78" ry="9" fill="#0d1218" />
+        <rect x="38" y="118" width="128" height="148" rx="22" fill="#2b3745" stroke="#7d91a7" strokeWidth="3" />
+        {!historical && <ellipse cx="102" cy="200" rx="60" ry="60" fill="url(#glow)" opacity={Math.min(1, hazard / 70)} />}
+        <text x="102" y="106" textAnchor="middle" fill="#d6dee9" fontSize="13" fontWeight="600">{historical ? "MIC storage (tank 610)" : "Storage tank"}</text>
         {!historical && <>
-          <rect x="52" y="124" width="14" height="100" rx="4" fill="#0f141a" stroke="#74879c" />
-          <rect x="52" y={224 - hazard} width="14" height={hazard} rx="4" fill={hazard >= 70 ? "#d9543f" : hazard >= 45 ? "#e0a43a" : "#5fb08a"} />
+          <rect x="52" y="136" width="16" height="112" rx="5" fill="#0f141a" stroke="#7d91a7" />
+          <rect x="52" y={248 - hazard * 1.12} width="16" height={hazard * 1.12} rx="5" fill={hazard >= 70 ? "#d9543f" : hazard >= 45 ? "#e0a43a" : "#5fb08a"} />
+          <text x="60" y="276" textAnchor="middle" fill="#9fb0c3" fontSize="9">hazard</text>
         </>}
-        {/* protective layers */}
+        <path d="M166 190 H204 M184 190 V120 H204 M184 190 V214 H204" fill="none" stroke="#7d91a7" strokeWidth="3" strokeDasharray="7 6" className="pv-flow" />
         {LAYERS.map((l, i) => (
-          <g key={l.id} transform={`translate(${196 + (i % 2) * 118} ${62 + Math.floor(i / 2) * 82})`}>
-            <rect width="108" height="68" rx="6" fill="#1d2733" stroke="#3a4a5c" />
-            <circle cx="16" cy="18" r="7" fill={LAMP_COLOR[ls[i].lamp]} />
-            <text x="30" y="22" fill="#e6ebf2" fontSize="11" fontWeight="600">{l.label}</text>
-            <text x="10" y="46" fill="#aab6c4" fontSize="10">{ls[i].note || LAMP_TEXT[ls[i].lamp]}</text>
+          <g key={l.id} transform={`translate(${204 + (i % 2) * 124} ${80 + Math.floor(i / 2) * 96})`}>
+            <rect width="114" height="80" rx="9" fill="#1d2733" stroke={ls[i].lamp === "off" ? "#7c3a31" : "#3a4a5c"} strokeWidth="1.5" />
+            <circle cx="18" cy="20" r="8" fill={LAMP_COLOR[ls[i].lamp]} className={ls[i].lamp === "off" ? "pv-pulse" : ""} />
+            <text x="34" y="25" fill="#eef2f7" fontSize="12" fontWeight="600">{l.label}</text>
+            <text x="12" y="52" fill="#b4c0cd" fontSize="11">{ls[i].note || LAMP_TEXT[ls[i].lamp]}</text>
+            <rect x="12" y="62" width="90" height="5" rx="2.5" fill="#33414f" /><rect x="12" y="62" width={ls[i].lamp === "ok" ? 90 : ls[i].lamp === "partial" ? 48 : 12} height="5" rx="2.5" fill={LAMP_COLOR[ls[i].lamp]} />
           </g>))}
-        <path d="M160 160 H196 M160 160 V96 H196 M160 160 V178 H196" fill="none" stroke="#74879c" strokeWidth="2" />
-        {/* neighbourhood */}
-        <g>{[0, 1, 2, 3, 4].map((i) => (
-          <g key={i} transform={`translate(${440 + (i % 2) * 54} ${150 + Math.floor(i / 2) * 30 - (i % 2) * 10})`}>
-            <path d="M0 24 V10 L16 0 L32 10 V24 Z" fill={historical ? "#4a5b6e" : community >= 55 ? "#5fb08a" : community >= 30 ? "#7a8a52" : "#8a5a52"} stroke="#0e1319" />
-          </g>))}
-        </g>
-        <text x="492" y="236" textAnchor="middle" fill="#cfd8e3" fontSize="12">{historical ? "Nearby neighbourhoods" : "Neighbouring housing"}</text>
-        {!historical && community >= 50 && <g><circle cx="430" cy="166" r="6" fill="#5fb08a" /><text x="418" y="150" fill="#9fd4b8" fontSize="10">community alarm</text></g>}
-        {gas && <ellipse cx="400" cy="150" rx="150" ry="52" fill="#c9a24a" opacity="0.18" />}
-        {gas && <text x="330" y="120" fill="#e8cf8a" fontSize="11">{historical ? "Gas drifted over nearby neighbourhoods" : "Simulated release"}</text>}
-      </svg>
-      <figcaption className="bh-cap">{historical ? "Schematic, not to scale. Status of each layer follows what sources report about December 1984." : "Fictional plant. The lamps follow your decisions and the “Safety systems working” level."}</figcaption>
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <path key={i} transform={`translate(${462 + (i % 3) * 34} ${262 - Math.floor(i / 3) * 36 - 26})`} d="M0 26 V12 L17 0 L34 12 V26 Z"
+            fill={historical ? "#475769" : community >= 55 ? "#4f9c7c" : community >= 30 ? "#7a8a52" : "#8a5a52"} stroke="#0d1218" />))}
+        {[0, 1, 2, 3, 4, 5].map((i) => <rect key={i} x={473 + (i % 3) * 34} y={262 - Math.floor(i / 3) * 36 - 14} width="5" height="6" fill={night ? "#f2d27a" : "#2b3745"} />)}
+        <text x="500" y="298" textAnchor="middle" fill="#cfd8e3" fontSize="11">{historical ? "Nearby neighbourhoods" : "Neighbouring housing"}</text>
+        {!historical && community >= 50 && <g><circle cx="446" cy="200" r="7" fill="#5fb08a" className="pv-pulse" /><text x="410" y="184" fill="#9fd4b8" fontSize="10">community alarm</text></g>}
+        {gas && <ellipse cx="420" cy="210" rx="170" ry="60" fill="#c9a24a" opacity=".2" className="pv-drift" />}
+        {gas && <text x="350" y="160" fill="#ecd48f" fontSize="12">{historical ? "Gas drifted over nearby neighbourhoods" : "Simulated release"}</text>}
+      </g></svg>
+      <figcaption className="bh-cap">{historical ? "Schematic, not to scale. Each layer shows what sources report about December 1984." : "Fictional plant. The lamps follow your decisions and the safety-systems level."}</figcaption>
     </figure>
   );
 }
@@ -95,8 +102,7 @@ export function BhopalStage({ scene, decision }: { scene: Scene; decision: React
         </ol>
         <p className="bh-legend"><span className="hist" /> Historical record <span className="fict" /> Fictional exercise</p>
         <PlantSchematic scene={scene} />
-        <section className="sim-card sim-meters" aria-label="Indicators">
-          <h2>{historical ? "Your reading of the record" : "Plant indicators"}</h2>
+        <section className="sim-meters sm-grid" aria-label="Indicators">
           {meters.map((m) => <MeterBar key={m.id} m={m} />)}
         </section>
       </aside>
