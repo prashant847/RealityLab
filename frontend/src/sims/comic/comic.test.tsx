@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { waitFor } from "@testing-library/react";
 import { ComicReader } from "./ComicReader";
 import { FIRST_SURGE } from "./firstSurge";
 
@@ -33,5 +34,16 @@ describe("the first-surge comic", () => {
     expect(done).toHaveBeenCalledTimes(1);
     await userEvent.click(screen.getByRole("button", { name: "Skip the comic" }));
     expect(done).toHaveBeenCalledTimes(2);
+  });
+
+  it("uses a finished picture for a page when one has been added, keeps the live text on top, and falls back to the drawing otherwise", async () => {
+    class Img { onload: (() => void) | null = null; onerror: (() => void) | null = null; set src(v: string) { setTimeout(() => (v.endsWith("/first-surge/morning.png") ? this.onload?.() : this.onerror?.()), 0); } }
+    vi.stubGlobal("Image", Img);
+    const { container } = render(<ComicReader pages={FIRST_SURGE} dir="first-surge" title="The first surge" onDone={() => undefined} />);
+    await waitFor(() => expect(container.querySelector("svg.ck-page image")?.getAttribute("href")).toBe("/comic/first-surge/morning.png"));
+    expect(container.querySelector("svg.ck-page")!.textContent).toContain("Thirty-one waiting");     // the words are still live text
+    await userEvent.keyboard("{ArrowRight}");
+    expect(container.querySelector("svg.ck-page image")).toBeNull();                                  // page 2 has no picture: the drawn art
+    vi.unstubAllGlobals();
   });
 });

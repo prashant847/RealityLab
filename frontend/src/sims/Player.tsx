@@ -9,7 +9,7 @@ import { audio } from "../audio/audio";
 import { ReadAloud } from "../a11y/speak";
 import { TerminalStage } from "./TerminalStage";
 import { ComicReader } from "./comic/ComicReader";
-import { FIRST_SURGE, type ComicPage } from "./comic/firstSurge";
+import { FIRST_SURGE, FIRST_SURGE_DIR, type ComicPage } from "./comic/firstSurge";
 import "./sims.css";
 
 const KIND_LABEL = { documented: "Documented record", hypothetical: "Fictional exercise", simulation: "Simulation", workday: "A normal day" } as const;
@@ -194,7 +194,7 @@ function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: s
       </>)}
     </section>
   );
-  if (reading && comic) return <ComicReader pages={comic} title={step.title} onDone={finishComic} />;
+  if (reading && comic) return <ComicReader pages={comic} dir={FIRST_SURGE_DIR} title={step.title} onDone={finishComic} />;
   return <Stage theme={theme as Theme} scene={view.scene} decision={decisionPanel} log={view.decisions} />;
 }
 

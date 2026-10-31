@@ -8,6 +8,8 @@ import { Bubble, Clock, Cough, INK, Page, Stick, Sfx, FONT } from "./ink";
  * All people and the hospital are fictional.
  */
 export interface ComicPage { id: string; alt: string; spoken: string; render: () => ReactNode }
+/** Where finished pictures for this comic go (public/comic/<dir>/<page id>.png, .jpg or .webp). Any page without a picture shows the drawn art. */
+export const FIRST_SURGE_DIR = "first-surge";
 
 const Window = ({ x, y, w = 54, h = 64, lit = false }: { x: number; y: number; w?: number; h?: number; lit?: boolean }) => (
   <g><rect x={x} y={y} width={w} height={h} fill={lit ? "#ffe9a3" : "#a9d6ec"} stroke={INK} strokeWidth="4" /><path d={`M${x + w / 2} ${y}V${y + h}M${x} ${y + h / 2}H${x + w}`} stroke={INK} strokeWidth="3" /><rect x={x} y={y} width={w} height={h} fill="url(#ck-dots-s)" opacity="0.16" /></g>
