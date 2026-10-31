@@ -98,6 +98,23 @@ def test_report_is_generated_from_the_run():
     assert all(v == 100 for v in pct(best).values()) and all(v == 0 for v in pct(worst).values())
 
 
+def test_report_decisions_carry_labelled_meter_effects_and_the_stronger_option():
+    """The Archivist's debrief is spoken from these fields, so they must be present, labelled and correct."""
+    st = _play(COVID, ["weak", "strong"] * 4)
+    rep = E.build_report(COVID, st)
+    labels = {m.label for m in COVID.meters}
+    for d in rep["major_decisions"]:
+        assert set(d) >= {"effects", "lesson", "stronger_option"}
+        for e in d["effects"]:
+            assert e["label"] in labels and e["from"] != e["to"]
+        if d["rating"] == "strong":
+            assert d["stronger_option"] is None
+        else:
+            rnd = next(r for r in COVID.rounds if r.title == d["step"])
+            assert d["stronger_option"] == next(c.label for c in rnd.choices if c.rating == "strong")
+    assert any(d["effects"] for d in rep["major_decisions"])
+
+
 # ------------------------------------------------------------------------------------------------- API and persistence
 
 @pytest.fixture

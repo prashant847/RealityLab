@@ -130,6 +130,7 @@ describe("report, journey, settings", () => {
   it("shows every required section of the career experience report", async () => {
     window.location.hash = "#/report/r1";
     render(<Shell api={fake({ report: vi.fn().mockResolvedValue(rep) })} />);
+    await userEvent.click(await screen.findByRole("button", { name: "Read the written report instead" }));
     for (const h of ["The hospital held", "Major decisions", "Key challenges you faced", "Skills shown by your decisions", "Areas for improvement", "Important lessons", "Recommended next"])
       expect(await screen.findByRole("heading", { name: h })).toBeInTheDocument();
     expect(screen.getByText(/A stronger option was: “Audit use”/)).toBeInTheDocument();
@@ -187,6 +188,7 @@ describe("workday, crisis and career comparison", () => {
       recommended_next: { id: "covid", title: "COVID-era Hospital", reason: "Now the crisis.", to: "crisis" }, note: "n", prep: prepItems } as unknown as SimReport;
     const api = fake({ report: vi.fn().mockResolvedValue(rep) });
     render(<Shell api={api} />);
+    await userEvent.click(await screen.findByRole("button", { name: "Read the written report instead" }));
     expect(await screen.findByRole("heading", { name: "What this day set up for the crisis" })).toBeInTheDocument();
     const save = screen.getByRole("button", { name: "Save my answers" });
     expect(save).toBeDisabled();
@@ -256,8 +258,8 @@ describe("polish: welcome, keyboard play, voices, feedback, milestones", () => {
     expect(within(dialog).getByRole("heading", { name: /Every job has two sides/ })).toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole("button", { name: "Next" }));
     await userEvent.click(within(dialog).getByRole("button", { name: "Let's begin" }));
-    expect(screen.queryByRole("dialog")).toBeNull();
-    expect(api.saveProfile).toHaveBeenCalledWith({ name: "Asha" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await waitFor(() => expect(api.saveProfile).toHaveBeenCalledWith({ name: "Asha" }));
     expect(localStorage.getItem(WELCOME_KEY)).toBe("1");
     unmount();
     render(<Shell api={fake()} />);

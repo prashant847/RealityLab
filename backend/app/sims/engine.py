@@ -235,6 +235,16 @@ def _level(pct: int) -> str:
     return "Strong" if pct >= 75 else "Solid" if pct >= 50 else "Developing"
 
 
+def _decision_row(sc: Scenario, d: dict[str, Any]) -> dict[str, Any]:
+    """One decision as the report shows it, with the meter changes labelled and the strongest alternative named."""
+    rnd = next(r for r in sc.rounds if r.id == d["round"])
+    labels = {m.id: m for m in sc.meters}
+    effects = [{"label": labels[k].label, "from": a, "to": b, "good": labels[k].good} for k, (a, b) in d["changes"].items() if k in labels]
+    best = next((c for c in rnd.choices if c.rating == "strong"), None)
+    return {"step": d["title"], "part": d["part"], "chose": d["label"], "rating": d["rating"], "consequence": d["consequence"], "changes": d["changes"],
+            "lesson": d["lesson"], "effects": effects, "stronger_option": best.label if best and d["rating"] != "strong" else None}
+
+
 def build_report(sc: Scenario, st: dict[str, Any], from_other: dict[str, str] | None = None) -> dict[str, Any]:
     """Everything here is computed from the recorded decisions and events of the run."""
     end = next(e for e in sc.endings if e.id == st["ending"])
@@ -269,8 +279,7 @@ def build_report(sc: Scenario, st: dict[str, Any], from_other: dict[str, str] | 
         "outcome": {"id": end.id, "title": end.title, "text": end.text, "tone": end.tone},
         "final_meters": [{"label": m.label, "value": st["meters"][m.id], "good": m.good} for m in sc.meters],
         "summary": {"decisions": len(decisions), "strong": len(strong), "mixed": len(mixed), "weak": len(weak)},
-        "major_decisions": [{"step": d["title"], "part": d["part"], "chose": d["label"], "rating": d["rating"], "consequence": d["consequence"],
-                             "changes": d["changes"]} for d in decisions],
+        "major_decisions": [_decision_row(sc, d) for d in decisions],
         "challenges": [{"title": e["title"], "text": e["text"], "round": e["round"]} for e in st["events"]],
         "skills": skills,
         "improve": improve,

@@ -95,7 +95,7 @@ export interface AttemptInfo {
   quality: Record<string, number>; active: boolean; label: string;
 }
 export interface Report {
-  version: number; run_id: string; simulation_id: string; seed: number;
+  version: number; run_id: string; simulation_id: string; seed: number; decision_count: number;
   ending: { id: string; title: string; text: string };
   overall: { score: number; band: string; raw: number; cap: string | null };
   categories: { id: string; name: string; weight: number; score: number; weighted: number; formula: string; measures: string; inputs: Record<string, unknown> }[];

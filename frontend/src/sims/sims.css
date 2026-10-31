@@ -258,3 +258,9 @@
 .pt-wrap { overflow: auto; } .pt-steps { min-height: min-content; }
 .sim-decision .sim-foot, .sim-outcome .sim-foot { flex: none; }
 @media (max-height: 560px) { .pt-steps { grid-template-columns: 1fr; } .pt-step { padding: 10px 14px; } .pt-step p:not(.sim-fine):not(.pt-status) { display: none; } .pt-hero .pt-art { display: none; } }
+
+/* report: the Archivist debrief is the first thing shown */
+.rep--debrief { display: flex; flex-direction: column; gap: 10px; }
+.rep-deb-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex: 0 0 auto; }
+.rep-deb-head h1 { margin: 0; font-size: 1.35rem; }
+.rep-act--archivist { border-color: #c9a24a; font-weight: 700; }

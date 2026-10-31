@@ -40,7 +40,7 @@ export function chunkText(text: string, max = 260): string[] {
   return out;
 }
 
-async function fetchPiece(text: string, voice: string, rate: number): Promise<string> {
+export async function fetchPiece(text: string, voice: string, rate: number): Promise<string> {
   const r = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, voice, rate }) });
   if (!r.ok) throw new Error(`speech ${r.status}`);
   return URL.createObjectURL(await r.blob());
@@ -112,6 +112,7 @@ export function installReadAloudKey(): () => void {
   const on = (e: KeyboardEvent) => {
     const t = e.target as HTMLElement | null;
     if (e.key.toLowerCase() !== "r" || e.ctrlKey || e.metaKey || e.altKey || (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable))) return;
+    if (document.querySelector("[data-debrief]")) { toast("The Archivist is speaking. Press Space to pause."); return; }
     if (!getA11y().readAloud) { toast("Read aloud is off. Turn it on in Settings, then Accessibility."); return; }
     if (!canSpeak()) { toast("This computer has no speech voice available."); return; }
     e.preventDefault();

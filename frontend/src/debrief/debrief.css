@@ -1,0 +1,83 @@
+/* The Archivist's debrief: a dark, candle-lit stage whatever the app theme is. */
+.deb { --gold: #c9a24a; --cream: #f1e6cf; display: flex; flex-direction: column; gap: 10px; min-height: 0; color: var(--cream); }
+.deb-stage { position: relative; width: 100%; height: min(68vh, 700px); min-height: 330px; border-radius: 18px; overflow: hidden; background: #120d09; border: 1px solid #3a2a1a; box-shadow: 0 18px 40px rgba(0, 0, 0, .45); }
+.arch { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.deb-kicker { margin: 0 0 4px; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--gold); }
+
+/* before the debrief begins */
+.deb-open { position: absolute; right: 3.5%; top: 50%; transform: translateY(-50%); width: min(430px, 46%); max-height: 92%; overflow: auto; padding: 22px 24px; border-radius: 16px; background: rgba(16, 11, 8, .86); border: 1px solid #c9a24a66; backdrop-filter: blur(3px); animation: deb-in .6s ease both; }
+.deb-open h2 { margin: 0 0 8px; font-size: 1.45rem; line-height: 1.2; color: #fff6e0; }
+.deb-open p { margin: 0 0 14px; color: #e3d6bb; line-height: 1.5; }
+.deb-open-acts { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+.deb-begin { font-size: 1.05rem; padding: 12px 18px; }
+
+/* the card beside the Archivist: the facts of the moment being described */
+.deb-card { position: absolute; right: 2.5%; top: 14px; width: min(300px, 32%); max-height: calc(100% - 28px); overflow: auto; padding: 14px 16px; border-radius: 14px; background: rgba(16, 11, 8, .84); border: 1px solid var(--edge, #c9a24a88); border-left: 5px solid var(--edge, #c9a24a); backdrop-filter: blur(3px); animation: deb-in .55s ease both; }
+.deb-card--warm { --edge: #6bbf8a; } .deb-card--pointed { --edge: #e0a23a; } .deb-card--grave { --edge: #d9604f; } .deb-card--calm { --edge: #c9a24a; }
+.deb-card h3 { margin: 0 0 8px; font-size: 1.08rem; line-height: 1.25; color: #fff6e0; }
+.deb-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.deb-chip { font-size: .76rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; border: 1px solid #ffffff33; background: #ffffff14; color: var(--cream); }
+.deb-chip--good { background: #1f5a3c; border-color: #6bbf8a; color: #dff8e8; } .deb-chip--mid { background: #66491a; border-color: #e0a23a; color: #ffefc9; } .deb-chip--bad { background: #6a2620; border-color: #d9604f; color: #ffe0da; }
+.deb-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: .86rem; }
+.deb-rows li { display: flex; justify-content: space-between; gap: 10px; padding-bottom: 4px; border-bottom: 1px solid #ffffff1f; }
+.deb-rows span { color: #d8cbb0; } .deb-rows b { white-space: nowrap; }
+.tone-good { color: #8be0ad; } .tone-mid { color: #f2c46a; } .tone-bad { color: #ff9a8b; } .tone-plain { color: var(--cream); }
+.deb-better { margin: 0 0 10px; padding: 8px 10px; border-radius: 10px; background: #1f5a3c55; border: 1px dashed #6bbf8a; font-size: .86rem; line-height: 1.35; }
+.deb-better span { display: block; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: #8be0ad; margin-bottom: 2px; }
+
+.deb-caption { position: absolute; left: 50%; bottom: 3.5%; transform: translateX(-50%); width: min(82%, 780px); margin: 0; padding: 10px 16px; text-align: center; font-size: 1.06rem; line-height: 1.45; color: #fff; background: rgba(0, 0, 0, .72); border-radius: 10px; text-shadow: 0 1px 2px #000; }
+.deb-note { position: absolute; left: 12px; top: 10px; margin: 0; padding: 6px 10px; border-radius: 8px; font-size: .82rem; background: rgba(0, 0, 0, .7); color: #ffe7b0; }
+
+/* controls */
+.deb-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 10px 14px; border-radius: 14px; background: #1a130d; border: 1px solid #3a2a1a; }
+.deb-ctl { display: flex; align-items: center; gap: 8px; } .deb-ctl--end { margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+.deb-ico { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #5a432a; background: #261a10; color: var(--cream); font-size: 1rem; cursor: pointer; }
+.deb-ico:hover:not(:disabled) { border-color: var(--gold); } .deb-ico:disabled { opacity: .4; cursor: default; }
+.deb-play { min-width: 112px; }
+.deb-chapters { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; flex: 1 1 160px; min-width: 120px; align-items: center; }
+.deb-chapters li { flex: 1 1 0; min-width: 6px; }
+.deb-chapters button { display: block; width: 100%; height: 10px; border: 0; border-radius: 6px; background: #4a3a28; cursor: pointer; padding: 0; transition: background .3s, transform .2s; }
+.deb-chapters button.done { background: #8a6d34; } .deb-chapters button.on { background: var(--gold); transform: scaleY(1.5); } .deb-chapters button:hover { background: #d9b45a; }
+.deb-speed { display: flex; align-items: center; gap: 6px; font-size: .85rem; color: #d8cbb0; }
+.deb-speed select { background: #261a10; color: var(--cream); border: 1px solid #5a432a; border-radius: 8px; padding: 6px 8px; }
+.deb-tog { background: #261a10; color: var(--cream); border: 1px solid #5a432a; border-radius: 999px; padding: 7px 14px; cursor: pointer; font-weight: 600; }
+.deb-tog[aria-pressed="true"] { background: #6a4d1c; border-color: var(--gold); }
+.deb .sim-btn { background: #261a10; color: var(--cream); border-color: #5a432a; } .deb .sim-btn--primary { background: var(--gold); color: #1a1008; border-color: var(--gold); font-weight: 700; }
+.deb .sim-btn:hover { border-color: #e6c36a; }
+.deb-hint { margin: 0; text-align: center; color: #8d7a58; }
+.deb-transcript { padding: 16px 20px; border-radius: 14px; background: #1a130d; border: 1px solid #3a2a1a; max-height: 40vh; overflow: auto; }
+.deb-transcript h3 { margin: 12px 0 4px; color: var(--gold); font-size: .95rem; } .deb-transcript h3:first-child { margin-top: 0; } .deb-transcript p { margin: 0 0 6px; line-height: 1.5; color: #e3d6bb; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* life in the room */
+@keyframes deb-in { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+.deb-open { animation-name: deb-in-c; } @keyframes deb-in-c { from { opacity: 0; transform: translateY(-50%) translateX(14px); } to { opacity: 1; transform: translateY(-50%); } }
+@keyframes arch-glow { 0%, 100% { opacity: .85; } 40% { opacity: 1; } 70% { opacity: .78; } }
+@keyframes arch-flame { 0%, 100% { transform: scale(1, 1) skewX(0); } 30% { transform: scale(.96, 1.06) skewX(3deg); } 60% { transform: scale(1.03, .96) skewX(-3deg); } }
+@keyframes arch-mote { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: .75; } 85% { opacity: .55; } 100% { transform: translate(26px, -90px); opacity: 0; } }
+@keyframes arch-turn { 0% { transform: scaleX(1); opacity: 1; } 45% { transform: scaleX(.04); } 55% { transform: scaleX(-.04); } 100% { transform: scaleX(-1); opacity: 0; } }
+.arch-glow { animation: arch-glow 3.6s ease-in-out infinite; }
+.arch-flame { transform-box: fill-box; transform-origin: 50% 100%; animation: arch-flame 1.3s ease-in-out infinite; }
+.arch-motes circle { animation: arch-mote linear infinite; }
+.arch-page { transform-box: view-box; transform-origin: 400px 0; } .arch-page.turning { animation: arch-turn .9s ease-in-out both; }
+.arch--speaking .arch-glow { animation-duration: 2.2s; }
+
+@media (max-width: 900px) {
+  .deb-open { width: min(420px, 56%); } .deb-card { width: min(260px, 40%); }
+  .deb-caption { font-size: .95rem; }
+}
+@media (max-height: 700px) { .deb-stage { height: min(58vh, 640px); min-height: 280px; } .deb-card { max-height: 62%; } }
+
+/* offered on the BLACKOUT ending, and the full-window stage it opens */
+.deb-offer { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 0 0 12px; padding: 10px 18px; border-radius: 14px; background: #1a130d; color: #f1e6cf; border: 1px solid #c9a24a88; }
+.deb-offer h2 { margin: 0 0 2px; font-size: 1.1rem; color: #fff6e0 !important; } .deb-offer p { margin: 0; line-height: 1.45; color: #e3d6bb; max-width: 62ch; }
+.deb-offer .deb-offer-k { margin: 0 0 2px; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: #c9a24a; }
+.deb-offer .sim-btn { background: #c9a24a; color: #1a1008; border: 1px solid #c9a24a; font-weight: 700; padding: 10px 18px; border-radius: 10px; cursor: pointer; white-space: nowrap; }
+.deb-modal { position: fixed; inset: 0; z-index: 60; background: rgba(6, 4, 3, .96); display: flex; align-items: center; justify-content: center; padding: 18px; overflow: auto; }
+.deb-modal-in { width: min(1200px, 100%); }
+.deb-modal .deb-stage { height: min(68vh, 700px); }
+
+/* the app's global heading colours must not leak into the dark stage */
+.deb .deb-card h3, .deb .deb-open h2 { color: #fff6e0 !important; }
+.deb .deb-transcript h3 { color: var(--gold); }
+.deb-bar .snd-toggle { color: var(--cream); border-color: #5a432a; background: #261a10; }

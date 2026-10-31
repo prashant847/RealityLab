@@ -32,7 +32,7 @@ export interface SimReport {
   outcome: { id: string; title: string; text: string; tone: "good" | "neutral" | "bad" };
   final_meters: { label: string; value: number; good: string }[];
   summary: { decisions: number; strong: number; mixed: number; weak: number };
-  major_decisions: { step: string; part: string; chose: string; rating: Rating; consequence: string }[];
+  major_decisions: { step: string; part: string; chose: string; rating: Rating; consequence: string; lesson?: string; effects?: { label: string; from: number; to: number; good: string }[]; stronger_option?: string | null }[];
   challenges: { title: string; text: string; round: number }[];
   skills: SkillResult[]; improve: { step: string; chose: string; why: string; stronger_option: string | null; rating: Rating }[];
   focus_areas: string[]; lessons: string[]; sources: { label: string; url: string }[];

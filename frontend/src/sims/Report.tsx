@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { PrepItem, SimReport, SimsApi } from "../api/sims";
 import { ReflectionForm } from "./Reflection";
 import { SoundToggle } from "../audio/useAudio";
 import { Radar } from "./Radar";
+import { Debrief } from "../debrief/Debrief";
+import { scriptForSim } from "../debrief/script";
 import "./sims.css";
 
 const RATING = { strong: "Strong", mixed: "Mixed", weak: "Weak" } as const;
@@ -17,6 +19,8 @@ export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId
   const [tab, setTab] = useState<Tab>("overview");
   const [skill, setSkill] = useState(0);
   const [open, setOpen] = useState<number | null>(null);
+  const [view, setView] = useState<"debrief" | "written">("debrief");
+  const scenes = useMemo(() => (rep ? scriptForSim(rep) : []), [rep]);
   useEffect(() => { api.report(runId).then(setRep).catch((e: Error) => setErr(e.message)); }, [api, runId]);
 
   if (err) return <main className="rep"><div className="sim-card sim-center"><h2>Report not available</h2><p>{err}</p><button type="button" className="sim-btn sim-btn--primary" onClick={onHome}>Back to all simulations</button></div></main>;
@@ -24,6 +28,13 @@ export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId
   const nx = rep.recommended_next;
   const s = rep.summary;
   const sk = rep.skills[Math.min(skill, rep.skills.length - 1)];
+  if (view === "debrief") return (
+    <main className={`rep rep--${rep.profession ?? rep.simulation_id} rep--debrief`} id="main" tabIndex={-1}>
+      <header className="rep-deb-head"><div><p className="sim-kicker">Career experience report</p><h1>{rep.simulation}</h1></div>
+        <button type="button" className="rep-act" onClick={onHome}>← All simulations</button></header>
+      <Debrief scenes={scenes} title={rep.simulation} onWritten={() => setView("written")} />
+    </main>
+  );
   return (
     <main className={`rep rep--${rep.profession ?? rep.simulation_id}`} id="main" tabIndex={-1}>
       <section className={`rep-hero rep-hero--${rep.outcome.tone}`}>
@@ -41,6 +52,7 @@ export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId
       <nav className="rep-tabs no-print" role="tablist" aria-label="Report sections">
         {TABS.map(([k, label]) => <button key={k} role="tab" type="button" aria-selected={tab === k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{label}</button>)}
         <span className="sim-spacer" />
+        <button type="button" className="rep-act rep-act--archivist" onClick={() => setView("debrief")}>Hear the Archivist</button>
         <SoundToggle className="snd-toggle--rep" />
         <button type="button" className="rep-act" onClick={() => window.print()}>Print or save as PDF</button>
         <button type="button" className="rep-act" onClick={onHome}>← All simulations</button>

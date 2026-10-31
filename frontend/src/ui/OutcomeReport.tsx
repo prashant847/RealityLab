@@ -15,8 +15,8 @@ function Bar({ label, value, need }: { label: string; value: number; need: numbe
   );
 }
 
-export function OutcomeReport({ final, state, children, onRewind, onReplay, onRestart, onCompare, felt }: {
-  final: FinalDispatch; state: WorldView; children?: React.ReactNode; felt?: React.ReactNode;
+export function OutcomeReport({ final, state, children, onRewind, onReplay, onRestart, onCompare, felt, archivist }: {
+  final: FinalDispatch; state: WorldView; children?: React.ReactNode; felt?: React.ReactNode; archivist?: React.ReactNode;
   onRewind?: () => void; onReplay?: () => void; onRestart?: () => void; onCompare?: () => void;
 }) {
   const good = final.ending === "full_recovery" || final.ending === "hospitals_served";
@@ -28,6 +28,7 @@ export function OutcomeReport({ final, state, children, onRewind, onReplay, onRe
         <h1 id="outcome-title">{final.ending_title}</h1>
         <p className="lede">{final.ending_text}</p>
       </header>
+      {archivist}
       <div className="out-tabs no-print" role="tablist" aria-label="Report sections">
         {([["ending", "The ending"], ["score", "Score and lessons"], ["full", "Full report"], ...(felt ? [["felt", "How it felt"]] : [])] as const).map(([k, label]) => (
           <button key={k} role="tab" type="button" aria-selected={tab === k} className={tab === k ? "on" : ""} onClick={() => setTab(k as typeof tab)}>{label}</button>))}
