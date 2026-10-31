@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Comparison, RunSummary } from "../api/types";
 
 const LABELS: Record<string, [string, string]> = {
@@ -37,8 +38,9 @@ function Head({ r, side }: { r: RunSummary; side: string }) {
 
 export function ComparisonView({ c, onClose }: { c: Comparison; onClose?: () => void }) {
   const rows = c.metrics.filter((m) => LABELS[m.metric]);
+  const [view, setView] = useState<"measures" | "timeline">("measures");
   return (
-    <section className="compare" aria-labelledby="cmp-h">
+    <section className="compare" aria-labelledby="cmp-h" data-view={view}>
       <div className="history-head">
         <h1 id="cmp-h">Compare timelines</h1>
         {onClose && <button type="button" className="primary" onClick={onClose}>Back</button>}
@@ -47,6 +49,11 @@ export function ComparisonView({ c, onClose }: { c: Comparison; onClose?: () => 
         ? "These two attempts made identical decisions." : `The attempts first differ at decision ${c.first_difference + 1}.`} {c.note}</p>
       <div className="cmp-heads"><Head r={c.base} side="base" /><Head r={c.other} side="other" /></div>
 
+      <div className="out-tabs" role="tablist" aria-label="Comparison views">
+        {([["measures", "Outcome measures"], ["timeline", "Side-by-side timeline"]] as const).map(([k, label]) => (
+          <button key={k} role="tab" type="button" aria-selected={view === k} className={view === k ? "on" : ""} onClick={() => setView(k)}>{label}</button>))}
+      </div>
+      <div className="cmp-measures">
       <table className="cmp-table">
         <caption className="sr-only">Outcome measures for both attempts</caption>
         <thead><tr><th scope="col">Measure</th><th scope="col">{c.base.label}</th><th scope="col">{c.other.label}</th><th scope="col">Change</th></tr></thead>
@@ -78,6 +85,8 @@ export function ComparisonView({ c, onClose }: { c: Comparison; onClose?: () => 
         <p className="legend"><span className="lg lg--base" /> {c.base.label} <span className="lg lg--other" /> {c.other.label} <span className="muted">— vertical line: where they diverge</span></p>
       </div>
 
+      </div>
+      <div className="cmp-timeline-wrap">
       <h3>Side-by-side timeline</h3>
       <ol className="cmp-timeline">
         {c.timeline.map((t) => (
@@ -98,6 +107,7 @@ export function ComparisonView({ c, onClose }: { c: Comparison; onClose?: () => 
           </li>
         ))}
       </ol>
+      </div>
     </section>
   );
 }

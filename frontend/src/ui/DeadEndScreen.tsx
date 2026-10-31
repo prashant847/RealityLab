@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { Analysis } from "../api/types";
 import { NpEnv } from "../comic/notpetya/Env";
 import { RecoveryTimeline } from "./RecoveryTimeline";
@@ -11,19 +11,23 @@ export function DeadEndScreen({ analysis, rewindsLeft, busy, actions }: {
   analysis: Analysis; rewindsLeft: number; busy?: boolean; actions: DeadEndActions;
 }) {
   const review = useRef<HTMLDetailsElement>(null);
+  const [tab, setTab] = useState<"overview" | "critical" | "timeline" | "mistakes">("overview");
   const canRewind = rewindsLeft > 0 && analysis.last_recoverable_checkpoint !== null;
   const cp = analysis.critical_point;
-  const reviewMistakes = () => {
-    if (review.current) { review.current.open = true; review.current.scrollIntoView({ behavior: "smooth", block: "start" }); }
-  };
+  const reviewMistakes = () => setTab("mistakes");
   return (
-    <section className="deadend" aria-labelledby="deadend-title">
+    <section className="deadend" aria-labelledby="deadend-title" data-tab={tab}>
       <header className="deadend-hero">
         <div className="deadend-bg" aria-hidden="true"><NpEnv env="warehouse_floor" effects={["power_failure", "warning_lights"]} /></div>
         <p className="kicker">{analysis.severity === "soft" ? "Objective out of reach — a reduced outcome remains" : "No acceptable outcome remains"}</p>
         <h1 id="deadend-title">{analysis.title}</h1>
       </header>
 
+      <div className="out-tabs de-tabs" role="tablist" aria-label="Dead end sections">
+        {([["overview", "What happened"], ["critical", "The critical point"], ["timeline", "Timeline"], ["mistakes", "Review my mistakes"]] as const).map(([k, label]) => (
+          <button key={k} role="tab" type="button" aria-selected={tab === k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{label}</button>))}
+      </div>
+      <div className="de-panels">
       <div className="deadend-grid">
         <section className="card" aria-labelledby="de-what">
           <h2 id="de-what">What happened</h2>
@@ -54,21 +58,7 @@ export function DeadEndScreen({ analysis, rewindsLeft, busy, actions }: {
 
       <RecoveryTimeline analysis={analysis} rewindFrom={analysis.last_recoverable_checkpoint} />
 
-      <div className="actions">
-        <button type="button" className="primary" disabled={!canRewind || busy} onClick={actions.onRewind}>
-          REWIND TO LAST RECOVERABLE DECISION
-        </button>
-        <button type="button" className="ghost" onClick={reviewMistakes}>Review my mistakes</button>
-        <button type="button" className="ghost" onClick={actions.onTimeline}>View decision timeline</button>
-        {analysis.continue_allowed && actions.onContinue && (
-          <button type="button" className="ghost ghost--warn" disabled={busy} onClick={actions.onContinue}>Continue despite the risk</button>
-        )}
-        <button type="button" className="ghost" disabled={busy} onClick={actions.onRestart}>Restart entire simulation</button>
-      </div>
-      {!canRewind && <p className="muted" role="status">{rewindsLeft <= 0 ? "No rewinds remain in this simulation." : "There is no recoverable checkpoint."}</p>}
-      <p className="muted">{rewindsLeft} rewind{rewindsLeft === 1 ? "" : "s"} remaining. A rewind is not a guarantee: consequences are recalculated from that point.</p>
-
-      <details ref={review} className="card review">
+      <details ref={review} className="card review" open={tab === "mistakes"} onToggle={(e) => { if (!(e.currentTarget as HTMLDetailsElement).open && tab === "mistakes") setTab("overview"); }}>
         <summary>Review my mistakes — decision by decision</summary>
         {analysis.contributing_decisions.map((d) => (
           <article key={d.index} className="mistake">
@@ -91,6 +81,20 @@ export function DeadEndScreen({ analysis, rewindsLeft, busy, actions }: {
         ))}
         {analysis.risks_not_addressed.length > 0 && (<><h3>Warnings that stayed unaddressed</h3><ul>{analysis.risks_not_addressed.map((r, i) => <li key={i}>{r}</li>)}</ul></>)}
       </details>
+      </div>
+      <div className="actions">
+        <button type="button" className="primary" disabled={!canRewind || busy} onClick={actions.onRewind}>
+          REWIND TO LAST RECOVERABLE DECISION
+        </button>
+        <button type="button" className="ghost" onClick={reviewMistakes}>Review my mistakes</button>
+        <button type="button" className="ghost" onClick={actions.onTimeline}>View decision timeline</button>
+        {analysis.continue_allowed && actions.onContinue && (
+          <button type="button" className="ghost ghost--warn" disabled={busy} onClick={actions.onContinue}>Continue despite the risk</button>
+        )}
+        <button type="button" className="ghost" disabled={busy} onClick={actions.onRestart}>Restart entire simulation</button>
+      </div>
+      {!canRewind && <p className="muted" role="status">{rewindsLeft <= 0 ? "No rewinds remain in this simulation." : "There is no recoverable checkpoint."}</p>}
+      <p className="muted">{rewindsLeft} rewind{rewindsLeft === 1 ? "" : "s"} remaining. A rewind is not a guarantee: consequences are recalculated from that point.</p>
     </section>
   );
 }

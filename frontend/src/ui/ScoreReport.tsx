@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { characterInfo } from "../comic/assets";
 import type { CharacterId } from "../comic/types";
 import type { Loss, Report, ReportDecision } from "../api/types";
@@ -33,6 +34,8 @@ function LossItem({ l }: { l: Loss }) {
 
 export function ScoreReport({ report }: { report: Report }) {
   const { overall } = report;
+  const [more, setMore] = useState<"cat" | "dec" | "loss" | "att" | "rev">("cat");
+  const [openDec, setOpenDec] = useState<number | null>(null);
   const pick = (idx: number[]) => idx.map((i) => report.decisions[i]).filter(Boolean);
   return (
     <section className="score" aria-labelledby="score-h">
@@ -74,9 +77,13 @@ export function ScoreReport({ report }: { report: Report }) {
         </section>
       )}
 
-      <div className="report-more">
+      <div className="report-more" data-more={more}>
         <h3 className="report-more-h">Full report: score breakdown, every decision, losses and alternatives</h3>
-      <div className="card" role="region" aria-labelledby="cat-h">
+        <div className="out-tabs rm-tabs" role="tablist" aria-label="Full report sections">
+          {([["cat", "Score breakdown"], ["dec", "Every decision"], ["loss", "Losses and alternatives"], ...(report.attempts.length > 1 ? [["att", "Attempts"]] : []), ["rev", "What was in the yard"]] as const).map(([k, label]) => (
+            <button key={k} role="tab" type="button" aria-selected={more === k} className={more === k ? "on" : ""} onClick={() => setMore(k as typeof more)}>{label}</button>))}
+        </div>
+      <div className="card rm-cat" role="region" aria-labelledby="cat-h">
         <h3 id="cat-h">Scores by category</h3>
         {report.categories.map((c) => (
           <div key={c.id} className="cat">
@@ -96,13 +103,16 @@ export function ScoreReport({ report }: { report: Report }) {
         ))}
       </div>
 
-      <section className="card" aria-labelledby="dec-h">
+      <section className="card rm-dec" aria-labelledby="dec-h">
         <h3 id="dec-h">Every decision, judged by what you knew then</h3>
         <p className="muted">Each decision is tested in several plausible worlds that differ only in what you could not know: chance events and the true stock level. A sound decision can still turn out badly; a poor one can get away with it. These are outcomes the simulation explores under its own assumptions, not facts about a real event.</p>
         <ol className="decision-review">
           {report.decisions.map((d) => (
-            <li key={d.index} data-rating={d.rating}>
-              <h4>{d.clock} · {d.label}</h4>
+            <li key={d.index} data-rating={d.rating} className={openDec === d.index ? "dr-open" : ""}>
+              <button type="button" className="dr-head" aria-expanded={openDec === d.index} onClick={() => setOpenDec(openDec === d.index ? null : d.index)}>
+                <h4>{d.clock} · {d.label}</h4><span className={`rating rating--${d.rating}`}>{RATING[d.rating]}</span>
+              </button>
+              <div className="dr-body">
               <Chips d={d} />
               <p>{d.verdict}</p>
               {d.warned_by.map((w) => <p key={w.stakeholder} className="muted">{characterInfo(w.stakeholder as CharacterId).name} warned: {w.why}.</p>)}
@@ -111,12 +121,13 @@ export function ScoreReport({ report }: { report: Report }) {
                   {d.alternative.differences.length > 0 && <span className="muted"> Immediate differences: {d.alternative.differences.join("; ")}.</span>}</p>
               )}
               <details><summary>What you knew at the time</summary><ul>{d.known_info.map((k, i) => <li key={i}>{k}</li>)}</ul></details>
+              </div>
             </li>
           ))}
         </ol>
       </section>
 
-      <div className="two-col">
+      <div className="two-col rm-loss">
         <section className="card" aria-labelledby="av-h">
           <h3 id="av-h">Avoidable losses</h3>
           {report.avoidable_losses.length === 0 ? <p className="muted">No losses could have been avoided by a comparably sound alternative.</p> :
@@ -131,7 +142,7 @@ export function ScoreReport({ report }: { report: Report }) {
       </div>
 
       {report.recommended_alternatives.length > 0 && (
-        <section className="card" aria-labelledby="rec-h">
+        <section className="card rm-loss" aria-labelledby="rec-h">
           <h3 id="rec-h">Alternative strategies worth trying</h3>
           <ul>{report.recommended_alternatives.map((a) => (
             <li key={a.index}><strong>{a.clock}</strong> — instead of “{a.chosen}”, try “{a.label}”.
@@ -139,7 +150,7 @@ export function ScoreReport({ report }: { report: Report }) {
         </section>
       )}
       {report.attempts.length > 1 && (
-        <section className="card" aria-labelledby="att-h">
+        <section className="card rm-att" aria-labelledby="att-h">
           <h3 id="att-h">Progress across attempts</h3>
           <table className="attempt-table">
             <thead><tr><th scope="col">Attempt</th><th scope="col">Result</th><th scope="col">Score</th><th scope="col">Sound</th><th scope="col">Questionable</th><th scope="col">Poor</th></tr></thead>
@@ -154,7 +165,7 @@ export function ScoreReport({ report }: { report: Report }) {
         </section>
       )}
 
-      <section className="card reveal" aria-labelledby="rev-h">
+      <section className="card reveal rm-rev" aria-labelledby="rev-h">
         <h3 id="rev-h">What was really in the yard</h3>
         <p>Your records said {report.reveal.recorded_units} cargo lots. There were {report.reveal.true_units}: the records overstated stock by {report.reveal.records_overstated_by}.
           You verified {report.reveal.verified_units}, so {report.reveal.existing_but_unverified} lots that did exist were never confirmed and could not ship safely.</p>

@@ -19,8 +19,7 @@ export function FinishedScreen({ api, simId, runId, final, state, onTryDifferent
   }, [api, simId, runId]);
 
   return (
-    <OutcomeReport final={final} state={state} onReplay={onTryDifferent} onRewind={onRewind} onRestart={onRestart}>
-      {report && report.attempts.length > 1 && <p className="actions"><button type="button" className="ghost" onClick={onCompare}>Compare attempts side by side</button></p>}
+    <OutcomeReport final={final} state={state} onReplay={onTryDifferent} onRewind={onRewind} onRestart={onRestart} onCompare={report && report.attempts.length > 1 ? onCompare : undefined}>
       {!report && !error && <p role="status" className="muted">Preparing your performance report…</p>}
       {error && <p className="alert" role="alert">The report could not be loaded: {error}</p>}
       {report && <ScoreReport report={report} />}

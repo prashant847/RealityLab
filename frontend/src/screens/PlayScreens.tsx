@@ -193,14 +193,14 @@ export function RewindBriefing({ view, ctx, onContinue }: {
   const btn = useRef<HTMLButtonElement>(null);
   useEffect(() => { btn.current?.focus(); }, []);
   return (
-    <div className="shell">
-      <main>
-        <div className="brief">
+    <div className="bo-scene bo-scene--text">
+      <main className="bo-stage bo-brief">
+        <div className="bo-title">
           <p className="kicker">Rewound · {ctx.clock} · Round {ctx.round}</p>
           <h1>Back at the decision</h1>
-          {ctx.previous_choice && <p className="lede-sm">Last time you chose: <strong>{ctx.previous_choice}</strong>. Your earlier attempt is kept and can be reviewed any time.</p>}
         </div>
-        <div className="two-col">
+        {ctx.previous_choice && <p className="lede-sm">Last time you chose: <strong>{ctx.previous_choice}</strong>. Your earlier attempt is kept and can be reviewed any time.</p>}
+        <div className="two-col bo-brief-cols">
           <section className="card" aria-labelledby="bf-known">
             <h2 id="bf-known">What you knew then</h2>
             <ul>{ctx.known_at_decision.map((t, i) => <li key={i}>{t}</li>)}</ul>
@@ -214,10 +214,12 @@ export function RewindBriefing({ view, ctx, onContinue }: {
             )}
           </section>
         </div>
-        <p className="muted">A rewind does not guarantee a better result: consequences are recalculated from here. {view.simulation.rewinds_left} rewind{view.simulation.rewinds_left === 1 ? "" : "s"} left.</p>
-        <button ref={btn} type="button" className="primary big" onClick={onContinue}>Choose differently</button>
+        <div className="bo-brief-foot">
+          <button ref={btn} type="button" className="primary big" onClick={onContinue}>Choose differently</button>
+          <p className="muted">A rewind does not guarantee a better result: consequences are recalculated from here. {view.simulation.rewinds_left} rewind{view.simulation.rewinds_left === 1 ? "" : "s"} left.</p>
+        </div>
       </main>
-      <SidePanel view={view} />
+      <aside className="bo-rail" aria-label="Status"><div className="bo-tabpanel"><StatusBlock view={view} /></div></aside>
     </div>
   );
 }

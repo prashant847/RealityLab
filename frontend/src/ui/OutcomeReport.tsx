@@ -15,9 +15,9 @@ function Bar({ label, value, need }: { label: string; value: number; need: numbe
   );
 }
 
-export function OutcomeReport({ final, state, children, onRewind, onReplay, onRestart }: {
+export function OutcomeReport({ final, state, children, onRewind, onReplay, onRestart, onCompare }: {
   final: FinalDispatch; state: WorldView; children?: React.ReactNode;
-  onRewind?: () => void; onReplay?: () => void; onRestart?: () => void;
+  onRewind?: () => void; onReplay?: () => void; onRestart?: () => void; onCompare?: () => void;
 }) {
   const good = final.ending === "full_recovery" || final.ending === "hospitals_served";
   const [tab, setTab] = useState<"ending" | "score" | "full">("ending");
@@ -31,6 +31,7 @@ export function OutcomeReport({ final, state, children, onRewind, onReplay, onRe
       <div className="out-tabs no-print" role="tablist" aria-label="Report sections">
         {([["ending", "The ending"], ["score", "Score and lessons"], ["full", "Full report"]] as const).map(([k, label]) => (
           <button key={k} role="tab" type="button" aria-selected={tab === k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{label}</button>))}
+        {onCompare && <button type="button" className="out-compare" onClick={onCompare}>Compare attempts side by side</button>}
       </div>
       <div className="outcome-grid">
         <section className="card" aria-labelledby="oc-ship">
