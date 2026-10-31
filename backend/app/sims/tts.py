@@ -7,8 +7,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-# female: clear English read-aloud voice. male: the deep British voice of the Archivist (and the male read-aloud voice). hindi: the Archivist in Hindi.
-VOICES = {"female": "en_US-lessac-medium", "male": "en_GB-alan-medium", "hindi": "hi_IN-pratham-medium"}
+# female: clear English read-aloud voice. male: the deep British voice of the Archivist (and the male read-aloud voice). heroic: the deep American voice of the Archivist's commanding style. hindi: the Archivist in Hindi.
+VOICES = {"female": "en_US-lessac-medium", "male": "en_GB-alan-medium", "heroic": "en_US-joe-medium", "hindi": "hi_IN-pratham-medium"}
 MAX_CHARS = 700                  # the page sends sentence-sized pieces; this is a safety limit
 _CACHE_LIMIT = 80
 

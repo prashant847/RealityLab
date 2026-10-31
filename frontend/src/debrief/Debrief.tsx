@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Archivist } from "./Archivist";
-import { Narrator, type Lang } from "./narrator";
+import { Narrator, type Lang, type Style } from "./narrator";
 import type { Scene, Tone } from "./script";
 import { SoundToggle } from "../audio/useAudio";
 import "./debrief.css";
 
 const LANG_KEY = "rl.debriefLang";
+const STYLE_KEY = "rl.debriefVoice";
+const readStyle = (): Style => { try { return localStorage.getItem(STYLE_KEY) === "commanding" ? "commanding" : "calm"; } catch { return "calm"; } };
 export const readLang = (): Lang => { try { return localStorage.getItem(LANG_KEY) === "hi" ? "hi" : "en"; } catch { return "en"; } };
 
 const TEXT = {
@@ -14,7 +16,7 @@ const TEXT = {
     intro: "They will talk you through each choice you made, what it led to, where it went wrong and what you could have done instead. It takes a few minutes. Captions are always shown.",
     begin: "Begin my debrief", written: "Read the written report instead", writtenShort: "Written report",
     play: "Pause", resume: "Resume", again: "Hear it again", prev: "Previous section", next: "Next section",
-    pace: "Pace", slower: "Slower", normal: "Normal", faster: "Faster", captions: "Captions", transcript: "Transcript", language: "Language",
+    pace: "Pace", voice: "Voice", calmVoice: "Calm", commandingVoice: "Commanding", slower: "Slower", normal: "Normal", faster: "Faster", captions: "Captions", transcript: "Transcript", language: "Language",
     sections: "Sections of the debrief", playback: "Playback", tone: { good: "good", mid: "so-so", bad: "poor", plain: "" },
     better: "A stronger option", noVoice: "No speech voice is available on this computer, so the debrief is shown as captions.",
     hint: (i: number, n: number, ch: string) => `Space pauses · ← → move between sections · C captions · Section ${i} of ${n}: ${ch}`,
@@ -24,7 +26,7 @@ const TEXT = {
     intro: "वे आपके हर चुनाव के बारे में बताएँगे: उसका नतीजा क्या हुआ, कहाँ चूक हुई, और आप क्या बेहतर कर सकते थे। इसमें कुछ मिनट लगते हैं। उपशीर्षक हमेशा दिखते हैं।",
     begin: "मेरी रिपोर्ट सुनें", written: "इसके बजाय लिखित रिपोर्ट पढ़ें", writtenShort: "लिखित रिपोर्ट",
     play: "रोकें", resume: "जारी रखें", again: "फिर सुनें", prev: "पिछला भाग", next: "अगला भाग",
-    pace: "गति", slower: "धीमी", normal: "सामान्य", faster: "तेज़", captions: "उपशीर्षक", transcript: "पूरा पाठ", language: "भाषा",
+    pace: "गति", voice: "आवाज़", calmVoice: "शांत", commandingVoice: "रोबीली", slower: "धीमी", normal: "सामान्य", faster: "तेज़", captions: "उपशीर्षक", transcript: "पूरा पाठ", language: "भाषा",
     sections: "रिपोर्ट के भाग", playback: "चलाना", tone: { good: "अच्छा", mid: "मिला-जुला", bad: "ख़राब", plain: "" },
     better: "एक बेहतर विकल्प", noVoice: "इस कंप्यूटर पर कोई बोलने वाली आवाज़ उपलब्ध नहीं है, इसलिए रिपोर्ट उपशीर्षकों में दिखाई जा रही है।",
     hint: (i: number, n: number, ch: string) => `स्पेस से रोकें · ← → से भाग बदलें · C से उपशीर्षक · भाग ${i} / ${n}: ${ch}`,
@@ -38,7 +40,8 @@ const TEXT = {
 export function Debrief({ scenesFor, title, onWritten, children }: { scenesFor: (lang: Lang) => Scene[]; title: string; onWritten: () => void; children?: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>(readLang);
   const scenes = useMemo(() => scenesFor(lang), [scenesFor, lang]);
-  const narrator = useMemo(() => new Narrator(scenes, lang), [scenes, lang]);
+  const [style, setStyleState] = useState<Style>(readStyle);
+  const narrator = useMemo(() => new Narrator(scenes, lang, style), [scenes, lang, style]);
   useEffect(() => () => narrator.destroy(), [narrator]);
   const st = useSyncExternalStore(narrator.subscribe, narrator.getState, narrator.getState);
   const [started, setStarted] = useState(false);
@@ -60,6 +63,12 @@ export function Debrief({ scenesFor, title, onWritten, children }: { scenesFor: 
     try { localStorage.setItem(LANG_KEY, next); } catch { /* not remembered */ }
     resume.current = started ? { id: scene.id, playing: true } : null;
     setLangState(next);
+  };
+  const setStyle = (next: Style) => {
+    if (next === style) return;
+    try { localStorage.setItem(STYLE_KEY, next); } catch { /* not remembered */ }
+    resume.current = started ? { id: scene.id, playing: true } : null;
+    setStyleState(next);
   };
   useEffect(() => {
     const r = resume.current;
@@ -89,6 +98,12 @@ export function Debrief({ scenesFor, title, onWritten, children }: { scenesFor: 
 
   const label = !started ? T.begin : st.ended ? T.again : st.playing ? T.play : T.resume;
   const tone = (t: Tone) => T.tone[t];
+  const StylePick = () => (
+    <label className="deb-speed">{T.voice}
+      <select value={style} onChange={(e) => setStyle(e.target.value as Style)} aria-label={T.voice}>
+        <option value="calm">{T.calmVoice}</option><option value="commanding">{T.commandingVoice}</option>
+      </select></label>
+  );
   const LangPick = ({ className }: { className?: string }) => (
     <div className={`deb-lang ${className ?? ""}`} role="radiogroup" aria-label={`${TEXT.en.language} / ${TEXT.hi.language}`}>
       {([["en", "English"], ["hi", "हिन्दी"]] as const).map(([k, l]) => <button key={k} type="button" role="radio" lang={k} aria-checked={lang === k} className={lang === k ? "on" : ""} onClick={() => setLang(k)}>{l}</button>)}
@@ -101,7 +116,7 @@ export function Debrief({ scenesFor, title, onWritten, children }: { scenesFor: 
         <Archivist mood={started ? scene.mood : "calm"} getMouth={getMouth} turn={turn} active={st.playing} />
         {!started && (
           <div className="deb-open">
-            <LangPick />
+            <div className="deb-pickers"><LangPick /><StylePick /></div>
             <p className="deb-kicker">{T.kicker}</p>
             <h2>{T.title}</h2>
             <p>{T.intro}</p>
@@ -141,6 +156,7 @@ export function Debrief({ scenesFor, title, onWritten, children }: { scenesFor: 
           </ol>
           <div className="deb-ctl deb-ctl--end">
             <LangPick className="deb-lang--bar" />
+            <StylePick />
             <label className="deb-speed">{T.pace}
               <select value={speed} onChange={(e) => setSpeed(Number(e.target.value))} aria-label={T.pace}>
                 <option value={0.85}>{T.slower}</option><option value={1}>{T.normal}</option><option value={1.15}>{T.faster}</option>

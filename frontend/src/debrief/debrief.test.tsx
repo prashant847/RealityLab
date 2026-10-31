@@ -133,6 +133,34 @@ describe("the narrator plays the debrief with the natural voice", () => {
     n.destroy();
   });
 
+  it("the commanding style uses the American voice, lower and slower than the calm one", async () => {
+    const asked: { voice: string; rate: number }[] = [];
+    const rates: number[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: { body?: string }) => {
+      if (url.includes("status")) return { ok: true, json: async () => ({ voices: ["female", "male", "heroic", "hindi"] }) };
+      const b = JSON.parse(init!.body!); asked.push({ voice: b.voice, rate: b.rate });
+      return { ok: true, blob: async () => new Blob(["x"]) };
+    }));
+    class A2 {
+      onended: (() => void) | null = null; onerror = null; onpause = null; paused = false; currentTime = 0; ended = false; playbackRate = 1; preservesPitch = true;
+      constructor(public src: string) { /* recorded on play */ }
+      play() { rates.push(this.playbackRate); setTimeout(() => this.onended?.(), 0); return Promise.resolve(); }
+      pause() { this.paused = true; }
+    }
+    (globalThis as unknown as { Audio: unknown }).Audio = A2;
+    const { Narrator } = await import("./narrator");
+    const scenes = [{ id: "a", chapter: "A", mood: "calm" as const, lines: ["One line."] }];
+    for (const [lang, style] of [["en", "calm"], ["en", "commanding"], ["hi", "commanding"]] as const) {
+      const n = new Narrator(scenes, lang, style);
+      n.play();
+      await vi.waitFor(() => expect(n.getState().ended).toBe(true), { timeout: 4000 });
+      n.destroy();
+    }
+    expect(asked.map((a) => a.voice)).toEqual(["male", "heroic", "hindi"]);
+    expect(rates[1]).toBeLessThan(rates[0]);                                   // commanding is played back lower than calm
+    expect(rates.every((r) => r < 1 && r >= 0.88)).toBe(true);                 // but never extreme
+  });
+
   it("with no voice at all it still runs, as captions on a timer", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ voices: [] }) })));
     const { Narrator } = await import("./narrator");

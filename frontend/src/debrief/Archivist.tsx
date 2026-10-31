@@ -148,9 +148,9 @@ export const Archivist = memo(function Archivist({ mood, getMouth, turn, active 
           <g fill="none" stroke="#a3a9b3" strokeWidth="2" strokeLinecap="round" opacity="0.8"><path d="M312 230C298 290 296 360 306 430M326 240C316 300 318 370 328 440" /><path transform="translate(800 0) scale(-1 1)" d="M312 230C298 290 296 360 306 430M326 240C316 300 318 370 328 440" /></g>
           <ellipse cx="320" cy="262" rx="12" ry="22" fill="#c48d65" /><ellipse cx="480" cy="262" rx="12" ry="22" fill="#c48d65" />
           <path d="M322 235C322 170 360 148 400 148C440 148 478 170 478 235C478 300 462 350 400 364C338 350 322 300 322 235Z" fill="url(#a-skin)" />
-          <path d="M316 254C296 170 340 108 400 108C460 108 504 170 484 254C482 224 470 200 450 188C434 180 416 190 400 206C384 190 366 180 350 188C330 200 318 224 316 254Z" fill="#e0e3e8" />
-          <g fill="none" strokeLinecap="round"><g stroke="#b6bbc4" strokeWidth="2.4"><path d="M358 186C350 158 366 130 398 118" /><path d="M402 206C402 166 414 136 440 122" /><path d="M446 190C458 168 456 142 436 126" /></g><path d="M372 182C366 160 378 138 402 126" stroke="#ffffff" strokeWidth="1.8" opacity="0.7" /></g>
-          <path d="M316 254C312 280 318 316 332 340C334 306 332 278 330 256Z" fill="#d6dae0" /><path transform="translate(800 0) scale(-1 1)" d="M316 254C312 280 318 316 332 340C334 306 332 278 330 256Z" fill="#d6dae0" />
+          {/* hair swept straight back off the forehead: a high hairline, no bangs and nothing across the face */}
+          <path d="M316 250C296 168 338 108 400 108C462 108 504 168 484 250C482 214 470 188 452 172C436 160 418 156 400 156C382 156 364 160 348 172C330 188 318 214 316 250Z" fill="#e0e3e8" />
+          <g fill="none" strokeLinecap="round"><g stroke="#b6bbc4" strokeWidth="2.4"><path d="M356 160C354 140 368 122 394 114" /><path d="M400 156C400 134 412 120 436 114" /><path d="M444 164C452 146 448 130 432 120" /></g><path d="M372 156C372 140 382 126 402 118" stroke="#ffffff" strokeWidth="1.8" opacity="0.7" /></g>
           {/* eyes */}
           {([["L", 368], ["R", 432]] as const).map(([s, cx]) => (
             <g key={s}>

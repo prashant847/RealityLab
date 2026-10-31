@@ -50,7 +50,7 @@ def test_with_voice_files_the_engine_is_called_and_a_wav_comes_back(client, tmp_
         return R()
 
     monkeypatch.setattr(tts.subprocess, "run", fake_run)
-    assert client.get("/api/tts/status").json() == {"voices": ["female", "male", "hindi"]}
+    assert client.get("/api/tts/status").json() == {"voices": ["female", "male", "heroic", "hindi"]}
     r = client.post("/api/tts", json={"text": "Hello   there.", "voice": "male", "rate": 0.5})
     assert r.status_code == 200 and r.headers["content-type"] == "audio/wav" and r.content[:4] == b"RIFF"
     assert "alan" in seen["cmd"][seen["cmd"].index("--model") + 1]
