@@ -35,6 +35,12 @@ function shelf(x: number, w: number, seed: number): { x: number; y: number; w: n
 const SHELVES = [-428, -202, 24, 552, 778, 1004];
 const MOTES = Array.from({ length: 16 }, (_, i) => ({ x: -300 + ((i * 97) % 1500), y: 120 + ((i * 53) % 330), r: 1 + (i % 3) * 0.7, d: 7 + (i % 5) * 2.3, o: (i * 0.9) % 6 }));
 
+const SKIN = "#c48d65", SKIN_EDGE = "#97603f";
+/** A finger or thumb: a rounded stroke with a slightly darker outline, so hands stay simple and clean. */
+const Finger = ({ d, w }: { d: string; w: number }) => (
+  <g fill="none" strokeLinecap="round" strokeLinejoin="round"><path d={d} stroke={SKIN_EDGE} strokeWidth={w + 2.6} /><path d={d} stroke={SKIN} strokeWidth={w} /></g>
+);
+
 export const Archivist = memo(function Archivist({ mood, getMouth, turn, active }: { mood: Mood; getMouth: () => Mouth; turn: number; active: boolean }) {
   const books = useMemo(() => SHELVES.flatMap((x, i) => shelf(x, 232, 7 + i * 13)), []);
   const moodRef = useRef(mood); moodRef.current = mood;
@@ -49,7 +55,7 @@ export const Archivist = memo(function Archivist({ mood, getMouth, turn, active 
   }, [turn]);
 
   useEffect(() => {
-    const cur: Face & { gesture: number; lid: number; ox: number; oy: number; wide: number } = { ...FACES.calm, gesture: 0, lid: 0.12, ox: 0, oy: 0, wide: 0 };
+    const cur: Face & { gesture: number; upright: number; lid: number; ox: number; oy: number; wide: number } = { ...FACES.calm, gesture: 0, upright: 0, lid: 0.12, ox: 0, oy: 0, wide: 0 };
     let frame = 0, nextBlink = performance.now() + 2200, blinkUntil = 0, nextGlance = performance.now() + 1600, tx = 0, ty = 0;
     const calm = () => (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) || document.documentElement.dataset.reduceMotion === "true";
     const set = (k: string, a: string, v: string | number) => r.current[k]?.setAttribute(a, String(v));
@@ -58,9 +64,9 @@ export const Archivist = memo(function Archivist({ mood, getMouth, turn, active 
       const f = FACES[moodRef.current];
       const m = getMouth();
       for (const k of ["browL", "browR", "tiltL", "tiltR", "smile", "lean", "look"] as const) cur[k] = lerp(cur[k], f[k], 0.07);
-      const talking = m.open > 0.05;
-      const g = moodRef.current === "pointed" || moodRef.current === "grave" ? (talking ? 1 : 0.35) : moodRef.current === "warm" ? (talking ? 0.35 : 0) : 0;
+      const g = moodRef.current === "pointed" || moodRef.current === "grave" ? 1 : moodRef.current === "warm" ? 0.25 : 0;     // one pose for the whole scene, not a twitch with every pause
       cur.gesture = lerp(cur.gesture, reduce ? 0 : g, 0.045);
+      cur.upright = lerp(cur.upright, reduce || g < 0.5 ? 0 : 1, 0.05);                                                         // the quill is either resting on the page or raised to make a point
       // blink and glance
       if (now > nextBlink) { blinkUntil = now + 130; nextBlink = now + 2400 + Math.random() * 3200; }
       if (now > nextGlance) { tx = (Math.random() - 0.5) * 5; ty = (Math.random() - 0.3) * 2.6; nextGlance = now + 1300 + Math.random() * 2400; }
@@ -88,9 +94,8 @@ export const Archivist = memo(function Archivist({ mood, getMouth, turn, active 
       set("sleeveL", "d", `M ${ex} ${ey} L ${wx} ${wy}`);
       const aim = (Math.atan2(wx - ex, -(wy - ey)) * 180) / Math.PI;                 // the hand continues the line of the forearm
       set("handL", "transform", `translate(${wx.toFixed(1)},${wy.toFixed(1)}) rotate(${aim.toFixed(1)})`);
-      const hold = lerp(158, -6, cur.gesture) + (reduce ? 0 : Math.sin(now / 900) * 1.4 * (1 - cur.gesture));
-      const slide = lerp(0, -42, cur.gesture);                                        // the quill slides in the grip: nib out to write, nib tucked in to make a point
-      set("quill", "transform", `rotate(${hold.toFixed(1)} 0 -30) translate(0 ${slide.toFixed(1)})`);
+      const hold = lerp(158, -6, cur.upright) + (reduce ? 0 : Math.sin(now / 900) * 1.4 * (1 - cur.upright));
+      set("quill", "transform", `rotate(${hold.toFixed(1)} 0 -46)`);                 // nib to the page when resting, feather up when making a point
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
@@ -107,6 +112,7 @@ export const Archivist = memo(function Archivist({ mood, getMouth, turn, active 
         <radialGradient id="a-vig" cx="0.5" cy="0.45" r="0.75"><stop offset="0.55" stopColor="#000" stopOpacity="0" /><stop offset="1" stopColor="#000" stopOpacity="0.55" /></radialGradient>
         <linearGradient id="a-coat" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#1f1d27" /><stop offset="0.5" stopColor="#34313f" /><stop offset="1" stopColor="#1f1d27" /></linearGradient>
         <radialGradient id="a-skin" cx="0.45" cy="0.4" r="0.7"><stop offset="0" stopColor="#d9a67e" /><stop offset="1" stopColor="#b97f58" /></radialGradient>
+        <linearGradient id="a-feather" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#f9f4e4" /><stop offset="1" stopColor="#e4d9b9" /></linearGradient>
         <clipPath id="a-mclip"><path ref={ref("mouthClip") as never} d="" /></clipPath>
       </defs>
 
@@ -137,20 +143,14 @@ export const Archivist = memo(function Archivist({ mood, getMouth, turn, active 
         <rect x="370" y="330" width="60" height="62" fill="#b97f58" />
         <path d="M370 372Q400 392 430 372V392H370Z" fill="#8f5f40" opacity="0.5" />
         <g ref={ref("head")}>
-          {/* hair behind the ears: silver, swept back and worn to the collar */}
-          <g fill="#aeb2ba"><path d="M330 196C300 214 286 262 290 312C292 338 306 356 324 362C318 344 322 322 330 304C336 274 334 238 340 212Z" /><path d="M470 196C500 214 514 262 510 312C508 338 494 356 476 362C482 344 478 322 470 304C464 274 466 238 460 212Z" /></g>
-          <g fill="none" stroke="#8d919a" strokeWidth="1.6" opacity="0.7" strokeLinecap="round"><path d="M318 224C304 252 300 292 308 332M326 232C316 262 314 296 320 336" /><path d="M482 224C496 252 500 292 492 332M474 232C484 262 486 296 480 336" /></g>
+          {/* long silver hair, falling past the shoulders */}
+          <g fill="#c7cbd3"><path d="M326 186C288 212 268 300 274 392C278 444 308 466 340 460C328 424 330 376 336 316C340 266 338 222 346 192Z" /><path transform="translate(800 0) scale(-1 1)" d="M326 186C288 212 268 300 274 392C278 444 308 466 340 460C328 424 330 376 336 316C340 266 338 222 346 192Z" /></g>
+          <g fill="none" stroke="#a3a9b3" strokeWidth="2" strokeLinecap="round" opacity="0.8"><path d="M312 230C298 290 296 360 306 430M326 240C316 300 318 370 328 440" /><path transform="translate(800 0) scale(-1 1)" d="M312 230C298 290 296 360 306 430M326 240C316 300 318 370 328 440" /></g>
           <ellipse cx="320" cy="262" rx="12" ry="22" fill="#c48d65" /><ellipse cx="480" cy="262" rx="12" ry="22" fill="#c48d65" />
           <path d="M322 235C322 170 360 148 400 148C440 148 478 170 478 235C478 300 462 350 400 364C338 350 322 300 322 235Z" fill="url(#a-skin)" />
-          {/* the hair: a receding, swept-back mane with a widow's peak, sideburns, strands and a few stray wisps */}
-          <path d="M316 254C296 174 338 106 400 106C462 106 504 174 484 254C482 234 478 214 466 198C458 188 446 181 432 178C420 186 410 194 400 204C390 194 380 186 368 178C354 181 342 188 334 198C322 214 318 234 316 254Z" fill="#dadde2" />
-          <path d="M316 254C312 272 314 292 322 308C326 294 326 278 330 264L330 242Z" fill="#cfd2d8" /><path d="M484 254C488 272 486 292 478 308C474 294 474 278 470 264L470 242Z" fill="#cfd2d8" />
-          <g fill="none" strokeLinecap="round">
-            <g stroke="#a9adb6" strokeWidth="2.4" opacity="0.85"><path d="M352 184C342 156 358 126 392 112" /><path d="M374 178C368 150 382 124 410 110" /><path d="M400 202C398 162 410 130 432 112" /><path d="M426 180C432 150 446 126 466 124" /><path d="M334 200C320 170 328 134 362 116" /><path d="M466 198C480 168 470 134 442 116" /><path d="M318 236C306 206 308 160 340 130" /><path d="M482 236C494 206 492 160 460 130" /></g>
-            <g stroke="#ffffff" strokeWidth="1.7" opacity="0.6"><path d="M358 182C350 158 364 132 396 118" /><path d="M380 178C376 152 390 128 416 116" /><path d="M432 182C438 154 450 132 470 130" /><path d="M342 196C330 170 340 140 368 124" /></g>
-            <path d="M334 198C344 187 356 181 368 178C380 186 390 194 400 204C410 194 420 186 432 178C444 181 456 187 466 198" stroke="#9b9fa9" strokeWidth="3" opacity="0.55" />
-            <g stroke="#d6d9de" strokeWidth="2.2"><path d="M372 112C366 102 358 98 350 100" /><path d="M432 110C440 100 450 98 458 102" /><path d="M404 106C406 96 414 90 422 90" /><path d="M334 134C326 128 318 128 312 132" /></g>
-          </g>
+          <path d="M316 254C296 170 340 108 400 108C460 108 504 170 484 254C482 224 470 200 450 188C434 180 416 190 400 206C384 190 366 180 350 188C330 200 318 224 316 254Z" fill="#e0e3e8" />
+          <g fill="none" strokeLinecap="round"><g stroke="#b6bbc4" strokeWidth="2.4"><path d="M358 186C350 158 366 130 398 118" /><path d="M402 206C402 166 414 136 440 122" /><path d="M446 190C458 168 456 142 436 126" /></g><path d="M372 182C366 160 378 138 402 126" stroke="#ffffff" strokeWidth="1.8" opacity="0.7" /></g>
+          <path d="M316 254C312 280 318 316 332 340C334 306 332 278 330 256Z" fill="#d6dae0" /><path transform="translate(800 0) scale(-1 1)" d="M316 254C312 280 318 316 332 340C334 306 332 278 330 256Z" fill="#d6dae0" />
           {/* eyes */}
           {([["L", 368], ["R", 432]] as const).map(([s, cx]) => (
             <g key={s}>
@@ -160,14 +160,12 @@ export const Archivist = memo(function Archivist({ mood, getMouth, turn, active 
               <path d={`M${cx - 18} 232Q${cx} 224 ${cx + 18} 232`} stroke="#8d5a3d" strokeWidth="2" fill="none" />
             </g>
           ))}
-          <path d="M400 252C396 272 388 286 385 292Q400 302 415 292C412 286 404 272 400 252Z" fill="#c4875f" stroke="#a96d48" strokeWidth="1.5" />
-          <path d="M330 262Q336 290 352 306M470 262Q464 290 448 306" stroke="#a96d48" strokeWidth="2" fill="none" opacity="0.5" />
+          <path d="M400 254C397 272 390 284 387 291Q400 299 413 291C410 284 403 272 400 254Z" fill="#b97f58" opacity="0.55" />
           {/* spectacles */}
           <g fill="#cfe6ff" fillOpacity="0.1" stroke="#c9a24a" strokeWidth="3.2"><circle cx="368" cy="238" r="26" /><circle cx="432" cy="238" r="26" /></g>
           <path d="M394 236Q400 230 406 236M342 232L322 228M458 232L478 228" stroke="#c9a24a" strokeWidth="3" fill="none" />
-          <path d="M352 224Q362 218 372 220" stroke="#fff" strokeWidth="2" opacity="0.5" fill="none" />
           {/* brows */}
-          <g ref={ref("browL")}><path d="M342 210Q366 196 392 207" stroke="#d6d9de" strokeWidth="8" strokeLinecap="round" fill="none" /></g>
+          <g ref={ref("browL")}><path d="M342 210Q366 196 392 207" stroke="#d6d9de" strokeWidth="6.5" strokeLinecap="round" fill="none" /></g>
           <g ref={ref("browR")}><path d="M458 210Q434 196 408 207" stroke="#d6d9de" strokeWidth="8" strokeLinecap="round" fill="none" /></g>
           {/* mouth, moustache, goatee */}
           <g transform="translate(400 322)">
@@ -195,29 +193,26 @@ export const Archivist = memo(function Archivist({ mood, getMouth, turn, active 
       {/* arms and hands, drawn over the desk. The quill hand points along its forearm; the quill is held in a pen grip. */}
       <path ref={ref("sleeveL")} d="M250 488L280 526" stroke="#2a2833" strokeWidth="46" strokeLinecap="round" fill="none" />
       <g ref={ref("handL")}>
-        <path d="M-15 -3C-19 -17-19 -31-15 -41C-8 -47 8 -47 15 -41C19 -31 19 -17 15 -3Z" fill="#c48d65" stroke="#a46a46" strokeWidth="1.5" />
-        <rect x="-21" y="-3" width="42" height="17" rx="7" fill="#efe8da" stroke="#cfc6b2" strokeWidth="1.3" />
         <g ref={ref("quill")}>
-          <path d="M-3 24L5 -70" stroke="#a8987a" strokeWidth="6" strokeLinecap="round" /><path d="M-3 24L5 -70" stroke="#f1e8d0" strokeWidth="3.8" strokeLinecap="round" />
-          <path d="M-5.6 18L-3 33L-0.4 18Z" fill="#241a12" />
-          <path d="M5 -70C16 -88 20 -110 14 -136C34 -120 40 -94 28 -76C22 -70 12 -68 5 -70Z" fill="#f6efdc" stroke="#b3a37c" strokeWidth="1.4" />
-          <path d="M5 -70C13 -92 16 -116 14 -136" fill="none" stroke="#b3a37c" strokeWidth="1.4" />
-          <path d="M10 -86L26 -96M12 -100L30 -110M13 -114L26 -124M8 -78L24 -84" stroke="#cdbf9a" strokeWidth="1" fill="none" />
+          {/* a proper quill: a tapered shaft with a cut, ink-dark nib, and a long barbed feather */}
+          <path d="M1.5 -22L2 -62" stroke="#b39f70" strokeWidth="6.4" strokeLinecap="round" /><path d="M1.5 -22L2 -62" stroke="#f1e8cd" strokeWidth="4.2" strokeLinecap="round" />
+          <path d="M-1.6 -23L5 -23L2.4 -7Z" fill="#2a1f14" /><path d="M2.4 -21L2.4 -11" stroke="#7d6a47" strokeWidth="0.9" />
+          <path d="M2 -62C-6 -96 -10 -140 6 -190C27 -142 29 -98 8 -64C5 -63 3 -62.5 2 -62Z" fill="url(#a-feather)" stroke="#b5a47b" strokeWidth="1.4" strokeLinejoin="round" />
+          <path d="M2 -62Q5 -130 6 -190" fill="none" stroke="#c9ba92" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M3 -80L-5 -92M3.5 -100L-7 -114M4 -120L-6 -136M5 -142L-3 -158M5.5 -162L0 -174M3 -76L13 -92M4 -98L19 -118M4.5 -120L21 -142M5 -144L17 -166M5.5 -166L14 -182" stroke="#d2c6a2" strokeWidth="1" fill="none" strokeLinecap="round" />
         </g>
-        <g stroke="#a46a46" strokeWidth="1.3" fill="#c48d65" strokeLinejoin="round">
-          <rect x="-15" y="-19" width="30" height="9.5" rx="4.7" /><rect x="-15.5" y="-28" width="31" height="9.5" rx="4.7" /><rect x="-16" y="-37" width="32" height="9.5" rx="4.7" /><rect x="-16" y="-46" width="32" height="9.5" rx="4.7" />
-          <path d="M-12 -12C-22 -20-22 -34-12 -44C-8 -46-3 -43-5 -39C-9 -33-9 -26-8 -20Z" />
-        </g>
-        <g stroke="#a46a46" strokeWidth="1" fill="none" opacity="0.8" strokeLinecap="round"><path d="M10 -41L10 -38M10 -32L10 -29M9 -23L9 -20M8 -14L8 -11" /><path d="M-14 -36C-10 -34-8 -30-8 -26" /></g>
+        <path d="M-14 0C-17 -12-16 -24-12 -32C-6 -38 8 -38 13 -32C17 -24 17 -12 14 0Z" fill={SKIN} stroke={SKIN_EDGE} strokeWidth="1.4" />
+        <rect x="-19" y="-3" width="38" height="16" rx="6" fill="#efe8da" stroke="#cfc6b2" strokeWidth="1.2" />
+        <Finger d="M10 -8C16 -9 16 -17 9 -18" w={7} /><Finger d="M10 -19C17 -21 17 -30 9 -31" w={7.6} />
+        <Finger d="M9 -32C15 -42 8 -52 -1 -50" w={8} />
+        <Finger d="M-13 -12C-21 -26-15 -41-3 -47" w={9.4} />
       </g>
       <path d="M542 482L506 526" stroke="#2a2833" strokeWidth="46" strokeLinecap="round" />
       <g transform="translate(506 526) rotate(219)">
-        <rect x="-21" y="-3" width="42" height="17" rx="7" fill="#efe8da" stroke="#cfc6b2" strokeWidth="1.3" />
-        <path d="M-16 -3C-20 -16-19 -28-15 -36L15 -36C19 -28 20 -16 16 -3Z" fill="#c48d65" stroke="#a46a46" strokeWidth="1.5" />
-        <g fill="#c48d65" stroke="#a46a46" strokeWidth="1.4" strokeLinecap="round">
-          <rect x="-15" y="-60" width="7.4" height="28" rx="3.7" transform="rotate(-6 -11 -32)" /><rect x="-6" y="-66" width="7.6" height="33" rx="3.8" /><rect x="3" y="-64" width="7.6" height="31" rx="3.8" /><rect x="11.5" y="-56" width="7" height="25" rx="3.5" transform="rotate(8 15 -32)" />
-          <path d="M-14 -10C-24 -16-27 -28-22 -37C-18 -40-14 -36-15 -31C-16 -24-12 -20-8 -18Z" />
-        </g>
+        <path d="M-15 0C-18 -10-17 -20-14 -26L14 -26C17 -20 18 -10 15 0Z" fill={SKIN} stroke={SKIN_EDGE} strokeWidth="1.4" />
+        <rect x="-19" y="-3" width="38" height="16" rx="6" fill="#efe8da" stroke="#cfc6b2" strokeWidth="1.2" />
+        <Finger d="M-10 -24C-11 -36-12 -44-13 -50" w={7.6} /><Finger d="M-3.4 -26C-3.6 -38-4 -48-4 -56" w={7.8} /><Finger d="M3.6 -26C4 -38 4.6 -46 5 -54" w={7.6} /><Finger d="M10 -24C11 -33 12 -40 14 -46" w={7} />
+        <Finger d="M-13 -6C-21 -10-25 -19-24 -30" w={8.6} />
       </g>
 
       <g className="arch-motes" fill="#ffe2b0">{MOTES.map((m, i) => <circle key={i} cx={m.x} cy={m.y} r={m.r} style={{ animationDuration: `${m.d}s`, animationDelay: `-${m.o}s` }} />)}</g>

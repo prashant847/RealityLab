@@ -11,8 +11,9 @@ interface Unit { scene: number; line: number; text: string; caption: string }
 export type Lang = "en" | "hi";
 const BEAT = 900;                                  // a breath between scenes
 const LINE_GAP = 380;                              // and a pause between lines, so each one lands
-const DEPTH = 0.88;                                // played back at 88% speed with the pitch allowed to drop: about two and a half semitones deeper, a bigger and older voice
-const TEMPO = 0.93;                                // and spoken a little slower than normal, unhurried
+/** Deep but calm, not menacing: a small drop in pitch, a gentle low warmth, nothing harsh, and an unhurried pace. Hindi is a touch deeper because its voice starts higher. */
+const DEPTH: Record<Lang, number> = { en: 0.98, hi: 0.93 };   // played back slightly slower with the pitch allowed to drop (English barely, about a third of a semitone)
+const TEMPO = 0.9;                                 // and spoken a little slower than normal, unhurried
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /** The voice of each language: English is the deep British voice (about 97 Hz), Hindi the deep Hindi male voice (about 108 Hz). */
@@ -123,7 +124,7 @@ export class Narrator {
     const hit = this.prefetch.get(i);
     if (hit) return hit;
     const tempo = getA11y().speechRate * this.rate * TEMPO;
-    const p = fetchPiece(this.units[i].text, ARCHIVIST_VOICE[this.lang], Math.max(0.5, Math.min(2, tempo / DEPTH)));   // generated faster, because it is played back slower
+    const p = fetchPiece(this.units[i].text, ARCHIVIST_VOICE[this.lang], Math.max(0.5, Math.min(2, tempo / DEPTH[this.lang])));   // generated faster, because it is played back slower
     p.catch(() => undefined);
     this.prefetch.set(i, p);
     return p;
@@ -137,13 +138,13 @@ export class Narrator {
       if (!this.analyser) {
         const an = (this.analyser = ctx.createAnalyser()); an.fftSize = 1024; an.smoothingTimeConstant = 0.35;
         this.td = new Uint8Array(an.fftSize); this.fd = new Uint8Array(an.frequencyBinCount);
-        const low = ctx.createBiquadFilter(); low.type = "lowshelf"; low.frequency.value = 180; low.gain.value = 7;
-        const body = ctx.createBiquadFilter(); body.type = "peaking"; body.frequency.value = 95; body.Q.value = 0.9; body.gain.value = 3;
-        const dark = ctx.createBiquadFilter(); dark.type = "highshelf"; dark.frequency.value = 4800; dark.gain.value = -4;
-        const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -22; comp.knee.value = 18; comp.ratio.value = 3; comp.attack.value = 0.01; comp.release.value = 0.25;
-        const dry = ctx.createGain(); dry.gain.value = 0.6;
+        const low = ctx.createBiquadFilter(); low.type = "lowshelf"; low.frequency.value = 200; low.gain.value = 2.5;
+        const body = ctx.createBiquadFilter(); body.type = "peaking"; body.frequency.value = 3200; body.Q.value = 0.8; body.gain.value = -1.5;   // takes the edge off the consonants
+        const dark = ctx.createBiquadFilter(); dark.type = "highshelf"; dark.frequency.value = 5500; dark.gain.value = -2;
+        const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -28; comp.knee.value = 24; comp.ratio.value = 1.8; comp.attack.value = 0.01; comp.release.value = 0.25;
+        const dry = ctx.createGain(); dry.gain.value = 0.85;
         const hall = ctx.createConvolver(); hall.buffer = impulse(ctx, 1.7);
-        const wet = ctx.createGain(); wet.gain.value = 0.1;
+        const wet = ctx.createGain(); wet.gain.value = 0.06;
         const master = ctx.createGain(); master.gain.value = 1;
         const limit = ctx.createDynamicsCompressor(); limit.threshold.value = -6; limit.knee.value = 0; limit.ratio.value = 20; limit.attack.value = 0.002; limit.release.value = 0.12;
         an.connect(low); low.connect(body); body.connect(dark); dark.connect(comp); comp.connect(dry); dry.connect(master);
@@ -191,7 +192,7 @@ export class Narrator {
     return new Promise((resolve, reject) => {
       const el = new Audio(url);
       el.preservesPitch = false;                                          // slowing the playback lowers the pitch, as for a bigger, older voice
-      el.playbackRate = DEPTH;
+      el.playbackRate = DEPTH[this.lang];
       this.audio = el;
       this.wire(el);
       const done = () => { if (this.audio === el) this.audio = null; };
