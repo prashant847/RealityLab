@@ -5,6 +5,11 @@ import { PathPage } from "../sims/Phases";
 import { SimPlayer } from "../sims/Player";
 import { CareerCompare } from "./CareerCompare";
 import { Welcome, WELCOME_KEY } from "./Welcome";
+import { Settings } from "./Settings";
+import { applyA11y, listenForDesktopZoom } from "../a11y/a11y";
+import { audio, type Mood } from "../audio/audio";
+import { SoundToggle } from "../audio/useAudio";
+import { markFresh, setIntent, takeIntent } from "./intent";
 import { achievements, upNext } from "./achievements";
 import { Preview } from "../sims/Previews";
 import { Radar } from "../sims/Radar";
@@ -23,7 +28,6 @@ const useHash = () => {
 
 /** Applies the saved accessibility settings to the whole window. */
 export function applyProfile(p: Profile) {
-  document.documentElement.dataset.largeText = String(p.large_text);
   document.documentElement.dataset.reduceMotion = String(p.reduce_motion);
 }
 
@@ -47,6 +51,28 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
   useEffect(() => { api.profile().then((p) => { setProfile(p); applyProfile(p); }).catch(() => setProfile({ name: "", large_text: false, reduce_motion: false })); }, [api]);
 
   const parts = hash.replace(/^#\/?/, "").split("/").filter(Boolean);
+  // sound and accessibility: start once, follow the screen with the music mood, and give every button a soft click
+  useEffect(() => {
+    applyA11y(); listenForDesktopZoom(); audio.start();
+    const click = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null; if (!t || t.tagName === "INPUT" || t.closest(".snd-toggle")) return;
+      if (t.closest(".sim-choice, .decision, [role=radio]")) audio.sfx("select");
+      else if (t.closest(".sim-btn--primary, .hub-btn--primary, button.primary, .commit")) audio.sfx("confirm");
+      else if (t.closest("button, a[href], [role=tab], summary")) audio.sfx("click");
+    };
+    document.addEventListener("click", click);
+    return () => document.removeEventListener("click", click);
+  }, []);
+  const moodNow: Mood = (["sim", "workday", "crisis", "play", "interval"].includes(parts[0] ?? "") && (["covid", "bhopal", "blackout"] as string[]).includes(parts[1] ?? "")) ? (parts[1] as Mood) : "hub";
+  useEffect(() => { audio.setMood(moodNow); }, [moodNow]);
+  // moving between screens moves keyboard focus to the new screen, so screen-reader and keyboard users start at the top
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const main = document.getElementById("main"); const active = document.activeElement;
+      if (main && !(active && active !== document.body && main.contains(active))) main.focus({ preventScroll: true });     // never take focus from a control the student is already using
+    }, 80);
+    return () => clearTimeout(t);
+  }, [hash]);
   const dev = ["gallery", "preview-notpetya", "char-export"].includes(parts[0] ?? "");
   const blackout = parts[0] === "play" && parts[1] === "blackout";            // the comic crisis; everything else is a themed screen
   // Every screen of the app except the developer galleries fits the window without page scrolling (long lists scroll inside their own panel).
@@ -62,8 +88,8 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
   if (dev) return <App />;
   if (blackout) return (
     <div className="bo-root">
-      <nav className="back-bar" aria-label="Application"><button type="button" onClick={() => go("#/")}>← All simulations</button><span>RealityLab AI</span></nav>
-      <App />
+      <nav className="back-bar" aria-label="Application"><button type="button" onClick={() => go("#/sim/blackout")}>← Your path</button><span className="back-right"><SoundToggle className="snd-toggle--dark" />RealityLab AI</span></nav>
+      <BlackoutGate api={api}><App /></BlackoutGate>
     </div>);
   const prof = (["blackout", "bhopal", "covid"] as const).find((x) => x === parts[1]);
   if (parts[0] === "sim" && prof) return <PathPage key={prof} api={api} profession={prof} onHome={() => go("#/")} />;
@@ -81,7 +107,7 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
             <a key={k} href={h} aria-current={tab === k ? "page" : undefined} className={tab === k ? "on" : ""}><Icon name={k} />{label}</a>))}
         </nav>
         <div className="hub-foot"><span className="hub-avatar" aria-hidden="true">{(profile?.name || "You").slice(0, 1).toUpperCase()}</span>
-          <div><strong>{profile?.name || "Student"}</strong><small>Saved on this computer</small></div></div>
+          <div><strong>{profile?.name || "Student"}</strong><small>Saved on this computer</small></div><SoundToggle className="snd-toggle--side" /></div>
       </aside>
       {welcome && tab === "home" && <Welcome onDone={finishWelcome} />}
       <div className="hub-body">
@@ -102,42 +128,33 @@ function useLoad<T>(fn: () => Promise<T>) {
   return { data, err, reload: load };
 }
 
-const Loading = ({ what }: { what: string }) => <main className="hub-main"><p className="hub-loading" role="status"><span className="hub-spin" aria-hidden="true" /> {what}</p></main>;
+const Loading = ({ what }: { what: string }) => <main id="main" tabIndex={-1} className="hub-main"><p className="hub-loading" role="status"><span className="hub-spin" aria-hidden="true" /> {what}</p></main>;
 
 function Library({ api, name }: { api: SimsApi; name: string }) {
   const { data: both, err, reload } = useLoad(useCallback(() => Promise.all([api.library(), api.careers().catch(() => null)]), [api]));
-  if (err) return <main className="hub-main"><div className="hub-panel hub-center"><h2>Could not load your simulations</h2><p>{err}</p><button type="button" className="hub-btn hub-btn--primary" onClick={reload}>Try again</button></div></main>;
+  if (err) return <main id="main" tabIndex={-1} className="hub-main"><div className="hub-panel hub-center"><h2>Could not load your simulations</h2><p>{err}</p><button type="button" className="hub-btn hub-btn--primary" onClick={reload}>Try again</button></div></main>;
   if (!both) return <Loading what="Loading your simulations…" />;
   const [data, car] = both;
   const done = data.filter((s) => s.status === "completed").length;
   const badges = car ? achievements(car.careers, data, car.choice) : [];
   const next = car ? upNext(data, car.careers, car.choice) : null;
   return (
-    <main className="hub-main">
+    <main id="main" tabIndex={-1} className="hub-main">
       <header className="hub-head">
         <div><p className="hub-eyebrow">{TAGLINE}</p><h1>{name ? `Welcome back, ${name}.` : "Choose a world to step into."}</h1>
           <p className="hub-lede">Real moments from demanding professions. Decide, see the consequences, and review what your choices showed.</p></div>
         <div className="hub-stats" aria-label="Your progress"><div><strong>{done}/3</strong><span>completed</span></div><div><strong>{data.filter((s) => s.status === "active").length}</strong><span>in progress</span></div>{car && <div><strong>{badges.filter((b) => b.earned).length}/{badges.length}</strong><span>milestones</span></div>}</div>
       </header>
-      {next && <button type="button" className="hub-next" onClick={() => go(next.to)}><span className="hub-next-tag">Up next</span><span className="hub-next-text"><b>{next.label}</b>{next.text}</span><span aria-hidden="true">→</span></button>}
+      {next && <button type="button" className="hub-next" onClick={() => { if (/^Continue/.test(next.label)) setIntent("continue"); go(next.to); }}><span className="hub-next-tag">Up next</span><span className="hub-next-text"><b>{next.label}</b>{next.text}</span><span aria-hidden="true">→</span></button>}
       <div className="hub-grid">{data.map((s, i) => <SimCard key={s.id} s={s} i={i} />)}</div>
     </main>
   );
 }
 
-/** The next sensible step for a profession: workday first, then the interval, then the crisis. */
-function nextStep(s: LibraryItem): { label: string; to: string } {
-  const wd = s.workday?.status ?? "none";
-  if (s.status === "active") return { label: "Continue the crisis", to: s.id === "blackout" ? "#/play/blackout" : `#/crisis/${s.id}` };
-  if (wd === "active") return { label: "Continue the day", to: `#/workday/${s.id}` };
-  if (wd === "none" && s.status === "none") return { label: "Start with a normal day", to: `#/workday/${s.id}` };
-  if (wd === "completed" && s.status === "none") return { label: "Begin the crisis", to: s.id === "blackout" ? "#/play/blackout" : `#/crisis/${s.id}` };
-  return { label: "Play again", to: `#/sim/${s.id}` };
-}
-
 function SimCard({ s, i = 0 }: { s: LibraryItem; i?: number }) {
   const [info, setInfo] = useState(false);
-  const next = nextStep(s);
+  const running = s.status === "active" || s.workday?.status === "active";
+  const label = running ? "Continue or start new" : s.status === "completed" ? "Play again" : "Start";
   const wd = s.workday;
   return (
     <article className={`hub-card hub-card--${s.id}`} aria-labelledby={`t-${s.id}`} style={{ ["--i" as string]: i }}>
@@ -147,6 +164,7 @@ function SimCard({ s, i = 0 }: { s: LibraryItem; i?: number }) {
         {info && <div className="hub-overlay" onClick={() => setInfo(false)}><h3>What you will practise</h3><ul>{s.objectives.map((o) => <li key={o}>{o}</li>)}</ul></div>}
       </div>
       <div className="hub-card-body">
+        <div className="hub-card-info">
         <p className="hub-domain">{s.domain.split("·")[0]}</p>
         <h2 id={`t-${s.id}`}>{s.title}</h2>
         <p className="hub-tag">{s.tagline}</p>
@@ -156,8 +174,9 @@ function SimCard({ s, i = 0 }: { s: LibraryItem; i?: number }) {
           <span className={`hp hp--${wd?.status ?? "none"}`}><i>1</i>A normal day</span><b aria-hidden="true">→</b>
           <span className={`hp hp--${s.status}`}><i>2</i>The crisis</span></a>
         {s.progress && <div className="hub-progress"><div className="hub-bar" role="progressbar" aria-label={`${s.title} progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={s.percent ?? 0}><span style={{ width: `${s.percent ?? 0}%` }} /></div><span>{s.progress}{s.completed > 0 && s.status === "active" ? ` · completed ${s.completed}×` : ""}</span></div>}
+        </div>
         <div className="hub-actions">
-          <button type="button" className="hub-btn hub-btn--primary" onClick={() => { if (s.id === "blackout" && s.status === "completed") { try { localStorage.removeItem("realitylab.simulationId"); } catch { /* ignore */ } } go(next.to); }}>{next.label}</button>
+          <button type="button" className="hub-btn hub-btn--primary" onClick={() => go(`#/sim/${s.id}`)}>{label}</button>
           {s.status === "completed" && s.id !== "blackout" && s.run_id && <button type="button" className="hub-btn" onClick={() => go(`#/report/${s.run_id}`)}>View report</button>}
         </div>
       </div>
@@ -167,12 +186,12 @@ function SimCard({ s, i = 0 }: { s: LibraryItem; i?: number }) {
 
 function JourneyView({ api }: { api: SimsApi }) {
   const { data: both, err, reload } = useLoad(useCallback(() => Promise.all([api.journey(), api.careers().catch(() => null), api.library().catch(() => null)]), [api]));
-  if (err) return <main className="hub-main"><div className="hub-panel hub-center"><p>{err}</p><button type="button" className="hub-btn hub-btn--primary" onClick={reload}>Try again</button></div></main>;
+  if (err) return <main id="main" tabIndex={-1} className="hub-main"><div className="hub-panel hub-center"><p>{err}</p><button type="button" className="hub-btn hub-btn--primary" onClick={reload}>Try again</button></div></main>;
   if (!both) return <Loading what="Loading your journey…" />;
   const [data, car, lib] = both as [Journey, Awaited<ReturnType<SimsApi["careers"]>> | null, LibraryItem[] | null];
   const badges = car && lib ? achievements(car.careers, lib, car.choice) : [];
   return (
-    <main className="hub-main">
+    <main id="main" tabIndex={-1} className="hub-main">
       <header className="hub-head"><div><p className="hub-eyebrow">Your progress</p><h1>My journey</h1></div><button type="button" className="hub-btn hub-btn--primary" onClick={() => go("#/compare")}>Compare careers</button></header>
       {badges.length > 0 && (
         <section className="hub-badges" aria-label="Milestones">
@@ -195,32 +214,31 @@ function JourneyView({ api }: { api: SimsApi }) {
   );
 }
 
-function Settings({ api, profile, onChange }: { api: SimsApi; profile: Profile; onChange: (p: Profile) => void }) {
-  const [name, setName] = useState(profile.name);
-  const [saved, setSaved] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-  const save = async (patch: Partial<Profile>) => {
-    setErr(null);
-    try { onChange(await api.saveProfile(patch)); setSaved(true); setTimeout(() => setSaved(false), 1800); } catch (e) { setErr((e as Error).message); }
-  };
+/** BLACKOUT keeps one unfinished game. Opening it asks whether to continue it or start a new one (unless that was already chosen on the path page). */
+function BlackoutGate({ api, children }: { api: SimsApi; children: React.ReactNode }) {
+  const [state, setState] = useState<"checking" | "ask" | "go">("checking");
+  const [round, setRound] = useState<string>("");
+  useEffect(() => {
+    const intent = takeIntent();
+    if (intent === "new") { markFresh(); setState("go"); return; }
+    if (intent === "continue") { setState("go"); return; }
+    let live = true;
+    api.library().then((l) => { if (!live) return; const b = l.find((x) => x.id === "blackout"); if (b?.status === "active") { setRound(b.progress ?? ""); setState("ask"); } else setState("go"); }).catch(() => live && setState("go"));
+    return () => { live = false; };
+  }, [api]);
+  if (state === "go") return <>{children}</>;
+  if (state === "checking") return <p className="hub-loading" role="status"><span className="hub-spin" aria-hidden="true" /> Loading…</p>;
   return (
-    <main className="hub-main">
-      <header className="hub-head"><div><p className="hub-eyebrow">Make it yours</p><h1>Settings</h1></div></header>
-      <div className="hub-settings">
-        <section className="hub-panel" aria-labelledby="pf-h"><h2 id="pf-h">Your profile</h2>
-          <form onSubmit={(e) => { e.preventDefault(); void save({ name }); }}>
-            <label>Your name (shown on the home screen)<input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} /></label>
-            <button type="submit" className="hub-btn hub-btn--primary">Save name</button>
-            {saved && <span role="status" className="hub-ok"> Saved</span>}
-          </form></section>
-        <section className="hub-panel" aria-labelledby="ac-h"><h2 id="ac-h">Accessibility</h2>
-          <label className="hub-check"><input type="checkbox" checked={profile.large_text} onChange={(e) => void save({ large_text: e.target.checked })} /> Larger text</label>
-          <label className="hub-check"><input type="checkbox" checked={profile.reduce_motion} onChange={(e) => void save({ reduce_motion: e.target.checked })} /> Reduce motion and animation</label></section>
-        <section className="hub-panel hub-about" aria-labelledby="ab-h"><h2 id="ab-h">About RealityLab AI</h2>
-          <p>{TAGLINE} Your progress, decisions and reports are saved on this computer only, and nothing is sent anywhere.</p>
-          <p>BLACKOUT follows the documented 2017 NotPetya attack, with scenes labelled as documented, reconstructed or simulation. The Bhopal simulation treats a real tragedy with care and separates the record from a fictional exercise. The hospital simulation is fictional and educational, not medical training.</p></section>
-      </div>
-      {err && <p role="alert" className="hub-err">{err}</p>}
+    <main className="bo-body bo-ask" id="main" tabIndex={-1}>
+      <section className="bo-ask-card" aria-labelledby="ask-h">
+        <p className="kicker">BLACKOUT</p>
+        <h1 id="ask-h">You have a game in progress</h1>
+        <p>{round ? `${round}. ` : ""}You can pick up exactly where you left off, or start a new game. Your earlier game stays saved in your history.</p>
+        <div className="bo-ask-btns">
+          <button type="button" className="primary big" onClick={() => setState("go")}>Continue where I left off</button>
+          <button type="button" className="ghost" onClick={() => { markFresh(); setState("go"); }}>Start a new game</button>
+        </div>
+      </section>
     </main>
   );
 }

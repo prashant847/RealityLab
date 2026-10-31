@@ -1,9 +1,11 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CareersView, Career, CareerPhase, Intro, PrepItem, LibraryItem, Outcome, RunView, SimReport, SimsApi } from "../api/sims";
 import { Shell } from "./Shell";
 import { achievements, upNext } from "./achievements";
+import { A11Y_KEY, getA11y, listenForDesktopZoom, setA11y } from "../a11y/a11y";
+import { audio, AUDIO_KEY } from "../audio/audio";
 import { WELCOME_KEY } from "./Welcome";
 
 const item = (id: LibraryItem["id"], over: Partial<LibraryItem> = {}): LibraryItem => ({
@@ -61,12 +63,12 @@ describe("library", () => {
     expect(await screen.findByRole("heading", { name: /welcome back, asha/i })).toBeInTheDocument();
     expect(screen.getAllByRole("article")).toHaveLength(3);
     const bhopal = screen.getByRole("article", { name: /bhopal/i });
-    expect(within(bhopal).getByRole("button", { name: "Continue the crisis" })).toBeInTheDocument();
+    expect(within(bhopal).getByRole("button", { name: "Continue or start new" })).toBeInTheDocument();
     expect(within(bhopal).getByRole("progressbar")).toHaveAttribute("aria-valuenow", "15");
     const covid = screen.getByRole("article", { name: /covid/i });
     expect(within(covid).getByRole("button", { name: "View report" })).toBeInTheDocument();
-    await userEvent.click(within(screen.getByRole("article", { name: /blackout/i })).getByRole("button", { name: "Start with a normal day" }));
-    expect(window.location.hash).toBe("#/workday/blackout");
+    await userEvent.click(within(screen.getByRole("article", { name: /blackout/i })).getByRole("button", { name: "Start" }));
+    expect(window.location.hash).toBe("#/sim/blackout");
   });
   it("shows an error with a retry when the service is unreachable", async () => {
     const api = fake({ library: vi.fn().mockRejectedValueOnce(new Error("offline")).mockResolvedValue([item("covid")]) });
@@ -134,29 +136,24 @@ describe("report, journey, settings", () => {
     await userEvent.click(screen.getByRole("button", { name: "Open it" }));
     expect(window.location.hash).toBe("#/sim/bhopal");
   });
-  it("journey has an empty state, and settings are saved and applied", async () => {
+  it("the journey has an empty state", async () => {
     window.location.hash = "#/journey";
-    const { unmount } = render(<Shell api={fake()} />);
+    render(<Shell api={fake()} />);
     expect(await screen.findByText("Nothing completed yet")).toBeInTheDocument();
-    unmount();
-    window.location.hash = "#/settings";
-    const api = fake();
-    render(<Shell api={api} />);
-    await userEvent.click(await screen.findByLabelText("Larger text"));
-    await waitFor(() => expect(api.saveProfile).toHaveBeenCalledWith({ large_text: true }));
-    await waitFor(() => expect(document.documentElement.dataset.largeText).toBe("true"));
   });
 });
 
 
 describe("workday, crisis and career comparison", () => {
-  it("the library offers the normal day first, then the crisis", async () => {
+  it("every card opens the path page, where you choose the normal day or the crisis", async () => {
     const wd = (status: "none" | "active" | "completed") => ({ id: "covid_workday", title: "A day", tagline: "t", minutes: 15, rounds: 7, status });
     const api = fake({ library: vi.fn().mockResolvedValue([item("blackout", { workday: wd("completed") }), item("bhopal", { workday: wd("active") }), item("covid", { workday: wd("none") })]) });
     render(<Shell api={api} />);
-    expect(await within(await screen.findByRole("article", { name: /blackout/i })).findByRole("button", { name: "Begin the crisis" })).toBeInTheDocument();
-    expect(within(screen.getByRole("article", { name: /bhopal/i })).getByRole("button", { name: "Continue the day" })).toBeInTheDocument();
-    expect(within(screen.getByRole("article", { name: /covid/i })).getByRole("button", { name: "Start with a normal day" })).toBeInTheDocument();
+    const b = within(await screen.findByRole("article", { name: /blackout/i }));
+    expect(b.getByRole("button", { name: "Start" })).toBeInTheDocument();
+    expect(within(screen.getByRole("article", { name: /bhopal/i })).getByRole("button", { name: "Continue or start new" })).toBeInTheDocument();
+    await userEvent.click(within(screen.getByRole("article", { name: /covid/i })).getByRole("button", { name: "Start" }));
+    expect(window.location.hash).toBe("#/sim/covid");
   });
   it("shows the path of one profession as two separate parts, with no interval between them", async () => {
     window.location.hash = "#/sim/covid";
@@ -323,5 +320,172 @@ describe("polish: welcome, keyboard play, voices, feedback, milestones", () => {
     const all = lib.map((l) => ({ ...l, status: "completed" as const, workday: wd("completed") }));
     expect(upNext(all, careersView.careers, null)).toMatchObject({ label: "Compare how you did", to: "#/compare" });
     expect(upNext(all, careersView.careers, { career: "covid", reason: "", updated_at: "" })).toBeNull();
+  });
+});
+
+
+describe("starting: continue or start new, workday or crisis", () => {
+  const wd = (status: "none" | "active" | "completed") => ({ id: "covid_workday", title: "A day", tagline: "A calm day", minutes: 15, rounds: 7, status, progress: status === "active" ? "Step 3 of 7" : undefined });
+  const path = (workday: ReturnType<typeof wd>, crisis: "none" | "active" | "completed") => fake({ library: vi.fn().mockResolvedValue([item("covid", { status: crisis, progress: crisis === "active" ? "Step 2 of 8" : undefined, workday })]) });
+  beforeEach(() => { sessionStorage.clear(); });
+
+  it("a part in progress offers both Continue where you left off and Start new", async () => {
+    window.location.hash = "#/sim/covid";
+    render(<Shell api={path(wd("active"), "active")} />);
+    const day = (await screen.findByRole("heading", { name: "A normal day" })).closest("li")!;
+    const crisis = screen.getByRole("heading", { name: "The crisis" }).closest("li")!;
+    expect(within(day as HTMLElement).getByRole("button", { name: "Continue where you left off" })).toBeInTheDocument();
+    expect(within(day as HTMLElement).getByRole("button", { name: "Start new" })).toBeInTheDocument();
+    await userEvent.click(within(crisis as HTMLElement).getByRole("button", { name: "Start new" }));
+    expect(window.location.hash).toBe("#/crisis/covid");
+  });
+  it("a part that has not been started just starts, and a finished part can be played again or reported", async () => {
+    window.location.hash = "#/sim/covid";
+    render(<Shell api={path(wd("completed"), "none")} />);
+    const day = (await screen.findByRole("heading", { name: "A normal day" })).closest("li") as HTMLElement;
+    expect(within(day).getByRole("button", { name: "Play the day again" })).toBeInTheDocument();
+    expect(within(day).queryByRole("button", { name: "Start new" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Begin the crisis" })).toBeInTheDocument();
+  });
+  it("Continue (chosen on the path page) resumes the run without the intro screen", async () => {
+    window.location.hash = "#/workday/covid";
+    sessionStorage.setItem("rl.go", "continue");
+    const api = fake({ current: vi.fn().mockResolvedValue(view(3)) });
+    render(<Shell api={api} />);
+    expect(await screen.findByRole("heading", { name: "Step 3 title" })).toBeInTheDocument();           // straight into the run
+    expect(api.start).not.toHaveBeenCalled();
+    expect(sessionStorage.getItem("rl.go")).toBeNull();                                                   // the choice applies once
+  });
+  it("Start new on the path page begins a fresh run straight away", async () => {
+    window.location.hash = "#/workday/covid";
+    sessionStorage.setItem("rl.go", "new");
+    const api = fake({ current: vi.fn().mockResolvedValue(view(3)) });
+    render(<Shell api={api} />);
+    expect(await screen.findByRole("heading", { name: "Step 1 title" })).toBeInTheDocument();
+    expect(api.start).toHaveBeenCalled();
+  });
+  it("opening BLACKOUT with a game in progress asks whether to continue or start new", async () => {
+    window.location.hash = "#/play/blackout";
+    localStorage.setItem("realitylab.simulationId", "abc");
+    const api = fake({ library: vi.fn().mockResolvedValue([item("blackout", { status: "active", progress: "Round 4 of 10" })]) });
+    render(<Shell api={api} />);
+    expect(await screen.findByRole("heading", { name: "You have a game in progress" })).toBeInTheDocument();
+    expect(screen.getByText(/Round 4 of 10/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Start a new game" }));
+    expect(localStorage.getItem("realitylab.simulationId")).toBeNull();                 // the old pointer is dropped; the old game stays in history
+  });
+  it("opening BLACKOUT with nothing in progress goes straight to its start screen", async () => {
+    window.location.hash = "#/play/blackout";
+    render(<Shell api={fake({ library: vi.fn().mockResolvedValue([item("blackout")]) })} />);
+    await waitFor(() => expect(screen.queryByRole("heading", { name: "You have a game in progress" })).toBeNull());
+  });
+});
+
+
+describe("accessibility and sound", () => {
+  beforeEach(() => {
+    localStorage.removeItem(A11Y_KEY); localStorage.removeItem(AUDIO_KEY);
+    setA11y({ textSize: 100, contrast: "normal", colorblind: false, easyFont: false, bigTargets: false, readAloud: false, speechRate: 1 });
+    audio.update({ music: true, sfx: true, musicVolume: 0.35, sfxVolume: 0.5 });
+    delete (window as unknown as { rlDesktop?: unknown }).rlDesktop;
+    window.location.hash = "#/settings";
+  });
+  const openTab = async (name: string) => { render(<Shell api={fake()} />); await userEvent.click(await screen.findByRole("tab", { name })); };
+
+  it("settings are in sections, and the profile name can still be saved", async () => {
+    const api = fake();
+    render(<Shell api={api} />);
+    const tabs = await screen.findByRole("tablist", { name: "Settings sections" });
+    expect(within(tabs).getAllByRole("tab").map((t) => t.textContent)).toEqual(["Profile", "Accessibility", "Sound", "About and shortcuts"]);
+    await userEvent.clear(screen.getByLabelText(/Your name/)); await userEvent.type(screen.getByLabelText(/Your name/), "Ravi");
+    await userEvent.click(screen.getByRole("button", { name: "Save name" }));
+    expect(api.saveProfile).toHaveBeenCalledWith({ name: "Ravi" });
+  });
+  it("text size zooms the desktop window and is remembered", async () => {
+    const setZoom = vi.fn();
+    (window as unknown as { rlDesktop: unknown }).rlDesktop = { setZoom };
+    await openTab("Accessibility");
+    await userEvent.click(screen.getByRole("radio", { name: "150%" }));
+    expect(setZoom).toHaveBeenLastCalledWith(1.5);
+    expect(document.documentElement.dataset.textSize).toBe("150");
+    expect(JSON.parse(localStorage.getItem(A11Y_KEY)!).textSize).toBe(150);
+    expect(screen.getByRole("radio", { name: "150%" })).toBeChecked();
+  });
+  it("high contrast, colour-blind colours, easy font and larger buttons are switchable, and each applies to the whole window", async () => {
+    await openTab("Accessibility");
+    await userEvent.click(screen.getByRole("radio", { name: "High contrast" }));
+    expect(document.documentElement.dataset.contrast).toBe("high");
+    await userEvent.click(screen.getByRole("switch", { name: "Colour-blind friendly colours" }));
+    expect(document.documentElement.dataset.colorblind).toBe("true");
+    await userEvent.click(screen.getByRole("switch", { name: "Easy-reading font" }));
+    expect(document.documentElement.dataset.easyfont).toBe("true");
+    await userEvent.click(screen.getByRole("switch", { name: "Larger buttons and more space" }));
+    expect(document.documentElement.dataset.targets).toBe("large");
+    await userEvent.click(screen.getByRole("radio", { name: "Normal" }));
+    expect(document.documentElement.dataset.contrast).toBe("normal");
+  });
+  it("reduce motion is saved to the profile, and read-aloud adds a speed control", async () => {
+    const api = fake();
+    render(<Shell api={api} />);
+    await userEvent.click(await screen.findByRole("tab", { name: "Accessibility" }));
+    await userEvent.click(screen.getByRole("switch", { name: "Reduce motion and animation" }));
+    await waitFor(() => expect(api.saveProfile).toHaveBeenCalledWith({ reduce_motion: true }));
+    expect(screen.queryByLabelText(/Reading speed/)).toBeNull();
+    (window as unknown as { speechSynthesis: unknown }).speechSynthesis = { speak: vi.fn(), cancel: vi.fn() };
+    class U { constructor(public text: string) {} rate = 1; lang = ""; }
+    (globalThis as unknown as { SpeechSynthesisUtterance: unknown }).SpeechSynthesisUtterance = U;
+    await userEvent.click(screen.getByRole("switch", { name: "Read-aloud buttons" }));
+    expect(getA11y().readAloud).toBe(true);
+    expect(await screen.findByText("Reading speed")).toBeInTheDocument();
+  });
+  it("keyboard zoom in the desktop app keeps the text size setting in step", () => {
+    let cb: (f: number) => void = () => undefined;
+    (window as unknown as { rlDesktop: unknown }).rlDesktop = { setZoom: vi.fn(), onZoom: (f: (n: number) => void) => { cb = f; } };
+    listenForDesktopZoom();
+    cb(1.76);
+    expect(getA11y().textSize).toBe(175);
+  });
+  it("sound: music and effects have their own switches and volumes, kept on this computer", async () => {
+    await openTab("Sound");
+    expect(screen.getByRole("switch", { name: "Music" })).toBeChecked();
+    await userEvent.click(screen.getByRole("switch", { name: "Music" }));
+    expect(audio.getSettings().music).toBe(false);
+    expect(screen.getByLabelText(/Music volume/)).toBeDisabled();
+    fireEvent.change(screen.getByLabelText(/Effects volume/), { target: { value: "0.2" } });
+    expect(audio.getSettings().sfxVolume).toBeCloseTo(0.2);
+    expect(JSON.parse(localStorage.getItem(AUDIO_KEY)!)).toMatchObject({ music: false, sfx: true, sfxVolume: 0.2 });
+  });
+  it("every screen has a quick sound button, and the audio engine is safe where there is no audio at all", async () => {
+    window.location.hash = "#/";
+    render(<Shell api={fake()} />);
+    const btn = await screen.findByRole("button", { name: /Sound is on/ });
+    await userEvent.click(btn);
+    expect(audio.getSettings()).toMatchObject({ music: false, sfx: false });
+    expect(screen.getByRole("button", { name: /Sound is off/ })).toBeInTheDocument();
+    expect(() => { audio.start(); audio.sfx("good"); audio.setMood("bhopal"); }).not.toThrow();       // jsdom has no AudioContext
+    audio.update({ musicVolume: 7 });
+    expect(audio.getSettings().musicVolume).toBe(1);                                                    // volumes are clamped
+  });
+  it("shortcuts and the accessibility statement are listed", async () => {
+    await openTab("About and shortcuts");
+    expect(screen.getByRole("heading", { name: "Keyboard shortcuts" })).toBeInTheDocument();
+    expect(screen.getByText(/works with the keyboard alone and with a screen reader/)).toBeInTheDocument();
+  });
+  it("read aloud speaks the situation of a step, and only when it is switched on", async () => {
+    const speak = vi.fn();
+    (window as unknown as { speechSynthesis: unknown }).speechSynthesis = { speak, cancel: vi.fn() };
+    class U { constructor(public text: string) {} rate = 1; lang = ""; }
+    (globalThis as unknown as { SpeechSynthesisUtterance: unknown }).SpeechSynthesisUtterance = U;
+    window.location.hash = "#/crisis/covid";
+    render(<Shell api={fake()} />);
+    await userEvent.click(await screen.findByRole("button", { name: "Begin" }));
+    await screen.findByRole("heading", { name: "Step 1 title" });
+    expect(screen.queryByRole("button", { name: /Read this aloud/ })).toBeNull();
+    setA11y({ readAloud: true });
+    const read = await screen.findByRole("button", { name: /Read this aloud/ });
+    await userEvent.click(read);
+    expect(speak).toHaveBeenCalled();
+    expect((speak.mock.calls[0][0] as { text: string }).text).toContain("Two of them worried me last night");
+    expect((speak.mock.calls[0][0] as { text: string }).text).toContain("brief");
   });
 });

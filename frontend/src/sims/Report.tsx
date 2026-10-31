@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { PrepItem, SimReport, SimsApi } from "../api/sims";
 import { ReflectionForm } from "./Reflection";
+import { SoundToggle } from "../audio/useAudio";
 import { Radar } from "./Radar";
 import "./sims.css";
 
@@ -24,7 +25,7 @@ export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId
   const s = rep.summary;
   const sk = rep.skills[Math.min(skill, rep.skills.length - 1)];
   return (
-    <main className={`rep rep--${rep.profession ?? rep.simulation_id}`}>
+    <main className={`rep rep--${rep.profession ?? rep.simulation_id}`} id="main" tabIndex={-1}>
       <section className={`rep-hero rep-hero--${rep.outcome.tone}`}>
         <div>
           <p className="sim-kicker">Career experience report</p>
@@ -40,6 +41,7 @@ export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId
       <nav className="rep-tabs no-print" role="tablist" aria-label="Report sections">
         {TABS.map(([k, label]) => <button key={k} role="tab" type="button" aria-selected={tab === k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{label}</button>)}
         <span className="sim-spacer" />
+        <SoundToggle className="snd-toggle--rep" />
         <button type="button" className="rep-act" onClick={() => window.print()}>Print or save as PDF</button>
         <button type="button" className="rep-act" onClick={onHome}>← All simulations</button>
       </nav>

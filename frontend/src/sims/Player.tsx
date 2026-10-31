@@ -3,6 +3,10 @@ import type { Intro, Outcome, RunView, SimsApi } from "../api/sims";
 import { BhopalStage } from "./BhopalStage";
 import { CovidStage } from "./CovidStage";
 import { Preview } from "./Previews";
+import { takeIntent } from "../shell/intent";
+import { SoundToggle } from "../audio/useAudio";
+import { audio } from "../audio/audio";
+import { ReadAloud } from "../a11y/speak";
 import { TerminalStage } from "./TerminalStage";
 import "./sims.css";
 
@@ -29,6 +33,9 @@ export function SimPlayer({ api, simId, onHome, onReport }: { api: SimsApi; simI
     setPhase({ k: "loading" });
     try {
       const [intro, current] = await Promise.all([api.intro(simId), api.current(simId)]);
+      const intent = takeIntent();                       // chosen on the path page: skip the intro for an explicit continue / start new
+      if (current && intent === "continue") { setPhase({ k: "step", view: current, picked: null, busy: false }); return; }
+      if (current && intent === "new") { setPhase({ k: "step", view: await api.start(simId), picked: null, busy: false }); return; }
       setPhase({ k: "intro", intro, current });
     } catch (e) { setPhase({ k: "error", message: (e as Error).message }); }
   }, [api, simId]);
@@ -57,10 +64,12 @@ export function SimPlayer({ api, simId, onHome, onReport }: { api: SimsApi; simI
         <span className="sim-spacer" />
         {scene && <span className="sim-pill" aria-label="Progress">{scene.status === "completed" ? "Finished" : `Step ${scene.round} of ${scene.total_rounds}`}</span>}
         {scene && <span className="sim-pill sim-pill--soft">Saved automatically</span>}
+        <SoundToggle />
         {scene && <div className="sim-topbar" role="progressbar" aria-label="Simulation progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}><span style={{ width: `${pct}%` }} /></div>}
       </header>
       {fail && <div className="sim-alert" role="alert">{fail}</div>}
-      <main className="sim-main">
+      <div className="sr-only" role="status" aria-live="polite">{phase.k === "step" && phase.view.scene.step ? `Step ${phase.view.scene.round} of ${phase.view.scene.total_rounds}: ${phase.view.scene.step.title}.` : phase.k === "outcome" ? `${phase.outcome.rating === "strong" ? "Strong" : phase.outcome.rating === "mixed" ? "Mixed" : "Weak"} decision. ${phase.outcome.consequence}` : ""}</div>
+      <main className="sim-main" id="main" tabIndex={-1}>
         {phase.k === "loading" && <p className="sim-loading" role="status"><span className="sim-spin" aria-hidden="true" /> Loading the simulation…</p>}
         {phase.k === "error" && (
           <div className="sim-card sim-center"><h2>Something went wrong</h2><p>{phase.message}</p>
@@ -83,6 +92,7 @@ function IntroScreen({ simId, intro, current, onBegin }: { simId: string; intro:
       <div className="sim-intro-art"><Preview id={(intro.profession ?? simId) as Theme} />
         <div className="sim-intro-meta"><span>{intro.minutes} min</span><span>{intro.rounds} steps</span><span>{intro.domain.split("·")[0].trim()}</span></div></div>
       <div className="sim-intro-body">
+        <div className="sim-intro-scroll">
         {intro.kind === "workday" && <p className="sim-phase"><b>Part 1 of 2 · A normal day.</b> Nothing is on fire. What you set up today carries into the crisis that follows.</p>}
         {intro.kind === "crisis" && <p className="sim-phase sim-phase--crisis"><b>Part 2 of 2 · The crisis.</b> Whatever your workday set up is already in place.</p>}
         <p className="sim-kicker">{intro.domain}</p>
@@ -99,7 +109,8 @@ function IntroScreen({ simId, intro, current, onBegin }: { simId: string; intro:
               : <><b>You have not played the normal day.</b> The crisis starts with no head start. <a href={`#/workday/${intro.profession}`}>Play it first (about 15 minutes)</a>.</>}
           </div>)}
         <p className="sim-disclaimer" role="note">{intro.disclaimer}</p>
-        <div className="sim-actions">
+        </div>
+        <div className="sim-actions sim-intro-foot">
           {current ? (<>
             <button type="button" className="sim-btn sim-btn--primary sim-btn--lg" onClick={() => onBegin(false)}>Continue where you left off (step {current.scene.round} of {current.scene.total_rounds})</button>
             <button type="button" className="sim-btn" onClick={() => onBegin(true)}>Start again</button>
@@ -151,7 +162,7 @@ function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: s
           {events.map((e) => <div key={e.event_id} className="sim-event" role="status"><b>{theme === "covid" ? "Situation update: " : "Development: "}{e.title}</b><p>{e.text}</p></div>)}
           {step.sources.length > 0 && <p className="sim-fine">Sources consulted: {step.sources.join("; ")}.</p>}
         </div>
-        <div className="sim-foot"><span className="sim-fine">{step.kind === "documented" ? "This record cannot be changed. Your answer shows how well you read it." : "Press Enter to continue."}</span>
+        <div className="sim-foot"><ReadAloud text={() => [step.voice ? `${step.voice.name}: ${step.voice.line}` : "", step.brief, ...step.facts].filter(Boolean).join(". ")} /><span className="sim-fine">{step.kind === "documented" ? "This record cannot be changed. Your answer shows how well you read it." : "Press Enter to continue."}</span>
           <button type="button" className="sim-btn sim-btn--primary" onClick={() => setPane("decide")}>Make your decision →</button></div>
       </>) : (<>
         <div className="sim-body" role="tabpanel">
@@ -167,7 +178,7 @@ function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: s
               </label>))}
           </div>
         </div>
-        <div className="sim-foot"><button type="button" className="sim-btn sim-btn--ghost" onClick={() => setPane("situation")}>← Back to the situation</button><span className="sim-keys" aria-hidden="true">Press <kbd>A</kbd>–<kbd>{String.fromCharCode(64 + step.choices.length)}</kbd> to choose, <kbd>Enter</kbd> to confirm</span>
+        <div className="sim-foot"><button type="button" className="sim-btn sim-btn--ghost" onClick={() => setPane("situation")}>← Back to the situation</button><ReadAloud text={() => `${step.question}. ${step.choices.map((c, i) => `Option ${String.fromCharCode(65 + i)}: ${c.label}.`).join(" ")}`} /><span className="sim-keys" aria-hidden="true">Press <kbd>A</kbd>–<kbd>{String.fromCharCode(64 + step.choices.length)}</kbd> to choose, <kbd>Enter</kbd> to confirm</span>
           <button type="button" className="sim-btn sim-btn--primary" disabled={!picked || busy} onClick={onConfirm}>{busy ? "Applying…" : "Confirm decision"}</button></div>
       </>)}
     </section>
@@ -178,6 +189,7 @@ function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: s
 function OutcomeScreen({ theme, outcome, prev, view, onNext }: { theme: string; outcome: Outcome; prev: RunView; view: RunView; onNext: () => void }) {
   const labels = Object.fromEntries(view.scene.meters.map((m) => [m.id, m]));
   const historical = prev.scene.step?.kind === "documented";
+  useEffect(() => { audio.sfx(outcome.rating === "strong" ? "good" : outcome.rating === "mixed" ? "neutral" : "bad"); }, [outcome]);   // a soft cue that matches the result
   const [settled, setSettled] = useState(false);                 // meters start at their old values, then move to the new ones
   useEffect(() => { const t = setTimeout(() => setSettled(true), 260); return () => clearTimeout(t); }, []);
   const deltas = Object.fromEntries(Object.entries(outcome.changes).map(([k, [a, b]]) => [k, b - a]));
@@ -204,7 +216,7 @@ function OutcomeScreen({ theme, outcome, prev, view, onNext }: { theme: string; 
           </ul>)}
         {outcome.lesson && <p className="sim-lesson"><b>Lesson:</b> {outcome.lesson}</p>}
       </div>
-      <div className="sim-foot"><span />
+      <div className="sim-foot"><ReadAloud text={() => `${outcome.consequence} ${outcome.lesson ? `Lesson: ${outcome.lesson}` : ""}`} />
         <button type="button" className="sim-btn sim-btn--primary" onClick={onNext}>{outcome.completed ? "See your career experience report" : "Continue"}</button></div>
     </section>
   );

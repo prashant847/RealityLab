@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, type GameApi } from "../api/client";
 import type { SimulationView } from "../api/types";
+import { takeFresh } from "../shell/intent";
 
 const KEY = "realitylab.simulationId";
 const store = {
@@ -43,6 +44,7 @@ export function useGame(api: GameApi) {
   const adopt = useCallback((v: SimulationView) => { store.set(v.simulation.id); setView(v); }, []);
 
   const boot = useCallback(async () => {
+    if (takeFresh()) { store.clear(); setBooting(false); return; }          // the student chose "Start new"
     let id = store.get();
     if (!id && api.current) { try { id = await api.current(); } catch { id = null; } }   // browser storage is per-origin; the backend knows what is unfinished
     if (!id) { setBooting(false); return; }

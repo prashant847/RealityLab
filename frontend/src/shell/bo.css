@@ -216,3 +216,7 @@
 /* BLACKOUT final report: the "How it felt" tab */
 .outcome .out-felt { display: none; flex: 1; min-height: 0; overflow: auto; } .outcome[data-tab="felt"] .out-felt { display: block; }
 .outcome[data-tab="felt"] .outcome-grid, .outcome[data-tab="felt"] .out-children, .outcome[data-tab="felt"] .out-actions { display: none; }
+.bo-body { overflow: auto; } .bo-scene { min-height: min-content; }
+@media (min-height: 560px) { .bo-scene { min-height: 0; } }
+.bo-ask { display: grid; place-items: center; padding: 20px; } .bo-ask-card { max-width: 560px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 28px 32px; box-shadow: 0 14px 40px rgba(60, 45, 15, .18); }
+.bo-ask-card h1 { margin: 4px 0 10px; font-size: 1.7rem; } .bo-ask-card p { color: var(--text); } .bo-ask-btns { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; } .bo-ask-btns .big { margin: 0; }

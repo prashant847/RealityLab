@@ -101,7 +101,7 @@ function Game({ api }: { api: GameApi }) {
       <div className="sr-only" role="status" aria-live="polite">
         {view.scene.title ? `Round ${view.scene.round}: ${view.scene.title}` : ""}
       </div>
-      <div className="bo-body">{paused ? <div aria-hidden="true" className="paused-veil" /> : body}</div>
+      <div className="bo-body" id="main" tabIndex={-1}>{paused ? <div aria-hidden="true" className="paused-veil" /> : body}</div>
       {paused && <PauseOverlay onResume={() => setPaused(false)} onHistory={() => { setPaused(false); setShowHistory(true); }} onLeave={leave} />}
       <BusyToast label={g.busy} />
     </div>

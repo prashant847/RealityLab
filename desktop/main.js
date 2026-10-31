@@ -1,6 +1,6 @@
 // RealityLab AI desktop shell: starts the local simulation service, waits until it is healthy, shows the app in its own window,
 // and stops the service when the app closes. The user never opens a browser or starts anything by hand.
-const { app, BrowserWindow, Menu, dialog, shell } = require("electron");
+const { app, BrowserWindow, Menu, dialog, ipcMain, shell } = require("electron");
 const { spawn, execFileSync } = require("node:child_process");
 const fs = require("node:fs");
 const http = require("node:http");
@@ -86,11 +86,21 @@ async function main() {
     await waitHealthy(port, 45000);
     win = new BrowserWindow({
       width: 1360, height: 880, minWidth: 960, minHeight: 640, show: false, title: "RealityLab AI", icon, backgroundColor: "#0a0f18", autoHideMenuBar: true,
-      webPreferences: { preload: path.join(__dirname, "preload.js"), contextIsolation: true, nodeIntegration: false, sandbox: true },
+      webPreferences: { preload: path.join(__dirname, "preload.js"), contextIsolation: true, nodeIntegration: false, sandbox: true, autoplayPolicy: "no-user-gesture-required" },
     });
     const origin = `http://127.0.0.1:${port}`;
     win.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:/.test(url) && !url.startsWith(origin)) shell.openExternal(url); return { action: "deny" }; });
     win.webContents.on("will-navigate", (e, url) => { if (!url.startsWith(origin)) e.preventDefault(); });
+    // Text size: the page asks for a zoom factor, and Ctrl and + / - / 0 work too (the application menu is removed, so they are handled here).
+    const setZoom = (f, tell) => { const z = Math.min(2, Math.max(1, Number.isFinite(f) ? f : 1)); if (win) { win.webContents.setZoomFactor(z); if (tell) win.webContents.send("rl:zoomed", z); } };
+    ipcMain.removeAllListeners("rl:zoom"); ipcMain.on("rl:zoom", (_e, f) => setZoom(f, false));
+    win.webContents.on("before-input-event", (e, input) => {
+      if (input.type !== "keyDown" || !(input.control || input.meta)) return;
+      const z = win.webContents.getZoomFactor();
+      if (input.key === "+" || input.key === "=") { e.preventDefault(); setZoom(Math.round((z + 0.25) * 100) / 100, true); }
+      else if (input.key === "-") { e.preventDefault(); setZoom(Math.round((z - 0.25) * 100) / 100, true); }
+      else if (input.key === "0") { e.preventDefault(); setZoom(1, true); }
+    });
     win.once("ready-to-show", () => { splash.destroy(); win.show(); });
     win.on("closed", () => { win = null; });
     await win.loadURL(origin + "/");

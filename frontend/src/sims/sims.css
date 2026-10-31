@@ -249,3 +249,12 @@
 @media (max-height: 700px) { .sim-voice { padding: 6px 12px; margin-bottom: 8px; } .sim-avatar { width: 34px; height: 34px; } .sim-voice blockquote { font-size: .92rem; line-height: 1.35; } }
 @media (max-width: 1100px) { .sim-keys { display: none; } }
 .sim-voice blockquote { color: var(--s-text); border: 0; padding: 0; }
+
+/* ===== nothing is ever pushed out of reach: pinned action bars, and every main area scrolls as a fallback ===== */
+.sim-main, .rep { overflow: auto; }
+.sim-intro-body { overflow: hidden; display: flex; flex-direction: column; min-height: 0; justify-content: flex-start; }
+.sim-intro-scroll { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; justify-content: center; padding-right: 4px; }
+.sim-intro-foot { flex: none; margin: 0; padding-top: 10px; border-top: 1px solid var(--s-line); }
+.pt-wrap { overflow: auto; } .pt-steps { min-height: min-content; }
+.sim-decision .sim-foot, .sim-outcome .sim-foot { flex: none; }
+@media (max-height: 560px) { .pt-steps { grid-template-columns: 1fr; } .pt-step { padding: 10px 14px; } .pt-step p:not(.sim-fine):not(.pt-status) { display: none; } .pt-hero .pt-art { display: none; } }
