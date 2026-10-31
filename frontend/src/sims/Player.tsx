@@ -9,10 +9,10 @@ import "./sims.css";
 const KIND_LABEL = { documented: "Documented record", hypothetical: "Fictional exercise", simulation: "Simulation", workday: "A normal day" } as const;
 
 type Theme = "bhopal" | "covid" | "blackout";
-function Stage({ theme, scene, decision, log }: { theme: Theme; scene: import("../api/sims").Scene; decision: React.ReactNode; log?: { title: string; label: string; rating: string }[] }) {
-  if (theme === "covid") return <CovidStage scene={scene} decision={decision} log={log} />;
-  if (theme === "blackout") return <TerminalStage scene={scene} decision={decision} />;
-  return <BhopalStage scene={scene} decision={decision} />;
+function Stage({ theme, scene, decision, log, deltas }: { theme: Theme; scene: import("../api/sims").Scene; decision: React.ReactNode; log?: { title: string; label: string; rating: string }[]; deltas?: Record<string, number> }) {
+  if (theme === "covid") return <CovidStage scene={scene} decision={decision} log={log} deltas={deltas} />;
+  if (theme === "blackout") return <TerminalStage scene={scene} decision={decision} deltas={deltas} />;
+  return <BhopalStage scene={scene} decision={decision} deltas={deltas} />;
 }
 
 type Phase =
@@ -114,6 +114,20 @@ function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: s
   const step = view.scene.step!;
   const [pane, setPane] = useState<"situation" | "decide">("situation");
   const events = view.scene.events ?? [];
+  useEffect(() => {
+    const on = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (e.ctrlKey || e.metaKey || e.altKey || (t && (t.tagName === "TEXTAREA" || (t.tagName === "INPUT" && (t as HTMLInputElement).type === "text")))) return;
+      const k = e.key.toLowerCase();
+      if (pane === "situation") { if ((k === "enter" || k === "arrowright") && !(t && (t.tagName === "BUTTON" || t.tagName === "A"))) { e.preventDefault(); setPane("decide"); } return; }
+      const i = "abcdefgh".indexOf(k) >= 0 && k.length === 1 ? "abcdefgh".indexOf(k) : "12345678".indexOf(k) >= 0 && k.length === 1 ? "12345678".indexOf(k) : -1;
+      if (i >= 0 && step.choices[i]?.available && !busy) { e.preventDefault(); onPick(step.choices[i].id); }
+      else if (k === "enter" && picked && !busy && !(t && (t.tagName === "BUTTON" || t.tagName === "A"))) { e.preventDefault(); onConfirm(); }
+      else if (k === "arrowleft" || k === "escape") { setPane("situation"); }
+    };
+    window.addEventListener("keydown", on);
+    return () => window.removeEventListener("keydown", on);
+  }, [pane, picked, busy, step.choices, onPick, onConfirm]);
   const head = (
     <div className="sim-head">
       <p className={`sim-tag sim-tag--${step.kind}`}>{KIND_LABEL[step.kind]}</p>
@@ -130,13 +144,14 @@ function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: s
       </div>
       {pane === "situation" ? (<>
         <div className="sim-body" role="tabpanel">
+          {step.voice && <figure className="sim-voice"><span className="sim-avatar" aria-hidden="true">{step.voice.name.replace(/^(Dr\.|Mr\.|Mrs\.|Sister|The)\s+/, "").slice(0, 1)}</span><blockquote>&ldquo;{step.voice.line}&rdquo;<figcaption><b>{step.voice.name}</b> · {step.voice.role}</figcaption></blockquote></figure>}
           <p className="sim-brief">{step.brief}</p>
           <ul className="sim-facts">{step.facts.map((f, i) => <li key={i}>{f}</li>)}</ul>
           {view.scene.round === 1 && (view.scene.prepared?.length ?? 0) > 0 && <div className="sim-prep" role="note"><b>From your normal day:</b><ul>{view.scene.prepared!.map((p) => <li key={p.flag}>{p.label}{p.full ? "" : " (half)"}</li>)}</ul></div>}
           {events.map((e) => <div key={e.event_id} className="sim-event" role="status"><b>{theme === "covid" ? "Situation update: " : "Development: "}{e.title}</b><p>{e.text}</p></div>)}
           {step.sources.length > 0 && <p className="sim-fine">Sources consulted: {step.sources.join("; ")}.</p>}
         </div>
-        <div className="sim-foot"><span className="sim-fine">{step.kind === "documented" ? "This record cannot be changed. Your answer shows how well you read it." : ""}</span>
+        <div className="sim-foot"><span className="sim-fine">{step.kind === "documented" ? "This record cannot be changed. Your answer shows how well you read it." : "Press Enter to continue."}</span>
           <button type="button" className="sim-btn sim-btn--primary" onClick={() => setPane("decide")}>Make your decision →</button></div>
       </>) : (<>
         <div className="sim-body" role="tabpanel">
@@ -152,7 +167,7 @@ function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: s
               </label>))}
           </div>
         </div>
-        <div className="sim-foot"><button type="button" className="sim-btn sim-btn--ghost" onClick={() => setPane("situation")}>← Back to the situation</button>
+        <div className="sim-foot"><button type="button" className="sim-btn sim-btn--ghost" onClick={() => setPane("situation")}>← Back to the situation</button><span className="sim-keys" aria-hidden="true">Press <kbd>A</kbd>–<kbd>{String.fromCharCode(64 + step.choices.length)}</kbd> to choose, <kbd>Enter</kbd> to confirm</span>
           <button type="button" className="sim-btn sim-btn--primary" disabled={!picked || busy} onClick={onConfirm}>{busy ? "Applying…" : "Confirm decision"}</button></div>
       </>)}
     </section>
@@ -163,6 +178,14 @@ function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: s
 function OutcomeScreen({ theme, outcome, prev, view, onNext }: { theme: string; outcome: Outcome; prev: RunView; view: RunView; onNext: () => void }) {
   const labels = Object.fromEntries(view.scene.meters.map((m) => [m.id, m]));
   const historical = prev.scene.step?.kind === "documented";
+  const [settled, setSettled] = useState(false);                 // meters start at their old values, then move to the new ones
+  useEffect(() => { const t = setTimeout(() => setSettled(true), 260); return () => clearTimeout(t); }, []);
+  const deltas = Object.fromEntries(Object.entries(outcome.changes).map(([k, [a, b]]) => [k, b - a]));
+  useEffect(() => {
+    const on = (e: KeyboardEvent) => { const t = e.target as HTMLElement | null; if ((e.key === "Enter" || e.key === " " || e.key === "ArrowRight") && !(t && (t.tagName === "BUTTON" || t.tagName === "A" || t.tagName === "INPUT"))) { e.preventDefault(); onNext(); } };
+    window.addEventListener("keydown", on);
+    return () => window.removeEventListener("keydown", on);
+  }, [onNext]);
   const card = (
     <section className="sim-card sim-outcome" aria-labelledby="out-h">
       <div className="sim-head">
@@ -185,6 +208,6 @@ function OutcomeScreen({ theme, outcome, prev, view, onNext }: { theme: string; 
         <button type="button" className="sim-btn sim-btn--primary" onClick={onNext}>{outcome.completed ? "See your career experience report" : "Continue"}</button></div>
     </section>
   );
-  const shown = { ...view.scene, step: prev.scene.step };   // the picture stays on the step you just decided
-  return <Stage theme={theme as Theme} scene={shown} decision={card} log={view.decisions} />;
+  const shown = { ...view.scene, step: prev.scene.step, meters: settled ? view.scene.meters : prev.scene.meters };   // the picture stays on the step you just decided
+  return <Stage theme={theme as Theme} scene={shown} decision={card} log={view.decisions} deltas={settled ? deltas : undefined} />;
 }

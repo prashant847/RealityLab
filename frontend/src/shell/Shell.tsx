@@ -4,6 +4,8 @@ import { simsApi, type Journey, type LibraryItem, type Profile, type SimsApi } f
 import { PathPage } from "../sims/Phases";
 import { SimPlayer } from "../sims/Player";
 import { CareerCompare } from "./CareerCompare";
+import { Welcome, WELCOME_KEY } from "./Welcome";
+import { achievements, upNext } from "./achievements";
 import { Preview } from "../sims/Previews";
 import { Radar } from "../sims/Radar";
 import { ReportView } from "../sims/Report";
@@ -36,6 +38,12 @@ const Icon = ({ name }: { name: string }) => <svg viewBox="0 0 24 24" width="20"
 export function Shell({ api = simsApi }: { api?: SimsApi }) {
   const hash = useHash();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [welcome, setWelcome] = useState(() => { try { return !localStorage.getItem(WELCOME_KEY); } catch { return false; } });
+  const finishWelcome = (name: string) => {
+    try { localStorage.setItem(WELCOME_KEY, "1"); } catch { /* ignore */ }
+    setWelcome(false);
+    if (name.trim()) api.saveProfile({ name: name.trim() }).then((p) => { setProfile(p); applyProfile(p); }).catch(() => undefined);
+  };
   useEffect(() => { api.profile().then((p) => { setProfile(p); applyProfile(p); }).catch(() => setProfile({ name: "", large_text: false, reduce_motion: false })); }, [api]);
 
   const parts = hash.replace(/^#\/?/, "").split("/").filter(Boolean);
@@ -75,6 +83,7 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
         <div className="hub-foot"><span className="hub-avatar" aria-hidden="true">{(profile?.name || "You").slice(0, 1).toUpperCase()}</span>
           <div><strong>{profile?.name || "Student"}</strong><small>Saved on this computer</small></div></div>
       </aside>
+      {welcome && tab === "home" && <Welcome onDone={finishWelcome} />}
       <div className="hub-body">
         {tab === "home" && <Library api={api} name={profile?.name ?? ""} />}
         {tab === "compare" && <CareerCompare api={api} />}
@@ -96,18 +105,22 @@ function useLoad<T>(fn: () => Promise<T>) {
 const Loading = ({ what }: { what: string }) => <main className="hub-main"><p className="hub-loading" role="status"><span className="hub-spin" aria-hidden="true" /> {what}</p></main>;
 
 function Library({ api, name }: { api: SimsApi; name: string }) {
-  const { data, err, reload } = useLoad(useCallback(() => api.library(), [api]));
+  const { data: both, err, reload } = useLoad(useCallback(() => Promise.all([api.library(), api.careers().catch(() => null)]), [api]));
   if (err) return <main className="hub-main"><div className="hub-panel hub-center"><h2>Could not load your simulations</h2><p>{err}</p><button type="button" className="hub-btn hub-btn--primary" onClick={reload}>Try again</button></div></main>;
-  if (!data) return <Loading what="Loading your simulations…" />;
+  if (!both) return <Loading what="Loading your simulations…" />;
+  const [data, car] = both;
   const done = data.filter((s) => s.status === "completed").length;
+  const badges = car ? achievements(car.careers, data, car.choice) : [];
+  const next = car ? upNext(data, car.careers, car.choice) : null;
   return (
     <main className="hub-main">
       <header className="hub-head">
         <div><p className="hub-eyebrow">{TAGLINE}</p><h1>{name ? `Welcome back, ${name}.` : "Choose a world to step into."}</h1>
           <p className="hub-lede">Real moments from demanding professions. Decide, see the consequences, and review what your choices showed.</p></div>
-        <div className="hub-stats" aria-label="Your progress"><div><strong>{done}/3</strong><span>completed</span></div><div><strong>{data.filter((s) => s.status === "active").length}</strong><span>in progress</span></div></div>
+        <div className="hub-stats" aria-label="Your progress"><div><strong>{done}/3</strong><span>completed</span></div><div><strong>{data.filter((s) => s.status === "active").length}</strong><span>in progress</span></div>{car && <div><strong>{badges.filter((b) => b.earned).length}/{badges.length}</strong><span>milestones</span></div>}</div>
       </header>
-      <div className="hub-grid">{data.map((s) => <SimCard key={s.id} s={s} />)}</div>
+      {next && <button type="button" className="hub-next" onClick={() => go(next.to)}><span className="hub-next-tag">Up next</span><span className="hub-next-text"><b>{next.label}</b>{next.text}</span><span aria-hidden="true">→</span></button>}
+      <div className="hub-grid">{data.map((s, i) => <SimCard key={s.id} s={s} i={i} />)}</div>
     </main>
   );
 }
@@ -122,12 +135,12 @@ function nextStep(s: LibraryItem): { label: string; to: string } {
   return { label: "Play again", to: `#/sim/${s.id}` };
 }
 
-function SimCard({ s }: { s: LibraryItem }) {
+function SimCard({ s, i = 0 }: { s: LibraryItem; i?: number }) {
   const [info, setInfo] = useState(false);
   const next = nextStep(s);
   const wd = s.workday;
   return (
-    <article className={`hub-card hub-card--${s.id}`} aria-labelledby={`t-${s.id}`}>
+    <article className={`hub-card hub-card--${s.id}`} aria-labelledby={`t-${s.id}`} style={{ ["--i" as string]: i }}>
       <div className="hub-art"><Preview id={s.id} />
         {s.status !== "none" && <span className={`hub-badge hub-badge--${s.status}`}>{s.status === "active" ? "In progress" : "Completed"}</span>}
         <button type="button" className="hub-info" aria-expanded={info} aria-label={`What you will practise in ${s.title}`} onClick={() => setInfo(!info)}>{info ? "×" : "i"}</button>
@@ -153,12 +166,18 @@ function SimCard({ s }: { s: LibraryItem }) {
 }
 
 function JourneyView({ api }: { api: SimsApi }) {
-  const { data, err, reload } = useLoad<Journey>(useCallback(() => api.journey(), [api]));
+  const { data: both, err, reload } = useLoad(useCallback(() => Promise.all([api.journey(), api.careers().catch(() => null), api.library().catch(() => null)]), [api]));
   if (err) return <main className="hub-main"><div className="hub-panel hub-center"><p>{err}</p><button type="button" className="hub-btn hub-btn--primary" onClick={reload}>Try again</button></div></main>;
-  if (!data) return <Loading what="Loading your journey…" />;
+  if (!both) return <Loading what="Loading your journey…" />;
+  const [data, car, lib] = both as [Journey, Awaited<ReturnType<SimsApi["careers"]>> | null, LibraryItem[] | null];
+  const badges = car && lib ? achievements(car.careers, lib, car.choice) : [];
   return (
     <main className="hub-main">
       <header className="hub-head"><div><p className="hub-eyebrow">Your progress</p><h1>My journey</h1></div><button type="button" className="hub-btn hub-btn--primary" onClick={() => go("#/compare")}>Compare careers</button></header>
+      {badges.length > 0 && (
+        <section className="hub-badges" aria-label="Milestones">
+          {badges.map((b) => <div key={b.id} className={`hub-badge-card${b.earned ? " on" : ""}`} title={b.hint}><span aria-hidden="true">{b.earned ? "★" : "☆"}</span><b>{b.title}</b><small>{b.earned ? "Earned" : b.hint}</small></div>)}
+        </section>)}
       {data.completed.length === 0 ? (
         <div className="hub-panel hub-center"><h2>Nothing completed yet</h2><p>Finish a simulation and its career experience report will appear here.</p><button type="button" className="hub-btn hub-btn--primary" onClick={() => go("#/")}>Choose a simulation</button></div>
       ) : (

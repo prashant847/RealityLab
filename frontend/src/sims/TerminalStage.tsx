@@ -57,12 +57,12 @@ export function TerminalScene({ scene }: { scene: Scene }) {
   );
 }
 
-export function TerminalStage({ scene, decision }: { scene: Scene; decision: ReactNode }) {
+export function TerminalStage({ scene, decision, deltas }: { scene: Scene; decision: ReactNode; deltas?: Record<string, number> }) {
   return (
     <div className="bh-layout tm-layout">
       <aside className="bh-aside" aria-label="Terminal board">
         <TerminalScene scene={scene} />
-        <section className="sim-meters sm-grid" aria-label="Indicators">{scene.meters.map((m) => <MeterBar key={m.id} m={m} />)}</section>
+        <section className="sim-meters sm-grid" aria-label="Indicators">{scene.meters.map((m) => <MeterBar key={m.id} m={m} delta={deltas?.[m.id]} />)}</section>
       </aside>
       <div className="bh-main">{decision}</div>
     </div>

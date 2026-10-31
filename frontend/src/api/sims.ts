@@ -12,7 +12,7 @@ export interface Meter { id: string; label: string; value: number; good: "high" 
 export interface Choice { id: string; label: string; summary: string; available: boolean; reason: string }
 export interface Step {
   id: string; title: string; clock: string; kind: "documented" | "hypothetical" | "simulation" | "workday"; brief: string; question: string;
-  facts: string[]; choices: Choice[]; part: string; scene: string; sources: string[];
+  facts: string[]; choices: Choice[]; part: string; scene: string; sources: string[]; voice?: { name: string; role: string; line: string } | null;
 }
 export interface SimEvent { event_id: string; title: string; text: string; kind: string; round: number; changes: Record<string, number[]> }
 export interface Scene {

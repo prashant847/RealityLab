@@ -87,7 +87,7 @@ export function PlantSchematic({ scene }: { scene: Scene }) {
   );
 }
 
-export function BhopalStage({ scene, decision }: { scene: Scene; decision: ReactNode }) {
+export function BhopalStage({ scene, decision, deltas }: { scene: Scene; decision: ReactNode; deltas?: Record<string, number> }) {
   const historical = !scene.step || scene.step.kind === "documented";
   const meters = scene.meters.filter((m) => (historical ? m.id === "insight" : m.id !== "insight"));
   const n = scene.status === "completed" ? scene.total_rounds : scene.round;
@@ -104,7 +104,7 @@ export function BhopalStage({ scene, decision }: { scene: Scene; decision: React
         {record && <p className="bh-legend"><span className="hist" /> Historical record <span className="fict" /> Fictional exercise</p>}
         <PlantSchematic scene={scene} />
         <section className="sim-meters sm-grid" aria-label="Indicators">
-          {meters.map((m) => <MeterBar key={m.id} m={m} />)}
+          {meters.map((m) => <MeterBar key={m.id} m={m} delta={deltas?.[m.id]} />)}
         </section>
       </aside>
       <div className="bh-main">{decision}</div>

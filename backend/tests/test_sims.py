@@ -297,3 +297,18 @@ def test_the_student_records_their_own_career_choice(db_url):
     with TestClient(create_app(db_url)) as c2:                                               # survives a restart
         assert c2.get("/api/careers").json()["choice"]["career"] == "bhopal"
         assert c2.put("/api/career-choice", json={"career": ""}).json() is None            # and can be cleared
+
+
+def test_every_playable_step_has_a_voice_and_it_reaches_the_scene(db_url):
+    from app.sims.registry import SCENARIOS
+    for sid, sc in SCENARIOS.items():
+        for r in sc.rounds:
+            if r.kind != "documented":                       # the historical record has no invented dialogue
+                assert r.voice and len(r.voice) == 3 and all(r.voice), (sid, r.id)
+            else:
+                assert not r.voice, (sid, r.id)
+    with TestClient(create_app(db_url)) as c:
+        v = c.post("/api/sims/covid_workday/runs").json()
+        assert v["scene"]["step"]["voice"]["name"] == "Sister Anita Das"
+        h = c.post("/api/sims/bhopal/runs").json()                   # Part 1 is documented history: nobody is quoted
+        assert h["scene"]["step"]["voice"] is None

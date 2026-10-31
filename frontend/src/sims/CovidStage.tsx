@@ -45,13 +45,13 @@ function WardBoard({ scene }: { scene: Scene }) {
   );
 }
 
-export function CovidStage({ scene, decision, log = [] }: { scene: Scene; decision: ReactNode; log?: { title: string; label: string; rating: string }[] }) {
+export function CovidStage({ scene, decision, log = [], deltas }: { scene: Scene; decision: ReactNode; deltas?: Record<string, number>; log?: { title: string; label: string; rating: string }[] }) {
   return (
     <div className="cv-layout">
       <aside className="cv-aside">
         <WardBoard scene={scene} />
         <section className="sim-meters sm-grid" aria-label="Indicators">
-          {scene.meters.map((m) => <MeterBar key={m.id} m={m} />)}
+          {scene.meters.map((m) => <MeterBar key={m.id} m={m} delta={deltas?.[m.id]} />)}
         </section>
         <section className="cv-log" aria-label="Shift log">
           <h3>Shift log</h3>

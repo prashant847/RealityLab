@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CareersView, Career, CareerPhase, Intro, PrepItem, LibraryItem, Outcome, RunView, SimReport, SimsApi } from "../api/sims";
 import { Shell } from "./Shell";
+import { achievements, upNext } from "./achievements";
+import { WELCOME_KEY } from "./Welcome";
 
 const item = (id: LibraryItem["id"], over: Partial<LibraryItem> = {}): LibraryItem => ({
   id, title: { blackout: "BLACKOUT: The NotPetya Incident", bhopal: "Bhopal: Industrial Safety", covid: "COVID-era Hospital" }[id], tagline: "tag", role: "role",
@@ -12,7 +14,7 @@ const meters = [{ id: "insight", label: "Understanding of the record", value: 20
 const view = (n: number, status = "active"): RunView => ({
   run: { id: "r1", sim_id: "covid", status, attempt: 1 }, scenario: { id: "covid", title: "COVID-era Hospital", role: "Lead", disclaimer: "d" },
   scene: { meters, flags: [], round: n, total_rounds: 2, status: status === "active" ? "active" : "completed",
-    step: { id: "c1", title: `Step ${n} title`, clock: "Day 3", kind: "hypothetical", brief: "brief", question: "What do you do?", facts: ["a fact"], part: "", scene: "triage", sources: [],
+    step: { id: "c1", title: `Step ${n} title`, clock: "Day 3", kind: "hypothetical", brief: "brief", question: "What do you do?", facts: ["a fact"], part: "", scene: "triage", sources: [], voice: { name: "Sister Anita Das", role: "Ward nurse lead", line: "Two of them worried me last night." },
       choices: [{ id: "c1_strong", label: "Structured plan", summary: "", available: true, reason: "" }, { id: "c1_weak", label: "Wing it", summary: "", available: true, reason: "" }] } },
   decisions: [],
 });
@@ -51,7 +53,7 @@ function fake(over: Partial<SimsApi> = {}): SimsApi {
   };
 }
 
-beforeEach(() => { window.location.hash = ""; document.documentElement.removeAttribute("data-large-text"); });
+beforeEach(() => { try { localStorage.setItem(WELCOME_KEY, "1"); } catch { /* ignore */ } window.location.hash = ""; document.documentElement.removeAttribute("data-large-text"); });
 
 describe("library", () => {
   it("lists the three simulations with progress and the right action", async () => {
@@ -241,5 +243,85 @@ describe("workday, crisis and career comparison", () => {
     await userEvent.click(screen.getByRole("tab", { name: "Skills required" }));
     expect(screen.getAllByRole("img", { name: "5 out of 5" }).length).toBeGreaterThan(0);
     expect(screen.getByRole("note")).toHaveTextContent("not career advice");
+  });
+});
+
+
+describe("polish: welcome, keyboard play, voices, feedback, milestones", () => {
+  it("shows a short welcome tour on first launch, saves the name, and never again", async () => {
+    localStorage.removeItem(WELCOME_KEY);
+    const api = fake();
+    const { unmount } = render(<Shell api={api} />);
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByRole("heading", { name: /Experience your future/ })).toBeInTheDocument();
+    await userEvent.type(within(dialog).getByLabelText(/What should we call you/), "Asha");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Next" }));
+    expect(within(dialog).getByRole("heading", { name: /Every job has two sides/ })).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole("button", { name: "Next" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Let's begin" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(api.saveProfile).toHaveBeenCalledWith({ name: "Asha" });
+    expect(localStorage.getItem(WELCOME_KEY)).toBe("1");
+    unmount();
+    render(<Shell api={fake()} />);
+    await screen.findAllByRole("article");
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+  it("can be skipped with Escape", async () => {
+    localStorage.removeItem(WELCOME_KEY);
+    render(<Shell api={fake()} />);
+    await screen.findByRole("dialog");
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+  it("a step has a voice, and can be played from the keyboard (A-C to choose, Enter to confirm, Enter to continue)", async () => {
+    window.location.hash = "#/crisis/covid";
+    const api = fake();
+    render(<Shell api={api} />);
+    await userEvent.click(await screen.findByRole("button", { name: "Begin" }));
+    expect(await screen.findByText(/Two of them worried me last night/)).toBeInTheDocument();
+    expect(screen.getByText("Ward nurse lead", { exact: false })).toBeInTheDocument();
+    await userEvent.keyboard("{Enter}");                                   // situation -> decision
+    expect(screen.getByRole("button", { name: "Confirm decision" })).toBeDisabled();
+    await userEvent.keyboard("a");
+    expect(screen.getByRole("radio", { name: /Structured plan/ })).toBeChecked();
+    await userEvent.keyboard("b");
+    expect(screen.getByRole("radio", { name: /Wing it/ })).toBeChecked();
+    await userEvent.keyboard("a{Enter}");
+    expect(api.decide).toHaveBeenCalledWith("r1", "c1_strong");
+    expect(await screen.findByText("It went well.")).toBeInTheDocument();
+    await userEvent.keyboard("{Enter}");                                   // outcome -> next step
+    expect(await screen.findByRole("heading", { name: "Step 2 title" })).toBeInTheDocument();
+  });
+  it("shows what a decision changed as a +/- badge on the meter", async () => {
+    window.location.hash = "#/crisis/covid";
+    render(<Shell api={fake()} />);
+    await userEvent.click(await screen.findByRole("button", { name: "Begin" }));
+    await userEvent.click(await screen.findByRole("button", { name: /make your decision/i }));
+    await userEvent.click(screen.getByLabelText(/structured plan/i));
+    await userEvent.click(screen.getByRole("button", { name: "Confirm decision" }));
+    expect(await screen.findByLabelText("changed by 5")).toHaveTextContent("+5");
+  });
+  it("home suggests the next step and counts milestones; the journey lists them", async () => {
+    render(<Shell api={fake()} />);
+    const next = await screen.findByRole("button", { name: /Up next/ });
+    expect(next).toHaveTextContent("Continue the crisis");
+    expect(screen.getByText("milestones")).toBeInTheDocument();
+    window.location.hash = "#/journey";
+    expect(await screen.findByRole("region", { name: "Milestones" })).toHaveTextContent("First day on the job");
+  });
+  it("milestones are worked out from real progress, and up-next follows the sensible order", () => {
+    const none = careersView.careers.map((c) => career(c.id, c.title, null, null));
+    const lib = [item("blackout"), item("bhopal"), item("covid")];
+    expect(achievements(none, lib, null).filter((b) => b.earned)).toHaveLength(0);
+    const earned = achievements(careersView.careers, lib, { career: "covid", reason: "", updated_at: "" }).filter((b) => b.earned).map((b) => b.id);
+    expect(earned).toEqual(expect.arrayContaining(["first_day", "both_sides", "explorer", "comparer", "decider", "reflective"]));
+    expect(upNext(lib, none, null)).toMatchObject({ label: "Start with a normal day", to: "#/workday/blackout" });
+    const wd = (status: "completed" | "active") => ({ id: "x_workday", title: "d", tagline: "t", minutes: 15, rounds: 7, status });
+    expect(upNext([item("blackout", { workday: wd("active") })], none, null)).toMatchObject({ label: "Continue the day" });
+    expect(upNext([item("bhopal", { workday: wd("completed") })], none, null)).toMatchObject({ label: "Begin the crisis", to: "#/crisis/bhopal" });
+    const all = lib.map((l) => ({ ...l, status: "completed" as const, workday: wd("completed") }));
+    expect(upNext(all, careersView.careers, null)).toMatchObject({ label: "Compare how you did", to: "#/compare" });
+    expect(upNext(all, careersView.careers, { career: "covid", reason: "", updated_at: "" })).toBeNull();
   });
 });

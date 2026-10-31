@@ -54,6 +54,7 @@ class Round:
     part: str = ""               # e.g. "Part 1 · The historical record"
     scene: str = ""              # name of the scene the frontend draws
     sources: tuple[str, ...] = ()
+    voice: tuple[str, ...] = ()   # (name, role, line): who is in the room and what they say
 
 
 @dataclass(frozen=True)
@@ -223,7 +224,8 @@ def scene_view(sc: Scenario, st: dict[str, Any]) -> dict[str, Any]:
         ok, why = availability(st, c)
         choices.append({"id": c.id, "label": c.label, "summary": c.summary, "available": ok, "reason": why})
     return {**base, "step": {"id": r.id, "title": r.title, "clock": r.clock, "kind": r.kind, "brief": r.brief, "question": r.question,
-                             "facts": list(r.facts), "choices": choices, "part": r.part, "scene": r.scene, "sources": list(r.sources)},
+                             "facts": list(r.facts), "choices": choices, "part": r.part, "scene": r.scene, "sources": list(r.sources),
+                             "voice": {"name": r.voice[0], "role": r.voice[1], "line": r.voice[2]} if r.voice else None},
             "events": st.get("round_events", [])}
 
 
