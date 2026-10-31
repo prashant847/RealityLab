@@ -88,7 +88,7 @@ describe("player", () => {
     localStorage.removeItem("rl.comic.r1.c1");
     const { unmount } = render(<Shell api={api} />);
     await userEvent.click(await screen.findByRole("button", { name: "Begin" }));
-    expect(await screen.findByRole("group", { name: /Page 1 of 4/ })).toBeInTheDocument();     // the comic comes first
+    expect(await screen.findByRole("group", { name: /Page 1 of 3/ })).toBeInTheDocument();     // the comic comes first
     expect(screen.queryByRole("heading", { name: "Step 1 title" })).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Skip the comic" }));
     expect(await screen.findByRole("heading", { name: "Step 1 title" })).toBeInTheDocument();    // then the step, as before
@@ -289,8 +289,7 @@ describe("polish: welcome, keyboard play, voices, feedback, milestones", () => {
     await screen.findAllByRole("article");
     expect(screen.queryByRole("dialog")).toBeNull();
   });
-  it("COVID Round 1 shows the illustrated sequence when its pictures are shipped, then the original decision", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, headers: { get: () => "image/jpeg" } })));
+  it("COVID Round 1 opens with its comic, then the original decision", async () => {
     window.location.hash = "#/crisis/covid";
     const first = view(1);
     first.run = { ...first.run, id: "r-gn" };
@@ -299,9 +298,9 @@ describe("polish: welcome, keyboard play, voices, feedback, milestones", () => {
     const api = fake({ start: vi.fn().mockResolvedValue(first), current: vi.fn().mockResolvedValue(null) });
     const { container } = render(<Shell api={api} />);
     await userEvent.click(await screen.findByRole("button", { name: "Begin" }));
-    expect(await screen.findByRole("group", { name: /Page 1 of 5/ })).toBeInTheDocument();         // five illustrated pages
-    expect(container.querySelector("svg.ck-page image")!.getAttribute("href")).toBe("/comic/round1/p1.jpg");
-    await userEvent.click(screen.getByRole("button", { name: "Page 5" }));
+    expect(await screen.findByRole("group", { name: /Page 1 of 3/ })).toBeInTheDocument();         // three comic pages
+    expect(container.querySelectorAll("svg.ck-page clipPath").length).toBeGreaterThanOrEqual(3);      // several panels on the page
+    await userEvent.click(screen.getByRole("button", { name: "Page 3" }));
     await userEvent.click(screen.getByRole("button", { name: "Make your decision →" }));
     expect(await screen.findByRole("heading", { name: "Step 1 title" })).toBeInTheDocument();      // the original step, unchanged
     await userEvent.click(screen.getByRole("button", { name: /make your decision/i }));

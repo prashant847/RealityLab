@@ -38,8 +38,8 @@ const POSES: Record<Pose, { l: [number, number][]; r: [number, number][]; legs: 
   wave:      { l: [[-30, -86], [-44, -40]], r: [[44, -126], [64, -178]], legs: [[[-16, 60], [-24, 120]], [[16, 60], [24, 120]]] },
 };
 
-export type Outfit = "none" | "scrubs" | "nurse" | "coat" | "gown" | "hoodie";
-export type Hat = "none" | "scrub-cap" | "nurse-cap" | "grey-hair" | "mask-only";
+export type Outfit = "none" | "scrubs" | "nurse" | "coat" | "gown" | "hoodie" | "tee" | "vest" | "jacket";
+export type Hat = "none" | "scrub-cap" | "nurse-cap" | "grey-hair" | "mask-only" | "beanie" | "cap" | "hard-hat";
 
 const line = (pts: [number, number][], w = 7) => <polyline points={pts.map((p) => p.join(",")).join(" ")} fill="none" stroke={INK} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" />;
 
@@ -64,11 +64,11 @@ function Face({ mouth, look = 0, sweat = false, mask = false }: { mouth: Mouth; 
 }
 
 /** One stickman. (x, y) is the hip; the figure stands about 290 units tall at scale 1. */
-export function Stick({ x, y, s = 1, flip = false, pose = "stand", mouth = "flat", look = 0, outfit = "none", hat = "none", sweat = false, mask = false, tilt = 0, color = "#fff", extra }: {
-  x: number; y: number; s?: number; flip?: boolean; pose?: Pose; mouth?: Mouth; look?: number; outfit?: Outfit; hat?: Hat; sweat?: boolean; mask?: boolean; tilt?: number; color?: string; extra?: ReactNode;
+export function Stick({ x, y, s = 1, flip = false, pose = "stand", mouth = "flat", look = 0, outfit = "none", hat = "none", sweat = false, mask = false, tilt = 0, color = "#fff", shirtColor, extra }: {
+  x: number; y: number; s?: number; flip?: boolean; pose?: Pose; mouth?: Mouth; look?: number; outfit?: Outfit; hat?: Hat; sweat?: boolean; mask?: boolean; tilt?: number; color?: string; shirtColor?: string; extra?: ReactNode;
 }) {
   const P = POSES[pose];
-  const shirt = outfit === "scrubs" ? "#2bb3a3" : outfit === "nurse" ? "#5aa7e0" : outfit === "coat" ? "#f4f4f0" : outfit === "gown" ? "#bcd8ea" : outfit === "hoodie" ? "#f5c518" : null;
+  const shirt = shirtColor ?? (outfit === "scrubs" ? "#2bb3a3" : outfit === "nurse" ? "#5aa7e0" : outfit === "coat" ? "#f4f4f0" : outfit === "gown" ? "#bcd8ea" : outfit === "hoodie" ? "#f5c518" : outfit === "vest" ? "#f2e03a" : outfit === "jacket" ? "#8a5a3c" : outfit === "tee" ? "#d96a5a" : null);
   const lower = outfit === "coat" ? 96 : outfit === "gown" ? 70 : 8;
   return (
     <g transform={`translate(${x} ${y}) scale(${flip ? -s : s} ${s})`}>
@@ -88,6 +88,7 @@ export function Stick({ x, y, s = 1, flip = false, pose = "stand", mouth = "flat
             {outfit === "nurse" && <path d="M-26 -60 H26 L24 -10 H-24Z" fill="#fff" stroke={INK} strokeWidth="3.4" strokeLinejoin="round" />}
             {outfit === "coat" && <path d="M0 -118 V90M-8 -112 L0 -84 L8 -112" fill="none" stroke={INK} strokeWidth="3.4" />}
             {outfit === "hoodie" && <path d="M-24 -114 Q0 -90 24 -114" fill="none" stroke={INK} strokeWidth="3.6" />}
+            {outfit === "vest" && <path d={`M-26 -80H26M-26 -50H26`} stroke="#e8e8e8" strokeWidth="7" />}
           </g>)}
         {/* the round white head */}
         <g transform="translate(0 -170)">
@@ -95,6 +96,9 @@ export function Stick({ x, y, s = 1, flip = false, pose = "stand", mouth = "flat
           <path d="M-36 20 Q-14 46 26 40" fill="none" stroke={INK} strokeWidth="2" opacity="0" />
           {hat === "scrub-cap" && <path d="M-47 -8 Q-44 -58 0 -56 Q44 -58 47 -8 Q0 -26 -47 -8Z" fill="#2bb3a3" stroke={INK} strokeWidth="4.6" strokeLinejoin="round" />}
           {hat === "nurse-cap" && <g><path d="M-30 -36 L-24 -66 L24 -66 L30 -36Z" fill="#fff" stroke={INK} strokeWidth="4.2" strokeLinejoin="round" /><path d="M-5 -62V-42M-12 -52H2" stroke="#e53935" strokeWidth="5" /></g>}
+          {hat === "beanie" && <g><path d="M-47 -10 Q-46 -62 0 -60 Q46 -62 47 -10 Q0 -28 -47 -10Z" fill="#7b4fc4" stroke={INK} strokeWidth="4.6" strokeLinejoin="round" /><circle cx="0" cy="-62" r="9" fill="#7b4fc4" stroke={INK} strokeWidth="3.6" /></g>}
+          {hat === "cap" && <g><path d="M-46 -8 Q-44 -54 0 -52 Q44 -54 46 -8 Q0 -22 -46 -8Z" fill="#d8402f" stroke={INK} strokeWidth="4.6" strokeLinejoin="round" /><path d="M-6 -16 Q40 -10 62 -18 Q50 -2 -6 -6Z" fill="#b8301f" stroke={INK} strokeWidth="3.6" strokeLinejoin="round" /></g>}
+          {hat === "hard-hat" && <g><path d="M-48 -6 Q-46 -62 0 -62 Q46 -62 48 -6Z" fill="#f2b21a" stroke={INK} strokeWidth="4.6" strokeLinejoin="round" /><rect x="-54" y="-8" width="108" height="9" rx="4" fill="#f2b21a" stroke={INK} strokeWidth="3.6" /></g>}
           {hat === "grey-hair" && <><path d="M-48 -4 Q-52 -40 -34 -38 Q-40 -10 -44 8Z" fill="#cfd2d6" stroke={INK} strokeWidth="3.4" /><path d="M48 -4 Q52 -40 34 -38 Q40 -10 44 8Z" fill="#cfd2d6" stroke={INK} strokeWidth="3.4" /><path d="M-26 -44 Q0 -62 26 -44" fill="none" stroke={INK} strokeWidth="3.4" /></>}
           <Face mouth={mouth} look={look} sweat={sweat} mask={mask} />
           {outfit === "coat" && <g fill="none" stroke={INK} strokeWidth="3.6"><circle cx="-14" cy="-6" r="12" /><circle cx="14" cy="-6" r="12" /><path d="M-2 -8 H2" /></g>}
