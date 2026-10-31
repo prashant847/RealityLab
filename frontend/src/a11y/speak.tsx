@@ -1,23 +1,67 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { getA11y, useA11y } from "./a11y";
 
-export const canSpeak = (): boolean => typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
+const browserVoice = (): boolean => typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
+export const canSpeak = (): boolean => browserVoice() || naturalVoices.length > 0;
+
+// The natural voice (Piper) runs on this computer; the app asks once which voices are installed. Without it the computer's own voice is used.
+let naturalVoices: string[] = [];
+let naturalChecked: Promise<void> | null = null;
+const checkNatural = (): Promise<void> => naturalChecked ??= (typeof fetch === "function"
+  ? fetch("/api/tts/status").then((r) => (r.ok ? r.json() : { voices: [] })).then((j: { voices?: string[] }) => { naturalVoices = j.voices ?? []; }).catch(() => { naturalVoices = []; })
+  : Promise.resolve());
+export const naturalVoiceReady = async (): Promise<boolean> => { await checkNatural(); return naturalVoices.length > 0; };
+void checkNatural();
 
 let speaking = false;
+let session = 0;
+let player: HTMLAudioElement | null = null;
 const listeners = new Set<() => void>();
 const set = (v: boolean) => { speaking = v; listeners.forEach((l) => l()); };
 export const useSpeaking = (): boolean => useSyncExternalStore((l) => { listeners.add(l); return () => listeners.delete(l); }, () => speaking, () => speaking);
 
-export function stopSpeaking(): void { if (canSpeak()) window.speechSynthesis.cancel(); set(false); }
+export function stopSpeaking(): void {
+  session++;
+  if (player) { player.pause(); player = null; }
+  if (browserVoice()) window.speechSynthesis.cancel();
+  set(false);
+}
 
-/** Speaks text with the computer's own voice. A short pause after cancelling avoids the browser dropping the new speech. */
-export function speak(text: string): void {
-  if (!canSpeak() || !text.trim()) return;
+/** Splits text into sentence-sized pieces so speech can start after the first one. */
+export function chunkText(text: string, max = 260): string[] {
+  const out: string[] = [];
+  let cur = "";
+  for (const sentence of text.replace(/\s+/g, " ").trim().match(/[^.!?]+[.!?]+["')\]]*\s*|[^.!?]+$/g) ?? []) {
+    if (cur && cur.length + sentence.length > max) { out.push(cur.trim()); cur = ""; }
+    cur += sentence;
+    while (cur.length > max) { const i = cur.lastIndexOf(" ", max); const cut = i > 40 ? i : max; out.push(cur.slice(0, cut).trim()); cur = cur.slice(cut); }
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out;
+}
+
+async function fetchPiece(text: string, voice: string, rate: number): Promise<string> {
+  const r = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, voice, rate }) });
+  if (!r.ok) throw new Error(`speech ${r.status}`);
+  return URL.createObjectURL(await r.blob());
+}
+
+const playUrl = (url: string, mine: number): Promise<void> => new Promise((resolve, reject) => {
+  const el = new Audio(url);
+  player = el;
+  const done = () => { URL.revokeObjectURL(url); if (player === el) player = null; };
+  el.onended = () => { done(); resolve(); };
+  el.onerror = () => { done(); reject(new Error("playback failed")); };
+  el.onpause = () => { if (session !== mine) { done(); resolve(); } };
+  el.play().catch((e) => { done(); reject(e); });
+});
+
+function speakWithBrowser(text: string): void {
+  if (!browserVoice()) { set(false); return; }
   const synth = window.speechSynthesis;
   synth.cancel();
-  const clean = text.replace(/\s+/g, " ").trim().slice(0, 6000);
   const say = () => {
-    const u = new SpeechSynthesisUtterance(clean);
+    const u = new SpeechSynthesisUtterance(text);
     u.rate = getA11y().speechRate;
     const v = synth.getVoices?.() ?? [];
     const en = v.find((x) => /^en/i.test(x.lang));
@@ -25,7 +69,32 @@ export function speak(text: string): void {
     u.onstart = () => set(true); u.onend = () => set(false); u.onerror = () => set(false);
     synth.speak(u);
   };
-  setTimeout(say, 80);
+  setTimeout(say, 80);                                                 // a short pause after cancelling avoids the browser dropping the new speech
+}
+
+/** Speaks text with the natural offline voice, one sentence group at a time (the next is prepared while one plays); falls back to the computer's voice. */
+export function speak(text: string): void {
+  const clean = text.replace(/\s+/g, " ").trim().slice(0, 8000);
+  if (!clean) return;
+  stopSpeaking();
+  const mine = session;
+  set(true);
+  void (async () => {
+    if (!(await naturalVoiceReady()) || session !== mine) { if (session === mine) speakWithBrowser(clean); return; }
+    const { voice, speechRate } = getA11y();
+    const pieces = chunkText(clean);
+    let next = fetchPiece(pieces[0], voice, speechRate);
+    for (let i = 0; i < pieces.length; i++) {
+      let url: string;
+      try { url = await next; } catch { if (session === mine) speakWithBrowser(pieces.slice(i).join(" ")); return; }
+      if (session !== mine) { URL.revokeObjectURL(url); return; }
+      next = i + 1 < pieces.length ? fetchPiece(pieces[i + 1], voice, speechRate) : Promise.resolve("");
+      next.catch(() => undefined);
+      try { await playUrl(url, mine); } catch { if (session === mine) speakWithBrowser(pieces.slice(i).join(" ")); return; }
+      if (session !== mine) return;
+    }
+    set(false);
+  })();
 }
 
 // the screen can say what is worth reading; otherwise the whole main area is read

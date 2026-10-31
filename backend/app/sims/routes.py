@@ -3,6 +3,9 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 
+from fastapi import HTTPException, Response
+
+from . import tts
 from .service import SimsService
 
 router = APIRouter(prefix="/api")
@@ -29,6 +32,12 @@ class ReflectionBody(BaseModel):
 class ChoiceBody(BaseModel):
     career: str = Field("", max_length=32)            # empty clears the choice
     reason: str = Field("", max_length=600)
+
+
+class TtsBody(BaseModel):
+    text: str = Field(min_length=1, max_length=tts.MAX_CHARS)
+    voice: str = Field("female", pattern="^(female|male)$")
+    rate: float = Field(1.0, ge=0.5, le=2.0)
 
 
 class ProfileBody(BaseModel):
@@ -115,3 +124,19 @@ def get_choice(s: SimsService = S):
 @router.put("/career-choice", summary="Record the student's own choice (it is not computed or recommended by the app)")
 def put_choice(body: ChoiceBody, s: SimsService = S):
     return s.save_choice(body.career, body.reason)
+
+
+@router.get("/tts/status", summary="Which natural read-aloud voices are installed on this computer")
+def tts_status() -> dict:
+    return {"voices": tts.available_voices()}
+
+
+@router.post("/tts", summary="Speak text with the offline natural voice (WAV)", response_class=Response)
+def tts_speak(body: TtsBody) -> Response:
+    try:
+        wav = tts.synthesize(body.text, body.voice, body.rate)
+    except LookupError:
+        raise HTTPException(404, "natural voice not installed")
+    except (RuntimeError, ValueError):
+        raise HTTPException(502, "speech failed")
+    return Response(wav, media_type="audio/wav", headers={"Cache-Control": "private, max-age=3600"})

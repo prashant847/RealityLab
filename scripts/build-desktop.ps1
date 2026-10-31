@@ -17,6 +17,8 @@ function Run($exe, $argList, $dir) {
 $py = Join-Path $root "backend\.venv\Scripts\python.exe"
 if (-not (Test-Path $py)) { throw "backend\.venv not found. Run: python -m venv backend\.venv; backend\.venv\Scripts\pip install -r backend\requirements.txt" }
 
+if (-not (Test-Path "$root\desktop\voice\piper\piper.exe")) { Step "Natural read-aloud voice (one-time download)"; & powershell -NoProfile -ExecutionPolicy Bypass -File "$root\scripts\get-voice.ps1"; if ($LASTEXITCODE -ne 0) { throw "Voice download failed" } }
+
 Step "1/3 Frontend"
 if (-not (Test-Path "$root\frontend\node_modules")) { Run "npm.cmd" @("ci") "$root\frontend" }
 if (-not $SkipTests) {

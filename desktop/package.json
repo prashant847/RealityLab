@@ -37,6 +37,10 @@
       {
         "from": "../frontend/dist",
         "to": "frontend"
+      },
+      {
+        "from": "voice",
+        "to": "voice"
       }
     ],
     "win": {

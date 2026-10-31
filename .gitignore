@@ -21,3 +21,4 @@ desktop/.cache/
 desktop/build/
 desktop/installer*/
 desktop/release*/
+desktop/voice/

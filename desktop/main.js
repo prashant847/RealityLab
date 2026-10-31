@@ -51,9 +51,11 @@ function startServer(port) {
   let cmd, args, cwd;
   if (packaged) {
     env.REALITYLAB_FRONTEND = path.join(process.resourcesPath, "frontend");
+    env.REALITYLAB_VOICE_DIR = path.join(process.resourcesPath, "voice");
     cmd = path.join(process.resourcesPath, "backend", "realitylab-server.exe"); args = ["--port", String(port)]; cwd = path.dirname(cmd);
   } else {                                                      // development: run from the source tree
     env.REALITYLAB_FRONTEND = process.env.REALITYLAB_FRONTEND || path.join(root, "frontend", "dist");
+    env.REALITYLAB_VOICE_DIR = process.env.REALITYLAB_VOICE_DIR || path.join(__dirname, "voice");
     cwd = path.join(root, "backend");
     cmd = path.join(cwd, ".venv", "Scripts", "python.exe"); args = ["-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", String(port)];
   }

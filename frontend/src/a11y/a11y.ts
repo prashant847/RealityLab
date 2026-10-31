@@ -9,10 +9,11 @@ export interface A11y {
   bigTargets: boolean;                            // larger buttons, with more room between them
   readAloud: boolean;                             // show "Read aloud" buttons
   speechRate: number;                             // 0.6 to 1.4
+  voice: "female" | "male";                       // which natural voice reads aloud
 }
 export const A11Y_KEY = "rl.a11y";
 export const TEXT_SIZES = [100, 125, 150, 175, 200] as const;
-const DEFAULTS: A11y = { textSize: 100, contrast: "normal", colorblind: false, easyFont: false, bigTargets: false, readAloud: false, speechRate: 1 };
+const DEFAULTS: A11y = { textSize: 100, contrast: "normal", colorblind: false, easyFont: false, bigTargets: false, readAloud: false, speechRate: 1, voice: "female" };
 
 function load(): A11y {
   try {
@@ -21,6 +22,7 @@ function load(): A11y {
       textSize: (TEXT_SIZES as readonly number[]).includes(r.textSize as number) ? (r.textSize as A11y["textSize"]) : 100,
       contrast: r.contrast === "high" ? "high" : "normal", colorblind: r.colorblind === true, easyFont: r.easyFont === true, bigTargets: r.bigTargets === true,
       readAloud: r.readAloud === true, speechRate: typeof r.speechRate === "number" ? Math.max(0.6, Math.min(1.4, r.speechRate)) : 1,
+      voice: r.voice === "male" ? "male" : "female",
     };
   } catch { /* unreadable: defaults */ }
   return { ...DEFAULTS };
