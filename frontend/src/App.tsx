@@ -52,11 +52,11 @@ function Game({ api }: { api: GameApi }) {
   if (g.booting) return <div className="splash" role="status">Resuming your simulation…</div>;
   if (!view) {
     return (
-      <>
+      <div className="bo-game">
         {g.problem && <ErrorBanner problem={g.problem} onDismiss={g.dismissProblem} />}
-        <StartScreen onStart={(seed) => void g.start(seed)} busy={g.busy !== null} notice={g.notice} />
+        <div className="bo-body"><StartScreen onStart={(seed) => void g.start(seed)} busy={g.busy !== null} notice={g.notice} /></div>
         <BusyToast label={g.busy} />
-      </>
+      </div>
     );
   }
 
@@ -92,7 +92,7 @@ function Game({ api }: { api: GameApi }) {
   }
 
   return (
-    <div className={paused ? "is-paused" : undefined}>
+    <div className={`bo-game${paused ? " is-paused" : ""}`}>
       <Topbar clock={view.scene.clock} round={view.scene.round} attempt={view.run.attempt} kind={view.run.kind}
         rewindsLeft={view.simulation.rewinds_left} paused={paused} onPause={() => setPaused(true)}
         onHistory={() => setShowHistory(true)} onLeave={leave} />
@@ -101,7 +101,7 @@ function Game({ api }: { api: GameApi }) {
       <div className="sr-only" role="status" aria-live="polite">
         {view.scene.title ? `Round ${view.scene.round}: ${view.scene.title}` : ""}
       </div>
-      {paused ? <div aria-hidden="true" className="paused-veil" /> : body}
+      <div className="bo-body">{paused ? <div aria-hidden="true" className="paused-veil" /> : body}</div>
       {paused && <PauseOverlay onResume={() => setPaused(false)} onHistory={() => { setPaused(false); setShowHistory(true); }} onLeave={leave} />}
       <BusyToast label={g.busy} />
     </div>

@@ -74,8 +74,8 @@ export function ScoreReport({ report }: { report: Report }) {
         </section>
       )}
 
-      <details className="report-more">
-        <summary>Full report: score breakdown, every decision, losses and alternatives</summary>
+      <div className="report-more">
+        <h3 className="report-more-h">Full report: score breakdown, every decision, losses and alternatives</h3>
       <div className="card" role="region" aria-labelledby="cat-h">
         <h3 id="cat-h">Scores by category</h3>
         {report.categories.map((c) => (
@@ -160,7 +160,7 @@ export function ScoreReport({ report }: { report: Report }) {
           You verified {report.reveal.verified_units}, so {report.reveal.existing_but_unverified} lots that did exist were never confirmed and could not ship safely.</p>
         <p className="muted">{report.reveal.note}</p>
       </section>
-      </details>
+      </div>
     </section>
   );
 }

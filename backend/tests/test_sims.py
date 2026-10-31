@@ -168,3 +168,11 @@ def test_skill_points_never_reward_a_weaker_choice(sc):
         for s in {k for c in r.choices for k in c.skills}:
             v = [next(c for c in r.choices if c.rating == k).skills.get(s, 0) for k in ("strong", "mixed", "weak")]
             assert v[0] >= v[1] >= v[2] and v[0] > v[2], (r.id, s, v)
+
+
+def test_blackout_current_points_at_the_unfinished_game(db_url):
+    with TestClient(create_app(db_url)) as c:
+        assert c.get("/api/blackout/current").json() == {"simulation_id": None}
+        sim_id = c.post("/api/simulations", json={}).json()["simulation"]["id"]
+    with TestClient(create_app(db_url)) as c2:          # a restart: no browser storage involved
+        assert c2.get("/api/blackout/current").json() == {"simulation_id": sim_id}

@@ -46,7 +46,7 @@ export function PlantSchematic({ scene }: { scene: Scene }) {
   const sky = night ? ["#05080f", "#141c28"] : ["#1a2433", "#3a3f48"];
   return (
     <figure className="bh-fig">
-      <svg viewBox="0 0 560 430" role="img" aria-label={alt} preserveAspectRatio="xMidYMid meet">
+      <svg viewBox="0 0 560 430" role="img" aria-label={alt} preserveAspectRatio="xMidYMid slice">
         <defs>
           <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={sky[0]} /><stop offset="1" stopColor={sky[1]} /></linearGradient>
           <radialGradient id="glow"><stop offset="0" stopColor="#e0a43a" stopOpacity=".55" /><stop offset="1" stopColor="#e0a43a" stopOpacity="0" /></radialGradient>

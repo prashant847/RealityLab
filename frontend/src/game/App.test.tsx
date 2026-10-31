@@ -55,6 +55,9 @@ const choose = async (label: RegExp) => {
   await userEvent.click(screen.getByRole("button", { name: /Commit decision|Confirm decision/ }));
 };
 
+/** The scene keeps decide / situation / team / status in tabs on the right; open one by name. */
+const tab = (name: string) => userEvent.click(screen.getByRole("tab", { name: new RegExp(`^${name}`) }));
+
 beforeEach(() => { localStorage.clear(); window.location.hash = ""; Element.prototype.scrollIntoView = vi.fn(); });
 
 describe("starting and playing", () => {
@@ -66,8 +69,9 @@ describe("starting and playing", () => {
     expect(await screen.findByRole("heading", { name: "THE SCREENS GO DARK" })).toBeInTheDocument();
     expect(calls).toEqual(["create"]);
     expect(localStorage.getItem(KEY)).toBe(roundViews[0].simulation.id);
-    expect(screen.getByRole("meter", { name: "Recovery effort" })).toHaveAttribute("aria-valuetext", "12.0 points");
     expect(screen.getAllByRole("radio")).toHaveLength(3);
+    await tab("Status");
+    expect(screen.getByRole("meter", { name: "Recovery effort" })).toHaveAttribute("aria-valuetext", "12.0 points");
   });
 
   it("passes a validated fixed seed and rejects an invalid one", async () => {
@@ -113,7 +117,14 @@ describe("starting and playing", () => {
       await userEvent.click(screen.getByRole("button", { name: /Commit decision|Confirm decision/ }));
       const cont = await screen.findByRole("button", { name: /Continue|See/ });
       if (k === idx) {
-        expect(screen.getByRole("region", { name: "Consequences" })).toHaveTextContent(withEvent.outcome!.events[0].title);
+        // the consequence panels are shown one at a time; page forward until the event's panel appears
+        const region = screen.getByRole("region", { name: "Consequences" });
+        for (let n = 0; n < 8 && !region.textContent!.includes(withEvent.outcome!.events[0].title); n++) {
+          const next = within(region).queryByRole("button", { name: "Next panel" });
+          if (!next || (next as HTMLButtonElement).disabled) break;
+          await userEvent.click(next);
+        }
+        expect(region).toHaveTextContent(withEvent.outcome!.events[0].title);
       }
       await userEvent.click(cont);
     }
@@ -305,23 +316,29 @@ describe("stakeholder advice", () => {
 
   it("lets the player ask a stakeholder, shows their view, and does not alter the world", async () => {
     const { api, calls } = await open();
+    await tab("Status");
     const hudBefore = screen.getByRole("meter", { name: "Recovery effort" }).getAttribute("aria-valuetext");
+    await tab("Team");
     await userEvent.click(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" }));
     const card = await screen.findByRole("article", { name: "Advice from Terminal Supervisor" });
     expect(card).toHaveTextContent("Clear the affected area");
     expect(within(card).getByText("Rule-based")).toBeInTheDocument();
     expect(within(card).getByRole("meter", { name: "Terminal Supervisor confidence" })).toBeInTheDocument();
     expect(calls).toContain("advice:kavya");
+    await tab("Status");
     expect(screen.getByRole("meter", { name: "Recovery effort" }).getAttribute("aria-valuetext")).toBe(hudBefore);
     expect(api.decide).not.toHaveBeenCalled();
+    await tab("Team");
     expect(screen.queryByRole("button", { name: "Ask Terminal Supervisor for advice" })).toBeNull();     // already asked
     expect(screen.getByText("Advice given — see below")).toBeInTheDocument();
   });
 
   it("marks each option with who recommends or opposes it, accessibly", async () => {
     await open();
+    await tab("Team");
     await userEvent.click(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" }));
     await screen.findByRole("article", { name: "Advice from Terminal Supervisor" });
+    await tab("Decide");
     const maintain = screen.getByRole("radio", { name: /Keep working manually/ });
     expect(within(maintain).getByText(/Terminal Supervisor/)).toBeInTheDocument();
     expect(within(maintain).getByText(/advises against this/)).toBeInTheDocument();
@@ -331,6 +348,7 @@ describe("stakeholder advice", () => {
 
   it("shows several advisors, and they are allowed to disagree", async () => {
     await open();
+    await tab("Team");
     for (const who of ["Terminal Supervisor", "Operations Manager"]) await userEvent.click(screen.getByRole("button", { name: `Ask ${who} for advice` }));
     await screen.findByRole("article", { name: "Advice from Operations Manager" });
     const kavya = adviceSamples.find((a) => a.stakeholder === "kavya")!, nisha = adviceSamples.find((a) => a.stakeholder === "nisha")!;
@@ -340,6 +358,7 @@ describe("stakeholder advice", () => {
 
   it("warns when an advisor's own information is unverified", async () => {
     const f = await open(roundViews[3], { advice: vi.fn(async () => adviceUnverified) });
+    await tab("Team");
     await userEvent.click(screen.getByRole("button", { name: "Ask Network Administrator for advice" }));
     const card = await screen.findByRole("article", { name: "Advice from Network Administrator" });
     expect(within(card).getByRole("note")).toHaveTextContent("Unverified: check this before relying on it");
@@ -350,6 +369,8 @@ describe("stakeholder advice", () => {
     const f = fakeApi(undefined, { adviceSoFar: vi.fn(async () => [adviceSamples[0], adviceSamples[2]]) }, roundViews[1]);
     localStorage.setItem(KEY, "x");
     render(<App api={f.api} />);
+    await screen.findByRole("heading", { name: roundViews[1].scene.title! });
+    await tab("Team");
     expect(await screen.findByRole("article", { name: "Advice from Terminal Supervisor" })).toBeInTheDocument();
     expect(screen.getByRole("article", { name: "Advice from Operations Manager" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Ask Terminal Supervisor for advice" })).toBeNull();
@@ -359,9 +380,12 @@ describe("stakeholder advice", () => {
   it("reports a failed request without losing the scene and allows retrying", async () => {
     let fail = true;
     await open(roundViews[1], { advice: vi.fn(async (_i: string, who: StakeholderKey) => { if (fail) throw new ApiError("Cannot reach the simulation server.", 0, "network", true); return adviceSamples.find((a) => a.stakeholder === who)!; }) });
+    await tab("Team");
     await userEvent.click(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Cannot reach");
+    await tab("Decide");
     expect(screen.getAllByRole("radio").length).toBeGreaterThan(0);
+    await tab("Team");
     fail = false;
     await userEvent.click(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" }));
     expect(await screen.findByRole("article", { name: "Advice from Terminal Supervisor" })).toBeInTheDocument();
@@ -370,6 +394,7 @@ describe("stakeholder advice", () => {
   it("labels AI-phrased advice differently from rule-based advice", async () => {
     const llm: Advice = { ...adviceSamples[0], source: "llm" };
     await open(roundViews[1], { advice: vi.fn(async () => llm) });
+    await tab("Team");
     await userEvent.click(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" }));
     const card = await screen.findByRole("article", { name: "Advice from Terminal Supervisor" });
     expect(within(card).getByText("AI-phrased")).toHaveAttribute("title", expect.stringContaining("fixed rules"));
@@ -380,13 +405,16 @@ describe("stakeholder advice", () => {
     localStorage.setItem(KEY, "x");
     render(<App api={f.api} />);
     await screen.findByRole("heading", { name: roundViews[1].scene.title! });
+    await tab("Team");
     await userEvent.click(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" }));
     await screen.findByRole("article", { name: "Advice from Terminal Supervisor" });
     f.given.clear();
+    await tab("Decide");
     await userEvent.click(screen.getAllByRole("radio").find((r) => r.getAttribute("aria-disabled") !== "true")!);
     await userEvent.click(screen.getByRole("button", { name: /Commit decision|Confirm decision/ }));
     await userEvent.click(await screen.findByRole("button", { name: /Continue/ }));
     await screen.findAllByRole("radio");
+    await tab("Team");
     expect(screen.queryByRole("article", { name: /^Advice from/ })).toBeNull();
     expect(screen.getByRole("button", { name: "Ask Terminal Supervisor for advice" })).toBeEnabled();
   });

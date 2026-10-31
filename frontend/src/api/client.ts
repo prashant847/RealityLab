@@ -36,6 +36,8 @@ export interface GameApi {
   timeline(id: string): Promise<TimelineResponse>;
   advice(id: string, stakeholder: StakeholderKey): Promise<Advice>;
   adviceSoFar(id: string): Promise<Advice[]>;
+  /** Id of the unfinished simulation, when the browser has no pointer to it (optional so test fakes need not provide it). */
+  current?(): Promise<string | null>;
   report(id: string, runId?: string): Promise<Report>;
   compare(id: string, base?: string, other?: string): Promise<Comparison>;
   checkpoint(id: string, index: number, runId?: string): Promise<CheckpointView>;
@@ -86,6 +88,7 @@ export const api: GameApi = {
   timeline: (id) => request("GET", `${sim(id)}/timeline`),
   advice: (id, stakeholder) => request("POST", `${sim(id)}/stakeholder-advice`, { stakeholder }),
   adviceSoFar: (id) => request("GET", `${sim(id)}/stakeholder-advice`),
+  current: async () => (await request<{ simulation_id: string | null }>("GET", "/blackout/current")).simulation_id,
   report: (id, runId) => request("GET", `${sim(id)}/report${q(runId)}`),
   compare: (id, base, other) => {
     const p = new URLSearchParams();

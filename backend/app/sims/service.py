@@ -67,6 +67,15 @@ class SimsService:
             info.update(progress="Completed", percent=100, ending=done[0].ending)
         return info
 
+    def blackout_current(self) -> dict[str, Any]:
+        """The BLACKOUT simulation with an unfinished run, so the desktop app can resume it without relying on browser storage."""
+        with self.sf() as db:
+            for sim in db.scalars(select(Simulation).order_by(Simulation.created_at.desc())).all():
+                run = db.get(Run, sim.active_run_id) if sim.active_run_id else None
+                if run is not None and run.status in ("active", "dead_end"):
+                    return {"simulation_id": sim.id}
+        return {"simulation_id": None}
+
     def _latest_generic(self, db: Session, sim_id: str) -> SimRun | None:
         return db.scalars(select(SimRun).where(SimRun.sim_id == sim_id, SimRun.status == "active").order_by(SimRun.created_at.desc())).first()
 

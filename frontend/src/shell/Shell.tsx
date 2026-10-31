@@ -6,6 +6,7 @@ import { Preview } from "../sims/Previews";
 import { Radar } from "../sims/Radar";
 import { ReportView } from "../sims/Report";
 import "./shell.css";
+import "./bo.css";
 
 export const TAGLINE = "Experience your future before you choose it.";
 const go = (h: string) => { window.location.hash = h; };
@@ -37,8 +38,8 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
   const parts = hash.replace(/^#\/?/, "").split("/").filter(Boolean);
   const dev = ["gallery", "preview-notpetya", "char-export"].includes(parts[0] ?? "");
   const blackout = parts[0] === "sim" && parts[1] === "blackout";
-  // Every screen of the app except the BLACKOUT comic (a long page by design) and the developer galleries fits the window without page scrolling.
-  useEffect(() => { document.body.classList.toggle("fit", !dev && !blackout); }, [dev, blackout]);
+  // Every screen of the app except the developer galleries fits the window without page scrolling (long lists scroll inside their own panel).
+  useEffect(() => { document.body.classList.toggle("fit", !dev); }, [dev]);
   useEffect(() => {
     const names: Record<string, string> = { blackout: "BLACKOUT", bhopal: "Bhopal", covid: "COVID-era Hospital" };
     const page = parts[0] === "sim" ? names[parts[1] ?? ""] : parts[0] === "report" ? "Career experience report" : parts[0] === "journey" ? "My journey" : parts[0] === "settings" ? "Settings" : "";
@@ -47,10 +48,10 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
 
   if (dev) return <App />;
   if (blackout) return (
-    <>
+    <div className="bo-root">
       <nav className="back-bar" aria-label="Application"><button type="button" onClick={() => go("#/")}>← All simulations</button><span>RealityLab AI</span></nav>
       <App />
-    </>);
+    </div>);
   if (parts[0] === "sim" && parts[1]) return <SimPlayer key={parts[1]} api={api} simId={parts[1]} onHome={() => go("#/")} onReport={(id) => go(`#/report/${id}`)} />;
   if (parts[0] === "report" && parts[1]) return <ReportView api={api} runId={parts[1]} onHome={() => go("#/")} onOpen={(s) => go(`#/sim/${s}`)} />;
 
@@ -120,7 +121,7 @@ function SimCard({ s }: { s: LibraryItem }) {
         <ul className="hub-goals" aria-label="What you will practise">{s.objectives.map((o) => <li key={o}>{o}</li>)}</ul>
         {s.progress && <div className="hub-progress"><div className="hub-bar" role="progressbar" aria-label={`${s.title} progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={s.percent ?? 0}><span style={{ width: `${s.percent ?? 0}%` }} /></div><span>{s.progress}{s.completed > 0 && s.status === "active" ? ` · completed ${s.completed}×` : ""}</span></div>}
         <div className="hub-actions">
-          <button type="button" className="hub-btn hub-btn--primary" onClick={() => go(`#/sim/${s.id}`)}>{verb}</button>
+          <button type="button" className="hub-btn hub-btn--primary" onClick={() => { if (s.id === "blackout" && s.status === "completed") { try { localStorage.removeItem("realitylab.simulationId"); } catch { /* ignore */ } } go(`#/sim/${s.id}`); }}>{verb}</button>
           {s.status === "completed" && s.id !== "blackout" && s.run_id && <button type="button" className="hub-btn" onClick={() => go(`#/report/${s.run_id}`)}>View report</button>}
         </div>
       </div>

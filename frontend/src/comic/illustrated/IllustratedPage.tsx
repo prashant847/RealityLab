@@ -161,14 +161,39 @@ export function ArtCredits({ script }: { script: ArtSceneScript }) {
   );
 }
 
-/** Illustrated comic page: image layers in the existing panel frame, text and effects from the backend's page data. */
-export function IllustratedPage({ page, script, title, facts = [], evidence, children }: { page: unknown; script: ArtSceneScript; title?: string; facts?: string[]; evidence?: EvidenceUse; children?: ReactNode }) {
+/** Illustrated comic page: image layers in the existing panel frame, text and effects from the backend's page data.
+ *  `paged` shows one panel at a time, filling the space it is given (no page scrolling), with Previous/Next. */
+export function IllustratedPage({ page, script, title, facts = [], evidence, paged, children }: { page: unknown; script: ArtSceneScript; title?: string; facts?: string[]; evidence?: EvidenceUse; paged?: boolean; children?: ReactNode }) {
   const safe = useMemo(() => sanitizePage(page).page, [page]);
+  const [idx, setIdx] = useState(0);
+  const count = script.panels.length;
+  const at = Math.min(idx, count - 1);
+  useEffect(() => { setIdx(0); }, [script]);
+  if (!paged) {
+    return (
+      <section className="comic-page comic-page--art" aria-label={title ?? "Comic page"} data-layout="illustrated" data-grade={script.grade ?? "cinematic"} style={{ ["--cols" as string]: script.columns }}>
+        {script.panels.map((p, i) => <IllustratedPanel key={p.id} script={p} index={i} source={safe.panels.find((s) => s.id === p.source)} facts={facts} flat={script.grade === "flat"} use={evidence} />)}
+        {children}
+        <ArtCredits script={script} />
+      </section>
+    );
+  }
+  const p = script.panels[at];
+  const go = (d: number) => setIdx((i) => Math.max(0, Math.min(count - 1, i + d)));
   return (
-    <section className="comic-page comic-page--art" aria-label={title ?? "Comic page"} data-layout="illustrated" data-grade={script.grade ?? "cinematic"} style={{ ["--cols" as string]: script.columns }}>
-      {script.panels.map((p, i) => <IllustratedPanel key={p.id} script={p} index={i} source={safe.panels.find((s) => s.id === p.source)} facts={facts} flat={script.grade === "flat"} use={evidence} />)}
-      {children}
-      <ArtCredits script={script} />
+    <section className="comic-page comic-page--art comic-page--paged" aria-label={title ?? "Comic page"} data-layout="illustrated" data-grade={script.grade ?? "cinematic"}
+      onKeyDown={(e) => { if (e.key === "ArrowRight") go(1); else if (e.key === "ArrowLeft") go(-1); }}>
+      <div className="paged-stage">
+        <IllustratedPanel key={p.id} script={{ ...p, span: 1 }} index={0} source={safe.panels.find((s) => s.id === p.source)} facts={facts} flat={script.grade === "flat"} use={evidence} />
+      </div>
+      {count > 1 && (
+        <nav className="pager" aria-label="Comic panels">
+          <button type="button" onClick={() => go(-1)} disabled={at === 0} aria-label="Previous panel">‹ Back</button>
+          <span className="pager-dots" role="group" aria-label={`Panel ${at + 1} of ${count}`}>
+            {script.panels.map((q, i) => <button key={q.id} type="button" className={i === at ? "on" : ""} aria-label={`Panel ${i + 1}`} aria-current={i === at ? "true" : undefined} onClick={() => setIdx(i)} />)}
+          </span>
+          <button type="button" className={at < count - 1 ? "next" : ""} onClick={() => go(1)} disabled={at === count - 1} aria-label="Next panel">Next ›</button>
+        </nav>)}
     </section>
   );
 }

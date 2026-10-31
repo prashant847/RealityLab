@@ -16,13 +16,16 @@ let quitting = false;
 if (!app.requestSingleInstanceLock()) { app.quit(); }
 else app.on("second-instance", () => { if (win) { if (win.isMinimized()) win.restore(); win.focus(); } });
 
-function freePort() {
+const PREFERRED_PORT = 47615;     // a stable origin keeps browser storage (BLACKOUT's resume pointer, UI state) across launches
+
+function listenOn(port) {
   return new Promise((resolve, reject) => {
     const s = net.createServer();
     s.once("error", reject);
-    s.listen(0, "127.0.0.1", () => { const { port } = s.address(); s.close(() => resolve(port)); });
+    s.listen(port, "127.0.0.1", () => { const { port: got } = s.address(); s.close(() => resolve(got)); });
   });
 }
+const freePort = () => listenOn(PREFERRED_PORT).catch(() => listenOn(0));
 
 function health(port) {
   return new Promise((resolve) => {

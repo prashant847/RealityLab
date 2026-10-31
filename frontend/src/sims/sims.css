@@ -1,18 +1,18 @@
 /* Bhopal and hospital simulations and the career experience report.
    Every screen is sized to the window (no page scrolling); long text lives in panels that split into tabs instead of growing the page. */
 .sim, .rep {
-  --s-bg: #0e1319; --s-panel: #171f29; --s-panel-2: #1d2733; --s-line: #33414f; --s-text: #e8edf2; --s-muted: #a3b0be;
-  --s-accent: #d8a24a; --s-accent-ink: #1a1305; --s-good: #5fb08a; --s-mid: #e0a43a; --s-bad: #d9543f;
+  --s-bg: #ece3d0; --s-panel: #fbf6ea; --s-panel-2: #f3ead6; --s-line: #d6c8a8; --s-text: #2a2016; --s-muted: #6d5f48;
+  --s-accent: #a8481f; --s-accent-ink: #ffffff; --s-good: #2f7d62; --s-mid: #b07d12; --s-bad: #b53a2b;
   --s-head: Georgia, "Times New Roman", serif;
-  background: radial-gradient(900px 420px at 80% -10%, #1f2c3a 0%, transparent 60%), var(--s-bg); color: var(--s-text); font-family: "Segoe UI", system-ui, sans-serif; font-size: 15px; line-height: 1.5;
+  background: radial-gradient(900px 420px at 85% -10%, #f6efdd 0%, transparent 60%), var(--s-bg); color: var(--s-text); font-family: "Segoe UI", system-ui, sans-serif; font-size: 15px; line-height: 1.5; color-scheme: light;
 }
-.sim--covid {
+.sim--covid, .rep--covid {
   --s-bg: #e9f2f5; --s-panel: #ffffff; --s-panel-2: #f2f8fa; --s-line: #c4d8de; --s-text: #16323c; --s-muted: #4d6b76;
   --s-accent: #1f7a8c; --s-accent-ink: #ffffff; --s-good: #2f8f6f; --s-mid: #c98a1b; --s-bad: #c4473a;
   --s-head: "Segoe UI Semibold", "Segoe UI", system-ui, sans-serif; color-scheme: light;
 }
 .sim--covid .sim-intro-art { background: #dcecf0; }
-.sim--covid { background: radial-gradient(800px 380px at 85% -10%, #cfe8ee 0%, transparent 60%), var(--s-bg); }
+.sim--covid, .rep--covid { background: radial-gradient(800px 380px at 85% -10%, #cfe8ee 0%, transparent 60%), var(--s-bg); }
 .sim, .rep { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 .sim h1, .sim h2, .sim h3, .rep h1, .rep h2, .rep h3 { font-family: var(--s-head); text-transform: none; letter-spacing: 0; color: var(--s-text); margin: 0; }
 .sim h1, .rep h1 { font-size: clamp(1.35rem, 2.1vw, 1.9rem); } .sim h2, .rep h2 { font-size: 1.08rem; } .sim h3, .rep h3 { font-size: .95rem; margin-top: 12px; }
@@ -28,7 +28,7 @@
 .sim-card { background: var(--s-panel); border: 1px solid var(--s-line); border-radius: 14px; padding: 16px 20px; }
 .sim-center { text-align: center; max-width: 520px; margin: auto; display: grid; gap: 10px; justify-items: center; }
 .sim-loading { margin: auto; color: var(--s-muted); display: flex; gap: 10px; align-items: center; }
-.sim-alert { flex: none; background: #5a1f19; color: #ffe3de; padding: 8px 18px; } .sim--covid .sim-alert { background: #fde1dc; color: #6a1d14; }
+.sim-alert { flex: none; background: #fde1dc; color: #6a1d14; padding: 8px 18px; }
 .sim-kicker { color: var(--s-accent); font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; margin: 0; font-weight: 700; }
 .sim-lede { font-size: 1.08rem; color: var(--s-muted); margin: 4px 0; } .sim-meta { color: var(--s-muted); font-size: .9rem; margin: 4px 0; } .sim-fine { color: var(--s-muted); font-size: .82rem; margin: 6px 0 0; }
 .sim-disclaimer { border-left: 4px solid var(--s-accent); background: var(--s-panel-2); padding: 8px 14px; margin: 10px 0 0; font-size: .86rem; border-radius: 0 8px 8px 0; }
@@ -52,7 +52,7 @@
 .sim-decision, .sim-outcome { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 18px 22px 14px; }
 .sim-head { flex: none; }
 .sim-tag { display: inline-block; font-size: .7rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; padding: 2px 10px; border-radius: 5px; margin: 0 10px 6px 0; }
-.sim-tag--documented { background: #c9a24a; color: #1a1305; } .sim-tag--hypothetical, .sim-tag--simulation { background: #2b6f66; color: #eafaf6; } .sim--covid .sim-tag--hypothetical { background: #1f7a8c; }
+.sim-tag--documented { background: #a8481f; color: #fff; } .sim-tag--hypothetical, .sim-tag--simulation { background: #2b6f66; color: #eafaf6; } .sim--covid .sim-tag--hypothetical { background: #1f7a8c; }
 .sim-clock { color: var(--s-accent); font-weight: 600; margin: 2px 0 0; font-size: .92rem; }
 .sim-tabs { flex: none; display: flex; gap: 4px; margin: 12px 0 10px; border-bottom: 1px solid var(--s-line); }
 .sim-tabs button { font: inherit; background: none; border: 0; border-bottom: 3px solid transparent; padding: 6px 14px; color: var(--s-muted); cursor: pointer; margin-bottom: -1px; }
@@ -62,7 +62,7 @@
 .sim-foot .sim-fine { margin: 0; max-width: 46ch; }
 .sim-brief { font-size: 1.05rem; margin: 0 0 10px; }
 .sim-facts { background: var(--s-panel-2); border-radius: 10px; padding: 10px 16px 10px 34px; margin: 0 0 8px; border-left: 4px solid var(--s-accent); } .sim-facts li { margin: 5px 0; }
-.sim-event { border: 1px solid var(--s-mid); background: var(--s-panel-2); border-left-width: 5px; border-radius: 10px; padding: 8px 14px; margin: 8px 0; } .sim-event p { margin: 2px 0 0; }
+.sim-event { border: 1px solid var(--s-mid); color: var(--s-text); background: var(--s-panel-2); border-left-width: 5px; border-radius: 10px; padding: 8px 14px; margin: 8px 0; } .sim-event p { margin: 2px 0 0; }
 .sim-question { font-size: 1.1rem; margin-bottom: 10px; }
 .sim-choices { display: grid; gap: 8px; }
 .sim-choice { display: flex; gap: 12px; align-items: flex-start; border: 1px solid var(--s-line); border-radius: 12px; padding: 10px 14px; cursor: pointer; background: var(--s-panel-2); position: relative; transition: border-color .15s, transform .1s, background .15s; }
@@ -93,7 +93,7 @@
 .bh-fig { flex: 1; min-height: 0; margin: 0; display: flex; flex-direction: column; } .bh-fig svg { flex: 1; min-height: 0; width: 100%; border: 1px solid var(--s-line); border-radius: 12px; background: #0a0f16; }
 .bh-cap { color: var(--s-muted); font-size: .76rem; margin: 4px 0 0; }
 .bh-rail { list-style: none; display: flex; gap: 4px; padding: 0; margin: 0; flex: none; } .bh-rail li { flex: 1; height: 7px; border-radius: 4px; margin: 0; opacity: .3; }
-.bh-rail li.hist, .bh-legend .hist { background: #c9a24a; } .bh-rail li.fict, .bh-legend .fict { background: #3a8f84; } .bh-rail li.done { opacity: .75; } .bh-rail li.now { opacity: 1; outline: 2px solid var(--s-text); outline-offset: 2px; }
+.bh-rail li.hist, .bh-legend .hist { background: #a8481f; } .bh-rail li.fict, .bh-legend .fict { background: #3a8f84; } .bh-rail li.done { opacity: .75; } .bh-rail li.now { opacity: 1; outline: 2px solid var(--s-text); outline-offset: 2px; }
 .bh-legend { font-size: .74rem; color: var(--s-muted); margin: 0; flex: none; } .bh-legend span { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin: 0 5px 0 10px; } .bh-legend span:first-child { margin-left: 0; }
 
 /* hospital board */

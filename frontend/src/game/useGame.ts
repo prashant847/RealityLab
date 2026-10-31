@@ -43,7 +43,8 @@ export function useGame(api: GameApi) {
   const adopt = useCallback((v: SimulationView) => { store.set(v.simulation.id); setView(v); }, []);
 
   const boot = useCallback(async () => {
-    const id = store.get();
+    let id = store.get();
+    if (!id && api.current) { try { id = await api.current(); } catch { id = null; } }   // browser storage is per-origin; the backend knows what is unfinished
     if (!id) { setBooting(false); return; }
     const v = await guard("Resuming your simulation…", () => api.get(id), () => void boot());
     if (v) adopt(v);

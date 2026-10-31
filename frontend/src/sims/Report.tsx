@@ -21,7 +21,7 @@ export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId
   const s = rep.summary;
   const sk = rep.skills[Math.min(skill, rep.skills.length - 1)];
   return (
-    <main className="rep">
+    <main className={`rep rep--${rep.simulation_id}`}>
       <section className={`rep-hero rep-hero--${rep.outcome.tone}`}>
         <div>
           <p className="sim-kicker">Career experience report</p>

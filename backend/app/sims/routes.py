@@ -35,6 +35,11 @@ def journey(s: SimsService = S):
     return s.journey()
 
 
+@router.get("/blackout/current", summary="The unfinished BLACKOUT simulation, if any")
+def blackout_current(s: SimsService = S):
+    return s.blackout_current()
+
+
 @router.get("/profile")
 def get_profile(s: SimsService = S):
     return s.profile()

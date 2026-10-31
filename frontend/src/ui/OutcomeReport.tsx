@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { FinalDispatch, WorldView } from "../api/types";
 
 function Bar({ label, value, need }: { label: string; value: number; need: number }) {
@@ -19,13 +20,18 @@ export function OutcomeReport({ final, state, children, onRewind, onReplay, onRe
   onRewind?: () => void; onReplay?: () => void; onRestart?: () => void;
 }) {
   const good = final.ending === "full_recovery" || final.ending === "hospitals_served";
+  const [tab, setTab] = useState<"ending" | "score" | "full">("ending");
   return (
-    <section className={`outcome outcome--${good ? "good" : "poor"}`} aria-labelledby="outcome-title">
+    <section className={`outcome outcome--${good ? "good" : "poor"}`} aria-labelledby="outcome-title" data-tab={tab}>
       <header>
         <p className="kicker">About Day 10 — Reopening</p>
         <h1 id="outcome-title">{final.ending_title}</h1>
         <p className="lede">{final.ending_text}</p>
       </header>
+      <div className="out-tabs no-print" role="tablist" aria-label="Report sections">
+        {([["ending", "The ending"], ["score", "Score and lessons"], ["full", "Full report"]] as const).map(([k, label]) => (
+          <button key={k} role="tab" type="button" aria-selected={tab === k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{label}</button>))}
+      </div>
       <div className="outcome-grid">
         <section className="card" aria-labelledby="oc-ship">
           <h2 id="oc-ship">What moved when the gates reopened</h2>
@@ -48,8 +54,8 @@ export function OutcomeReport({ final, state, children, onRewind, onReplay, onRe
           </dl>
         </details>
       </div>
-      {children}
-      <div className="actions">
+      <div className="out-children">{children}</div>
+      <div className="actions out-actions">
         {onReplay && <button type="button" className="primary" onClick={onReplay}>Try a different decision</button>}
         {onRewind && <button type="button" className="ghost" onClick={onRewind}>Rewind to an earlier decision</button>}
         {onRestart && <button type="button" className="ghost" onClick={onRestart}>Restart entire simulation</button>}

@@ -5,7 +5,7 @@ import type { Advice, SimulationView, StakeholderKey } from "../api/types";
 import { AdvicePanel } from "../ui/AdvicePanel";
 import type { Endorsement } from "../ui/DecisionCard";
 import { ComicPage } from "../comic/ComicPage";
-import { DecisionStage, IllustratedPage, type EvidenceUse } from "../comic/illustrated/IllustratedPage";
+import { IllustratedPage, type EvidenceUse } from "../comic/illustrated/IllustratedPage";
 import { FIRST_PAGE_STYLE, activeScenes } from "../comic/illustrated/scenes";
 import { ANALYST } from "../story/beats";
 import { composeConsequence, composeEventsPage, composeRoundPage } from "../story/compose";
@@ -17,13 +17,31 @@ import { EventPanel } from "../ui/EventPanel";
 import { SimulationHUD } from "../ui/SimulationHUD";
 import { StakeholderCard } from "../ui/StakeholderCard";
 import { Facts, PlainBrief } from "../ui/PlainGuide";
-import { plainPage } from "../story/plain";
+import { plainPage, plainRound } from "../story/plain";
 
 const STAFF_NAMES = { kavya: "Terminal Supervisor", arjun: "IT Lead", nisha: "Operations Manager", raghav: "Network Administrator", isha: "Customer Representative" } as const;
 const STAFF_ROLES = { kavya: "Site safety and terminal operations", arjun: "IT systems and incident analysis", nisha: "Operations and recovery planning", raghav: "Networks, connections and routes", isha: "Customers and communication" } as const;
 
 const asEnvironment = (s: string | undefined): EnvironmentId =>
   (ENVIRONMENT_IDS as readonly string[]).includes(s ?? "") ? (s as EnvironmentId) : "ops_office";
+
+type RailTab = "decide" | "story" | "team" | "status";
+
+/** Status meters and active risks. */
+function StatusBlock({ view }: { view: SimulationView }) {
+  const { state, scene, risks } = view;
+  return (
+    <>
+      <SimulationHUD compact state={state} clock={scene.clock ?? "About Day 10"} round={scene.round ?? 10} />
+      {risks.length > 0 && (
+        <section className="card risks" aria-labelledby="risks-h">
+          <h2 id="risks-h">Active risks</h2>
+          <ul>{risks.map((r) => <li key={r.id}>{r.text}</li>)}</ul>
+        </section>
+      )}
+    </>
+  );
+}
 
 /** Right-hand column: status, active risks, stakeholders. Everything is read from the server view. */
 export function SidePanel({ view, onAsk, asking, asked }: {
@@ -84,36 +102,57 @@ export function SceneScreen({ api, view, busy, onDecide }: { api: GameApi; view:
   const analystId = ANALYST[scene.round ?? 1] ?? "arjun";
   const analystCard = advice.find((a) => a.stakeholder === analystId);
   const evidence: EvidenceUse = { analyst: STAFF_NAMES[analystId], role: STAFF_ROLES[analystId], advice: analystCard, busy: asking === analystId, error: adviceError, choices: scene.choices ?? [], onAnalyse: () => ask(analystId) };
+  const [tab, setTab] = useState<RailTab>("decide");
+  useEffect(() => { setTab("decide"); }, [view.run.id, scene.round]);
+  // The comic is paged, one panel at a time: panels for "since your last decision" come first, then this round's.
+  const pagedScript = useMemo(() => {
+    if (!artScript) return undefined;
+    if (!flatStory || scene.events.length === 0) return artScript;
+    const ev = composeEventsPage(scene.events, scene.environment ?? "ops_office", scene.round!);
+    return { ...artScript, panels: [...ev.panels, ...artScript.panels] };
+  }, [artScript, flatStory, scene.events, scene.environment, scene.round]);
+  const plain = flatStory ? plainRound(scene.round) : undefined;
+  const decisions = <DecisionList key={`${view.run.id}-${scene.round}`} choices={scene.choices ?? []} busy={busy} onCommit={onDecide} endorsements={endorsements} />;
+  const askedSet = new Set(advice.map((a) => a.stakeholder));
   return (
-    <div className="shell">
-      <main aria-busy={busy}>
-        <div className="brief">
-          <p className="kicker">{scene.clock} · Round {scene.round} of 10</p>
+    <div className="bo-scene">
+      <main className="bo-stage" aria-busy={busy}>
+        <div className="bo-title">
+          <p className="kicker">{scene.clock} · Round {scene.round} of 10{scene.events.length > 0 ? " · new developments" : ""}</p>
           <h1 ref={heading} tabIndex={-1}>{scene.title}</h1>
-          </div>
-        {flatStory ? <PlainBrief round={scene.round} trail={trail} original={scene.brief} /> : <p className="lede-sm">{scene.brief}</p>}
-        {scene.events.length > 0 && (
-          <section aria-label="What just happened" className="happened">
-            <h2>Since your last decision</h2>
-            {flatStory ? <IllustratedPage page={null} script={composeEventsPage(scene.events, scene.environment ?? "ops_office", scene.round!)} title="Since your last decision" /> : scene.events.map((e) => <EventPanel key={e.event_id} event={e} environment={asEnvironment(scene.environment)} />)}
-          </section>
-        )}
-        {artScript ? <IllustratedPage page={flatStory ? plainPage(scene.page) : scene.page} script={artScript} title={scene.title} facts={scene.info ?? []} evidence={flatStory ? evidence : undefined} /> : <ComicPage page={scene.page} title={scene.title} />}
-        {flatStory ? <Facts info={scene.info ?? []} texts={[scene.brief ?? "", ...(scene.info ?? []), ...(scene.choices ?? []).flatMap((c) => [c.label, c.summary])]} /> : (
-          <section className="card known" aria-labelledby="known-h">
-            <h2 id="known-h">What you know</h2>
-            <ul className="scene-info">{scene.info?.map((t, i) => <li key={i}>{t}</li>)}</ul>
-          </section>
-        )}
-        <AdvicePanel advice={advice} />
-        {asking && <p role="status" className="muted">Asking for advice…</p>}
-        {adviceError && <p className="alert" role="alert">{adviceError}</p>}
-        {(() => {
-          const decisions = <DecisionList key={`${view.run.id}-${scene.round}`} choices={scene.choices ?? []} busy={busy} onCommit={onDecide} endorsements={endorsements} />;
-          return artScript ? <DecisionStage asset={artScript.decisionBackdrop}>{decisions}</DecisionStage> : decisions;
-        })()}
+        </div>
+        {pagedScript ? <IllustratedPage paged page={flatStory ? plainPage(scene.page) : scene.page} script={pagedScript} title={scene.title} facts={scene.info ?? []} evidence={flatStory ? evidence : undefined} /> : <ComicPage page={scene.page} title={scene.title} />}
       </main>
-      <SidePanel view={view} onAsk={ask} asking={asking} asked={new Set(advice.map((a) => a.stakeholder))} />
+      <aside className="bo-rail" aria-label="Decision, situation, team and status">
+        <div className="bo-tabs" role="tablist" aria-label="Panels">
+          {([["decide", "Decide"], ["story", "Situation"], ["team", "Team"], ["status", "Status"]] as const).map(([k, label]) => (
+            <button key={k} role="tab" type="button" aria-selected={tab === k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{label}{k === "team" && advice.length > 0 ? ` (${advice.length})` : ""}</button>))}
+        </div>
+        <div className="bo-tabpanel" role="tabpanel">
+          {tab === "decide" && (<>
+            {plain ? <p className="bo-job"><b>Your job:</b> {plain.job.replace(/^Decide /, "decide ")}</p> : <p className="bo-job">{scene.brief}</p>}
+            {asking && <p role="status" className="muted">Asking for advice…</p>}
+            {adviceError && <p className="alert" role="alert">{adviceError}</p>}
+            {decisions}
+          </>)}
+          {tab === "story" && (<>
+            {flatStory ? <PlainBrief round={scene.round} trail={trail} original={scene.brief} /> : <p className="lede-sm">{scene.brief}</p>}
+            {flatStory ? <Facts info={scene.info ?? []} texts={[scene.brief ?? "", ...(scene.info ?? []), ...(scene.choices ?? []).flatMap((c) => [c.label, c.summary])]} /> : (
+              <section className="card known" aria-labelledby="known-h"><h2 id="known-h">What you know</h2><ul className="scene-info">{scene.info?.map((t, i) => <li key={i}>{t}</li>)}</ul></section>)}
+          </>)}
+          {tab === "team" && (<>
+            <AdvicePanel advice={advice} />
+            {asking && <p role="status" className="muted">Asking for advice…</p>}
+            {adviceError && <p className="alert" role="alert">{adviceError}</p>}
+            <section aria-labelledby="stake-h" className="stakeholders">
+              <h2 id="stake-h">Ask your team</h2>
+              {(["kavya", "arjun", "nisha", "raghav", "isha"] as const).map((id) => (
+                <StakeholderCard key={id} id={id} compact trust={view.state.trust[id] ?? 0} asked={askedSet.has(id)} onAsk={() => ask(id)} disabled={Boolean(asking)} />))}
+            </section>
+          </>)}
+          {tab === "status" && <StatusBlock view={view} />}
+        </div>
+      </aside>
     </div>
   );
 }
@@ -125,35 +164,25 @@ export function ResultScreen({ view, outcome, onContinue }: { view: SimulationVi
   const flat = FIRST_PAGE_STYLE === "flat";
   const script = useMemo(() => (flat ? composeConsequence(outcome.choice_id, outcome.label, outcome.consequence, outcome.events, outcome.environment) : null), [flat, outcome]);
   return (
-    <div className="shell">
-      <main>
-        <div className="brief">
+    <div className="bo-scene">
+      <main className="bo-stage">
+        <div className="bo-title">
           <p className="kicker">{outcome.clock} · Round {outcome.round} · Result</p>
-          <h1>You decided</h1>
-          <p className="decided">{outcome.label}</p>
+          <h1>What happened next</h1>
         </div>
-        {script ? (
-          <section aria-label="Consequences" className="happened">
-            <IllustratedPage page={null} script={script} title="What happened next" />
-          </section>
-        ) : (
-          <>
-            <section className="card card--accent result" aria-labelledby="res-h">
-              <h2 id="res-h">What it did</h2>
-              <p>{outcome.consequence}</p>
-            </section>
-            {outcome.events.length > 0 && (
-              <section aria-label="Consequences" className="happened">
-                <h2>Then this happened</h2>
-                {outcome.events.map((e) => <EventPanel key={e.event_id} event={e} environment={asEnvironment(outcome.environment)} />)}
-              </section>
-            )}
-          </>
-        )}
-        {script && outcome.effects.length > 0 && <p className="chips" aria-label="Recorded changes">{outcome.effects.map((e) => <span key={e} className="chip">{e}</span>)}</p>}
-        <button ref={btn} type="button" className="primary big" onClick={onContinue}>{next}</button>
+        {script ? <section aria-label="Consequences" className="bo-consequences"><IllustratedPage paged page={null} script={script} title="What happened next" /></section> : (
+          <section className="card card--accent result" aria-labelledby="res-h"><h2 id="res-h">What it did</h2><p>{outcome.consequence}</p>
+            {outcome.events.map((e) => <EventPanel key={e.event_id} event={e} environment={asEnvironment(outcome.environment)} />)}</section>)}
       </main>
-      <SidePanel view={view} />
+      <aside className="bo-rail" aria-label="Result and status">
+        <div className="bo-tabpanel">
+          <h2 className="bo-decided-h">You decided</h2>
+          <p className="decided">{outcome.label}</p>
+          {outcome.effects.length > 0 && <p className="chips" aria-label="Recorded changes">{outcome.effects.map((e) => <span key={e} className="chip">{e}</span>)}</p>}
+          <button ref={btn} type="button" className="primary big" onClick={onContinue}>{next}</button>
+          <StatusBlock view={view} />
+        </div>
+      </aside>
     </div>
   );
 }
