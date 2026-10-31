@@ -1,0 +1,58 @@
+TITLE: The First Surge
+STYLE: western graphic novel, editorial comic illustration, realistic proportions, cinematic lighting, muted painted colours
+NEGATIVE: anime, manga, chibi, cartoon, stick figure, flat colours, 3d render, photograph, worst quality, low quality, blurry, deformed, bad anatomy, bad hands, extra fingers, text, letters, watermark, logo, speech bubble, collage, split screen, nsfw, gore, blood, hazmat suit, gas mask
+
+PAGE: 1
+LAYOUT: 1
+
+PANEL: 1
+ACTION: a woman with short dark brown hair in green surgical scrubs and a lanyard seen from behind, standing at the lit emergency entrance of a hospital, looking along a long queue of waiting people
+PROMPT: small lone figure, weary posture, quiet weight of responsibility
+COMPOSITION: wide establishing shot, low angle, queue leading away into the distance, hospital filling the frame
+ENVIRONMENT: district hospital exterior at dawn, brick facade, glowing emergency entrance canopy, two ambulances parked, long line of masked people along the pavement, cold morning mist, empty street
+LIGHTING: cold blue pre-dawn light, warm lit windows, long shadows on wet pavement
+FX: faint breath mist in the cold air
+
+PAGE: 2
+LAYOUT: 1
+
+PANEL: 1
+ACTION: packed hospital emergency waiting room, rows of connected plastic seats full of patients in everyday clothes wearing blue surgical masks, one man bent forward gasping for breath, a woman fanning herself, an older man coughing into his elbow, others sitting calmly, a nurse in scrubs walking past with a clipboard
+PROMPT: tense crowded atmosphere, many ordinary people, believable worried faces, patients are not wearing scrubs, illustrated not photographic
+COMPOSITION: wide interior shot, slightly high angle, depth through rows of seats
+ENVIRONMENT: emergency department waiting area, triage window, stretcher trolleys along the wall, IV stands, hand sanitiser dispensers, warm beige walls, wall clock, glass doors, no desks
+LIGHTING: neutral white fluorescent light, warm beige tones, tired atmosphere
+NEGATIVE: green tint, desks, office, courtroom, classroom, reading papers
+
+PAGE: 3
+LAYOUT: 1
+
+PANEL: 1
+CHARACTERS: nurse
+ACTION: standing in a hospital staff room holding a printed instruction sheet against her chest, looking uncertain, two colleagues in the background reading from a wall screen
+PROMPT: nervous new to the job, wide anxious eyes
+COMPOSITION: medium shot, eye level, subject on the left third, background colleagues softly blurred
+ENVIRONMENT: hospital staff room, noticeboard crowded with papers, wall mounted screen, coffee machine, window with grey morning light
+LIGHTING: soft overcast window light, cool tones with warm lamp accent
+
+PAGE: 4
+LAYOUT: 1
+
+PANEL: 1
+CHARACTERS: lead
+ACTION: standing in a busy hospital corridor looking forward, a trolley and hurried staff blurred behind
+PROMPT: tired determined expression, steady eyes, close portrait, weight of responsibility
+COMPOSITION: close medium shot, shallow depth of field, subject centered right
+ENVIRONMENT: hospital corridor, double doors, staff and patients moving in the background
+LIGHTING: cold corridor light from above, warm rim light from a doorway behind
+
+PAGE: 5
+LAYOUT: 1
+
+PANEL: 1
+CHARACTERS: hakim
+ACTION: an elderly consultant facing the camera in a hospital corridor, speaking seriously with one hand slightly raised, in the foreground left the blurred back of a woman's head with short dark hair and green scrubs
+PROMPT: serious conversation, steady eye contact, authority and concern
+COMPOSITION: over the shoulder shot, cinematic, subject on the right, foreground figure out of focus
+ENVIRONMENT: hospital hallway with rows of waiting patients far behind, wall clock, glass doors
+LIGHTING: dramatic window light from the left, cool shadows, warm rim light on his face

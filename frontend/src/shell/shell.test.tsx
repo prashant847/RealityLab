@@ -289,6 +289,26 @@ describe("polish: welcome, keyboard play, voices, feedback, milestones", () => {
     await screen.findAllByRole("article");
     expect(screen.queryByRole("dialog")).toBeNull();
   });
+  it("COVID Round 1 shows the illustrated sequence when its pictures are shipped, then the original decision", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, headers: { get: () => "image/jpeg" } })));
+    window.location.hash = "#/crisis/covid";
+    const first = view(1);
+    first.run = { ...first.run, id: "r-gn" };
+    first.scene.step = { ...first.scene.step!, id: "c1" };
+    localStorage.removeItem("rl.comic.r-gn.c1");
+    const api = fake({ start: vi.fn().mockResolvedValue(first), current: vi.fn().mockResolvedValue(null) });
+    const { container } = render(<Shell api={api} />);
+    await userEvent.click(await screen.findByRole("button", { name: "Begin" }));
+    expect(await screen.findByRole("group", { name: /Page 1 of 5/ })).toBeInTheDocument();         // five illustrated pages
+    expect(container.querySelector("svg.ck-page image")!.getAttribute("href")).toBe("/comic/round1/p1.jpg");
+    await userEvent.click(screen.getByRole("button", { name: "Page 5" }));
+    await userEvent.click(screen.getByRole("button", { name: "Make your decision →" }));
+    expect(await screen.findByRole("heading", { name: "Step 1 title" })).toBeInTheDocument();      // the original step, unchanged
+    await userEvent.click(screen.getByRole("button", { name: /make your decision/i }));
+    expect(screen.getByLabelText(/structured plan/i)).toBeInTheDocument();                         // and its choices
+    vi.unstubAllGlobals();
+    localStorage.removeItem("rl.comic.r-gn.c1");
+  });
   it("an open dialog keeps keyboard focus: the screen-change focus move never steals it", async () => {
     window.location.hash = "#/";
     localStorage.removeItem(WELCOME_KEY);

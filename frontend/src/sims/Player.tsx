@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Intro, Outcome, RunView, SimsApi } from "../api/sims";
 import { BhopalStage } from "./BhopalStage";
 import { CovidStage } from "./CovidStage";
@@ -10,6 +10,8 @@ import { ReadAloud } from "../a11y/speak";
 import { TerminalStage } from "./TerminalStage";
 import { ComicReader } from "./comic/ComicReader";
 import { FIRST_SURGE, FIRST_SURGE_DIR, type ComicPage } from "./comic/firstSurge";
+import { toComicPages, useIllustrated } from "./comic/graphic";
+import { ROUND1_PANELS } from "./comic/round1";
 import "./sims.css";
 
 const KIND_LABEL = { documented: "Documented record", hypothetical: "Fictional exercise", simulation: "Simulation", workday: "A normal day" } as const;
@@ -133,6 +135,9 @@ function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: s
   const [pane, setPane] = useState<"situation" | "decide">("situation");
   const comic = COMICS[step.id];
   const [reading, setReading] = useState(() => !!comic && !comicSeen(view.run.id, step.id));
+  // COVID Round 1 opens with an illustrated sequence when its pictures are shipped; otherwise the drawn comic below is used, exactly as before
+  const illustrated = useIllustrated(reading && comic ? ROUND1_PANELS : null);
+  const illustratedPages = useMemo(() => toComicPages(ROUND1_PANELS), []);
   const finishComic = () => { try { localStorage.setItem(seenKey(view.run.id, step.id), "1"); } catch { /* shown again next time */ } setReading(false); };
   const events = view.scene.events ?? [];
   useEffect(() => {
@@ -194,7 +199,10 @@ function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: s
       </>)}
     </section>
   );
-  if (reading && comic) return <ComicReader pages={comic} dir={FIRST_SURGE_DIR} title={step.title} onDone={finishComic} />;
+  if (reading && comic) {
+    if (illustrated === "pending") return <p className="sim-loading" role="status"><span className="sim-spin" aria-hidden="true" /> Loading…</p>;
+    return illustrated === "yes" ? <ComicReader pages={illustratedPages} title={step.title} onDone={finishComic} /> : <ComicReader pages={comic} dir={FIRST_SURGE_DIR} title={step.title} onDone={finishComic} />;
+  }
   return <Stage theme={theme as Theme} scene={view.scene} decision={decisionPanel} log={view.decisions} />;
 }
 

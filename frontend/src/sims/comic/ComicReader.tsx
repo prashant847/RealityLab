@@ -10,7 +10,7 @@ import "./comic.css";
 function useArt(pages: ComicPage[], dir: string): Record<string, string> {
   const [art, setArt] = useState<Record<string, string>>({});
   useEffect(() => {
-    if (typeof Image === "undefined") return;
+    if (!dir || typeof Image === "undefined") return;
     let live = true;
     for (const p of pages) {
       const tries = ["png", "jpg", "webp"].map((x) => `/comic/${dir}/${p.id}.${x}`);
