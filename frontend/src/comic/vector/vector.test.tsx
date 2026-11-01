@@ -43,7 +43,7 @@ describe("vector first page", () => {
 
   it("the earlier vector page has no photographs or placeholder tags", () => {
     const { container } = render(<IllustratedPage page={legacyRound1Page} script={ART_SCENES_VECTOR[1]} facts={facts} />);
-    expect(container.querySelectorAll("img")).toHaveLength(0);
+    expect(Array.from(container.querySelectorAll("img")).filter((i) => !i.closest(".stick"))).toHaveLength(0);   // no photographs (the drawn stickmen are sprites)
     expect(container.querySelector(".art-tag")).toBeNull();
     expect(container.querySelector(".art-credits")).toBeNull();
     expect(container.querySelectorAll("figure.panel--art")).toHaveLength(4);
@@ -69,7 +69,7 @@ describe("flat reference-style first page", () => {
   const script = ART_SCENES_FLAT[1];
   it("is flat: no photographs, no placeholder tags, no credits, full-body people and the same story text", () => {
     const { container } = render(<IllustratedPage page={legacyRound1Page} script={script} facts={facts} />);
-    expect(container.querySelectorAll("img")).toHaveLength(0);
+    expect(Array.from(container.querySelectorAll("img")).filter((i) => !i.closest(".stick"))).toHaveLength(0);   // no photographs (the drawn stickmen are sprites)
     expect(container.querySelector(".art-tag, .art-credits")).toBeNull();
     expect(container.querySelector(".comic-page--art")).toHaveAttribute("data-grade", "flat");
     expect(container.querySelectorAll(".art--person").length).toBeGreaterThanOrEqual(4);

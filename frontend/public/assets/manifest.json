@@ -3,63 +3,63 @@
   "generator": "tools/generate-assets.mjs",
   "environments": {
     "warehouse_floor": {
-      "path": "environments/warehouse_floor.svg",
+      "path": "scene/env/warehouse_floor.webp",
       "width": 1600,
       "height": 900,
       "description": "Rows of storage racks receding under overhead strip lights.",
       "status": "placeholder"
     },
     "control_room": {
-      "path": "environments/control_room.svg",
+      "path": "scene/env/control_room.webp",
       "width": 1600,
       "height": 900,
       "description": "Monitor wall with trend lines and a few amber alerts.",
       "status": "placeholder"
     },
     "electrical_area": {
-      "path": "environments/electrical_area.svg",
+      "path": "scene/env/electrical_area.webp",
       "width": 1600,
       "height": 900,
       "description": "Switchgear cabinets, cable trays and hazard striping.",
       "status": "placeholder"
     },
     "loading_dock": {
-      "path": "environments/loading_dock.svg",
+      "path": "scene/env/loading_dock.webp",
       "width": 1600,
       "height": 900,
       "description": "Roller doors, one open onto a truck, wet concrete.",
       "status": "placeholder"
     },
     "ops_office": {
-      "path": "environments/ops_office.svg",
+      "path": "scene/env/ops_office.webp",
       "width": 1600,
       "height": 900,
       "description": "Night skyline through floor-to-ceiling glass, ops desk.",
       "status": "placeholder"
     },
     "hospital_corridor": {
-      "path": "environments/hospital_corridor.svg",
+      "path": "scene/env/hospital_corridor.webp",
       "width": 1600,
       "height": 900,
       "description": "Cool one-point-perspective hospital corridor.",
       "status": "placeholder"
     },
     "flooded_highway": {
-      "path": "environments/flooded_highway.svg",
+      "path": "scene/env/flooded_highway.webp",
       "width": 1600,
       "height": 900,
       "description": "Highway disappearing under floodwater, rain and lamplight.",
       "status": "placeholder"
     },
     "alt_depot": {
-      "path": "environments/alt_depot.svg",
+      "path": "scene/env/alt_depot.webp",
       "width": 1600,
       "height": 900,
       "description": "Alternate depot yard with floodlights and stacked containers.",
       "status": "placeholder"
     },
     "press_scene": {
-      "path": "environments/press_scene.svg",
+      "path": "scene/env/press_scene.webp",
       "width": 1600,
       "height": 900,
       "description": "Night entrance ringed with camera lights and microphones.",
@@ -71,109 +71,109 @@
       "name": "Operations Director",
       "role": "You",
       "width": 600,
-      "height": 800,
+      "height": 650,
       "expressions": {
-        "calm": "characters/player_calm.svg",
-        "worried": "characters/player_worried.svg",
-        "angry": "characters/player_angry.svg",
-        "surprised": "characters/player_surprised.svg",
-        "determined": "characters/player_determined.svg",
-        "exhausted": "characters/player_exhausted.svg",
-        "speaking": "characters/player_speaking.svg",
-        "pointing": "characters/player_pointing.svg"
+        "calm": "stick/director_calm.webp",
+        "worried": "stick/director_worried.webp",
+        "angry": "stick/director_angry.webp",
+        "surprised": "stick/director_surprised.webp",
+        "determined": "stick/director_determined.webp",
+        "exhausted": "stick/director_exhausted.webp",
+        "speaking": "stick/director_speaking.webp",
+        "pointing": "stick/director_pointing.webp"
       },
-      "description": "Operations Director, You. Bust portrait, transparent background.",
-      "status": "placeholder"
+      "description": "Operations Director. Drawn stickman (Henry Stickmin style), full body, transparent background; see tools/slice_sprites.py.",
+      "status": "real"
     },
     "kavya": {
       "name": "Kavya Rao",
       "role": "Safety Chief",
       "width": 600,
-      "height": 800,
+      "height": 650,
       "expressions": {
-        "calm": "characters/kavya_calm.svg",
-        "worried": "characters/kavya_worried.svg",
-        "angry": "characters/kavya_angry.svg",
-        "surprised": "characters/kavya_surprised.svg",
-        "determined": "characters/kavya_determined.svg",
-        "exhausted": "characters/kavya_exhausted.svg",
-        "speaking": "characters/kavya_speaking.svg",
-        "pointing": "characters/kavya_pointing.svg"
+        "calm": "stick/kavya_calm.webp",
+        "worried": "stick/kavya_worried.webp",
+        "angry": "stick/kavya_angry.webp",
+        "surprised": "stick/kavya_surprised.webp",
+        "determined": "stick/kavya_determined.webp",
+        "exhausted": "stick/kavya_exhausted.webp",
+        "speaking": "stick/kavya_speaking.webp",
+        "pointing": "stick/kavya_pointing.webp"
       },
-      "description": "Kavya Rao, Safety Chief. Bust portrait, transparent background.",
-      "status": "placeholder"
+      "description": "Kavya Rao. Drawn stickman (Henry Stickmin style), full body, transparent background; see tools/slice_sprites.py.",
+      "status": "real"
     },
     "arjun": {
       "name": "Arjun Mehta",
       "role": "IT & Systems Lead",
       "width": 600,
-      "height": 800,
+      "height": 650,
       "expressions": {
-        "calm": "characters/arjun_calm.svg",
-        "worried": "characters/arjun_worried.svg",
-        "angry": "characters/arjun_angry.svg",
-        "surprised": "characters/arjun_surprised.svg",
-        "determined": "characters/arjun_determined.svg",
-        "exhausted": "characters/arjun_exhausted.svg",
-        "speaking": "characters/arjun_speaking.svg",
-        "pointing": "characters/arjun_pointing.svg"
+        "calm": "stick/arjun_calm.webp",
+        "worried": "stick/arjun_worried.webp",
+        "angry": "stick/arjun_angry.webp",
+        "surprised": "stick/arjun_surprised.webp",
+        "determined": "stick/arjun_determined.webp",
+        "exhausted": "stick/arjun_exhausted.webp",
+        "speaking": "stick/arjun_speaking.webp",
+        "pointing": "stick/arjun_pointing.webp"
       },
-      "description": "Arjun Mehta, IT & Systems Lead. Bust portrait, transparent background.",
-      "status": "placeholder"
+      "description": "Arjun Mehta. Drawn stickman (Henry Stickmin style), full body, transparent background; see tools/slice_sprites.py.",
+      "status": "real"
     },
     "nisha": {
       "name": "Nisha Sen",
       "role": "Finance Director",
       "width": 600,
-      "height": 800,
+      "height": 650,
       "expressions": {
-        "calm": "characters/nisha_calm.svg",
-        "worried": "characters/nisha_worried.svg",
-        "angry": "characters/nisha_angry.svg",
-        "surprised": "characters/nisha_surprised.svg",
-        "determined": "characters/nisha_determined.svg",
-        "exhausted": "characters/nisha_exhausted.svg",
-        "speaking": "characters/nisha_speaking.svg",
-        "pointing": "characters/nisha_pointing.svg"
+        "calm": "stick/nisha_calm.webp",
+        "worried": "stick/nisha_worried.webp",
+        "angry": "stick/nisha_angry.webp",
+        "surprised": "stick/nisha_surprised.webp",
+        "determined": "stick/nisha_determined.webp",
+        "exhausted": "stick/nisha_exhausted.webp",
+        "speaking": "stick/nisha_speaking.webp",
+        "pointing": "stick/nisha_pointing.webp"
       },
-      "description": "Nisha Sen, Finance Director. Bust portrait, transparent background.",
-      "status": "placeholder"
+      "description": "Nisha Sen. Drawn stickman (Henry Stickmin style), full body, transparent background; see tools/slice_sprites.py.",
+      "status": "real"
     },
     "raghav": {
       "name": "Raghav Verma",
       "role": "Logistics Manager",
       "width": 600,
-      "height": 800,
+      "height": 650,
       "expressions": {
-        "calm": "characters/raghav_calm.svg",
-        "worried": "characters/raghav_worried.svg",
-        "angry": "characters/raghav_angry.svg",
-        "surprised": "characters/raghav_surprised.svg",
-        "determined": "characters/raghav_determined.svg",
-        "exhausted": "characters/raghav_exhausted.svg",
-        "speaking": "characters/raghav_speaking.svg",
-        "pointing": "characters/raghav_pointing.svg"
+        "calm": "stick/raghav_calm.webp",
+        "worried": "stick/raghav_worried.webp",
+        "angry": "stick/raghav_angry.webp",
+        "surprised": "stick/raghav_surprised.webp",
+        "determined": "stick/raghav_determined.webp",
+        "exhausted": "stick/raghav_exhausted.webp",
+        "speaking": "stick/raghav_speaking.webp",
+        "pointing": "stick/raghav_pointing.webp"
       },
-      "description": "Raghav Verma, Logistics Manager. Bust portrait, transparent background.",
-      "status": "placeholder"
+      "description": "Raghav Verma. Drawn stickman (Henry Stickmin style), full body, transparent background; see tools/slice_sprites.py.",
+      "status": "real"
     },
     "isha": {
       "name": "Dr. Isha Kapoor",
       "role": "Hospital Liaison",
       "width": 600,
-      "height": 800,
+      "height": 650,
       "expressions": {
-        "calm": "characters/isha_calm.svg",
-        "worried": "characters/isha_worried.svg",
-        "angry": "characters/isha_angry.svg",
-        "surprised": "characters/isha_surprised.svg",
-        "determined": "characters/isha_determined.svg",
-        "exhausted": "characters/isha_exhausted.svg",
-        "speaking": "characters/isha_speaking.svg",
-        "pointing": "characters/isha_pointing.svg"
+        "calm": "stick/isha_calm.webp",
+        "worried": "stick/isha_worried.webp",
+        "angry": "stick/isha_angry.webp",
+        "surprised": "stick/isha_surprised.webp",
+        "determined": "stick/isha_determined.webp",
+        "exhausted": "stick/isha_exhausted.webp",
+        "speaking": "stick/isha_speaking.webp",
+        "pointing": "stick/isha_pointing.webp"
       },
-      "description": "Dr. Isha Kapoor, Hospital Liaison. Bust portrait, transparent background.",
-      "status": "placeholder"
+      "description": "Dr. Isha Kapoor. Drawn stickman (Henry Stickmin style), full body, transparent background; see tools/slice_sprites.py.",
+      "status": "real"
     }
   },
   "effects": {

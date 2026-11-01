@@ -10,10 +10,12 @@ export interface A11y {
   readAloud: boolean;                             // show "Read aloud" buttons
   speechRate: number;                             // 0.6 to 1.4
   voice: "female" | "male";                       // which natural voice reads aloud
+  comicNarrator: boolean;                         // the narrator stickman appears on comic pages (separate from the reaction scenes, which always play)
+  storyVoices: boolean;                           // the comic narrator, the characters in a reaction scene and the Archivist speak
 }
 export const A11Y_KEY = "rl.a11y";
 export const TEXT_SIZES = [100, 125, 150, 175, 200] as const;
-const DEFAULTS: A11y = { textSize: 100, contrast: "normal", colorblind: false, easyFont: false, bigTargets: false, readAloud: false, speechRate: 1, voice: "female" };
+const DEFAULTS: A11y = { textSize: 100, contrast: "normal", colorblind: false, easyFont: false, bigTargets: false, readAloud: false, speechRate: 1, voice: "female", comicNarrator: true, storyVoices: true };
 
 function load(): A11y {
   try {
@@ -22,7 +24,7 @@ function load(): A11y {
       textSize: (TEXT_SIZES as readonly number[]).includes(r.textSize as number) ? (r.textSize as A11y["textSize"]) : 100,
       contrast: r.contrast === "high" ? "high" : "normal", colorblind: r.colorblind === true, easyFont: r.easyFont === true, bigTargets: r.bigTargets === true,
       readAloud: r.readAloud === true, speechRate: typeof r.speechRate === "number" ? Math.max(0.6, Math.min(1.4, r.speechRate)) : 1,
-      voice: r.voice === "male" ? "male" : "female",
+      voice: r.voice === "male" ? "male" : "female", storyVoices: r.storyVoices !== false, comicNarrator: r.comicNarrator !== false,
     };
   } catch { /* unreadable: defaults */ }
   return { ...DEFAULTS };

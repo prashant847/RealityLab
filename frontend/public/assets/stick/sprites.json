@@ -1,0 +1,202 @@
+{
+ "arjun": {
+  "canvas": [
+   600,
+   650
+  ],
+  "bust": [
+   380,
+   400
+  ],
+  "poses": [
+   "calm",
+   "speaking",
+   "pointing",
+   "angry",
+   "worried",
+   "exhausted",
+   "surprised",
+   "determined"
+  ]
+ },
+ "kavya": {
+  "canvas": [
+   600,
+   650
+  ],
+  "bust": [
+   380,
+   400
+  ],
+  "poses": [
+   "calm",
+   "speaking",
+   "pointing",
+   "angry",
+   "worried",
+   "exhausted",
+   "surprised",
+   "determined"
+  ]
+ },
+ "nisha": {
+  "canvas": [
+   600,
+   650
+  ],
+  "bust": [
+   380,
+   400
+  ],
+  "poses": [
+   "calm",
+   "speaking",
+   "pointing",
+   "angry",
+   "worried",
+   "exhausted",
+   "surprised",
+   "determined"
+  ]
+ },
+ "raghav": {
+  "canvas": [
+   600,
+   650
+  ],
+  "bust": [
+   380,
+   400
+  ],
+  "poses": [
+   "calm",
+   "speaking",
+   "pointing",
+   "angry",
+   "worried",
+   "exhausted",
+   "surprised",
+   "determined"
+  ]
+ },
+ "isha": {
+  "canvas": [
+   600,
+   650
+  ],
+  "bust": [
+   380,
+   400
+  ],
+  "poses": [
+   "calm",
+   "speaking",
+   "pointing",
+   "angry",
+   "worried",
+   "exhausted",
+   "surprised",
+   "determined"
+  ]
+ },
+ "director": {
+  "canvas": [
+   600,
+   650
+  ],
+  "bust": [
+   380,
+   400
+  ],
+  "poses": [
+   "calm",
+   "speaking",
+   "pointing",
+   "angry",
+   "worried",
+   "exhausted",
+   "surprised",
+   "determined"
+  ]
+ },
+ "worker": {
+  "canvas": [
+   600,
+   650
+  ],
+  "bust": [
+   380,
+   400
+  ],
+  "poses": [
+   "calm",
+   "speaking",
+   "pointing",
+   "angry",
+   "worried",
+   "exhausted",
+   "surprised",
+   "determined"
+  ]
+ },
+ "worker_b": {
+  "canvas": [
+   600,
+   650
+  ],
+  "bust": [
+   380,
+   400
+  ],
+  "poses": [
+   "calm",
+   "speaking",
+   "pointing",
+   "angry",
+   "worried",
+   "exhausted",
+   "surprised",
+   "determined"
+  ]
+ },
+ "worker_c": {
+  "canvas": [
+   600,
+   650
+  ],
+  "bust": [
+   380,
+   400
+  ],
+  "poses": [
+   "calm",
+   "speaking",
+   "pointing",
+   "angry",
+   "worried",
+   "exhausted",
+   "surprised",
+   "determined"
+  ]
+ },
+ "worker_d": {
+  "canvas": [
+   600,
+   650
+  ],
+  "bust": [
+   380,
+   400
+  ],
+  "poses": [
+   "calm",
+   "speaking",
+   "pointing",
+   "angry",
+   "worried",
+   "exhausted",
+   "surprised",
+   "determined"
+  ]
+ }
+}

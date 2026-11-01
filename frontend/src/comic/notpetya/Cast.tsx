@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { hasSprite, spritePose, StickSprite } from "../stick/StickSprite";
 
 // STAGE 3 PREVIEW. Not used by the game yet.
 // Flat 2D vector people for the NotPetya story: one consistent dark outline, solid fills, one shade shape per garment, no gradients.
@@ -238,6 +239,9 @@ export const WHO_TITLES: Record<Who, string> = { arjun: "IT Lead", kavya: "Termi
 
 /** One person for the comic, by the game's own id, expression and pose. `bust` crops to head and shoulders. */
 export function NpPerson({ who, expression = "neutral", pose = "idle", bust = false, label }: { who: Who; expression?: Expr | string; pose?: StagePose; bust?: boolean; label?: string }) {
+  // The six named people are drawn stickmen (sprites); staff extras keep the flat vector figure below.
+  const key: string = who;
+  if (hasSprite(key)) return <StickSprite who={key} pose={spritePose(expression, pose)} bust={bust} meta={{ pose, expression }} label={label ?? `${WHO_TITLES[who]}, ${expression}`} />;
   const p: Pose = pose === "at_desk" || pose === "arms_down" ? "idle" : pose;
   const mood = (EXPRESSIONS as string[]).includes(expression) ? (expression as Expr) : LEGACY[expression] ?? "neutral";
   return <Figure role={KEY_OF[who]} mood={mood} pose={p} bust={bust} title={label ?? `${WHO_TITLES[who]}, ${mood}`} data={{ who, pose, expression: mood }} />;

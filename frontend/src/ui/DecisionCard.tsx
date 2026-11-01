@@ -41,14 +41,14 @@ export function DecisionCard({ choice, selected, onSelect, index, endorsements =
 }
 
 /** Radio-group of options + a commit button. Consequential choices need a second, explicit confirmation. */
-export function DecisionList({ choices, busy, onCommit, endorsements = {} }: {
-  choices: Choice[]; busy?: boolean; onCommit: (choiceId: string) => void; endorsements?: Record<string, Endorsement[]>;
+export function DecisionList({ choices, busy, onCommit, onSelect, endorsements = {} }: {
+  choices: Choice[]; busy?: boolean; onCommit: (choiceId: string) => void; onSelect?: (choiceId: string) => void; endorsements?: Record<string, Endorsement[]>;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [armed, setArmed] = useState(false);
   const current = choices.find((c) => c.id === selected && c.available) ?? null;
 
-  const select = (id: string) => { setSelected(id); setArmed(false); };
+  const select = (id: string) => { setSelected(id); setArmed(false); onSelect?.(id); };
   const commit = () => {
     if (!current || busy) return;
     if (current.confirm && !armed) { setArmed(true); return; }

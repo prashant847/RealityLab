@@ -2,15 +2,19 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { getA11y, useA11y } from "./a11y";
 
 const browserVoice = (): boolean => typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
-export const canSpeak = (): boolean => browserVoice() || naturalVoices.length > 0;
+export const canSpeak = (): boolean => browserVoice() || naturalVoices.length > 0 || humanVoices;
 
 // The natural voice (Piper) runs on this computer; the app asks once which voices are installed. Without it the computer's own voice is used.
 let naturalVoices: string[] = [];
+let humanVoices = false;                                  // an ElevenLabs key is saved: real human voices, no installed files needed
 let naturalChecked: Promise<void> | null = null;
 const checkNatural = (): Promise<void> => naturalChecked ??= (typeof fetch === "function"
-  ? fetch("/api/tts/status").then((r) => (r.ok ? r.json() : { voices: [] })).then((j: { voices?: string[] }) => { naturalVoices = j.voices ?? []; }).catch(() => { naturalVoices = []; })
+  ? fetch("/api/tts/status").then((r) => (r.ok ? r.json() : { voices: [] })).then((j: { voices?: string[]; human?: boolean }) => { naturalVoices = j.voices ?? []; humanVoices = j.human === true; }).catch(() => { naturalVoices = []; humanVoices = false; })
   : Promise.resolve());
-export const naturalVoiceReady = async (): Promise<boolean> => { await checkNatural(); return naturalVoices.length > 0; };
+export const naturalVoiceReady = async (): Promise<boolean> => { await checkNatural(); return naturalVoices.length > 0 || humanVoices; };
+/** After a key is saved or forgotten in Settings: ask the service again. */
+export const refreshVoices = (): Promise<void> => { naturalChecked = null; return checkNatural(); };
+export const hasHumanVoices = (): boolean => humanVoices;
 void checkNatural();
 
 let speaking = false;
@@ -41,9 +45,13 @@ export function chunkText(text: string, max = 260): string[] {
 }
 
 export async function fetchPiece(text: string, voice: string, rate: number): Promise<string> {
-  const r = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, voice, rate }) });
-  if (!r.ok) throw new Error(`speech ${r.status}`);
-  return URL.createObjectURL(await r.blob());
+  const ac = new AbortController();
+  const timer = window.setTimeout(() => ac.abort(), 25000);      // a voice service that never answers must not freeze the reader
+  try {
+    const r = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, voice, rate }), signal: ac.signal });
+    if (!r.ok) throw new Error(`speech ${r.status}`);
+    return URL.createObjectURL(await r.blob());
+  } finally { window.clearTimeout(timer); }
 }
 
 const playUrl = (url: string, mine: number): Promise<void> => new Promise((resolve, reject) => {

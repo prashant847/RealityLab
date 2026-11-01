@@ -1,51 +1,24 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { waitFor } from "@testing-library/react";
 import { ComicReader } from "./ComicReader";
 import { ROUND1_STORY } from "./round1Story";
-import { FIRST_SURGE } from "./firstSurge";
 
-describe("the first-surge comic", () => {
-  it("has four pages, each with a description for screen readers and a line for read-aloud", () => {
-    expect(FIRST_SURGE.map((p) => p.id)).toEqual(["morning", "waiting", "huddle", "question"]);
-    for (const p of FIRST_SURGE) { expect(p.alt.length).toBeGreaterThan(40); expect(p.spoken.length).toBeGreaterThan(20); }
-  });
-
-  it("only says what the round says: 31 waiting, a mix of severities, changing guidance, an anxious and partly new team, the round's own question", () => {
-    const all = FIRST_SURGE.map((p) => p.alt + " " + p.spoken).join(" ");
-    for (const fact of ["Thirty-one", "faster than your team can assess them", "Guidance from health authorities is still changing", "anxious and some are new to this", "how you want to decide who is seen first"]) expect(all).toContain(fact);
-  });
-
+describe("the comic reader", () => {
   it("is read a page at a time, from the keyboard or the buttons, and can be skipped", async () => {
     const done = vi.fn();
-    const { container } = render(<ComicReader pages={FIRST_SURGE} title="The first surge" onDone={done} />);
-    expect(screen.getByRole("group", { name: /Page 1 of 4/ })).toBeInTheDocument();
-    expect(container.querySelector("svg.ck-page")).not.toBeNull();
+    render(<ComicReader pages={ROUND1_STORY} title="The first surge" onDone={done} />);
+    expect(screen.getByRole("group", { name: /Page 1 of 3/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "← Back" })).toBeDisabled();
     await userEvent.keyboard("{ArrowRight}");
-    expect(screen.getByRole("group", { name: /Page 2 of 4/ })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Next page →" }));
+    expect(screen.getByRole("group", { name: /Page 2 of 3/ })).toBeInTheDocument();
     await userEvent.keyboard("{ArrowLeft}");
-    expect(screen.getByRole("group", { name: /Page 2 of 4/ })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Page 4" }));
-    expect(screen.getByRole("button", { name: "Make your decision →" })).toBeInTheDocument();
-    expect(done).not.toHaveBeenCalled();
+    expect(screen.getByRole("group", { name: /Page 1 of 3/ })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Page 3" }));
     await userEvent.click(screen.getByRole("button", { name: "Make your decision →" }));
     expect(done).toHaveBeenCalledTimes(1);
     await userEvent.click(screen.getByRole("button", { name: "Skip the comic" }));
     expect(done).toHaveBeenCalledTimes(2);
-  });
-
-  it("uses a finished picture for a page when one has been added, keeps the live text on top, and falls back to the drawing otherwise", async () => {
-    class Img { onload: (() => void) | null = null; onerror: (() => void) | null = null; set src(v: string) { setTimeout(() => (v.endsWith("/first-surge/morning.png") ? this.onload?.() : this.onerror?.()), 0); } }
-    vi.stubGlobal("Image", Img);
-    const { container } = render(<ComicReader pages={FIRST_SURGE} dir="first-surge" title="The first surge" onDone={() => undefined} />);
-    await waitFor(() => expect(container.querySelector("svg.ck-page image")?.getAttribute("href")).toBe("/comic/first-surge/morning.png"));
-    expect(container.querySelector("svg.ck-page")!.textContent).toContain("Thirty-one waiting");     // the words are still live text
-    await userEvent.keyboard("{ArrowRight}");
-    expect(container.querySelector("svg.ck-page image")).toBeNull();                                  // page 2 has no picture: the drawn art
-    vi.unstubAllGlobals();
   });
 });
 
@@ -56,6 +29,7 @@ describe("COVID Round 1 comic", () => {
     const { container } = render(<>{ROUND1_STORY.map((p) => <div key={p.id}>{p.render()}</div>)}</>);
     const text = container.textContent!.replace(/\s+/g, " ");
     for (const fact of ["Day three, 07:30.", "Overnight, admissions doubled.", "Thirty-one people are waiting", "emergency department.", "A mix of mild and severe", "breathing difficulty.", "Patients are arriving faster", "than your team can assess them.", "Guidance from health authorities", "is still changing.", "Your team is anxious and some", "are new to this.", "Thirty-one in the department.", "Tell me how you want", "seen first.", "How do you organise who is seen first?"]) expect(text).toContain(fact);
-    expect(container.querySelectorAll("image")).toHaveLength(0);                                      // drawn in code, no pictures
+    expect(container.querySelectorAll("svg")).toHaveLength(0);                                         // no drawn SVG art any more
+    expect(container.querySelectorAll(".cm-panel > img")).toHaveLength(11);                            // eleven inked panels
   });
 });

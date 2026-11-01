@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { hasSprite, spritePose, StickSprite } from "../stick/StickSprite";
 
 // Flat full-body people in the reference style: no outlines, solid fills, small faces (dot eyes, thin brows, a short mouth), a slightly large
 // head, simple torso and trousers, round mitten hands and a few darker detail shapes on the clothes. Figure space is 400 x 1000.
@@ -193,6 +194,8 @@ export const personLabel = (who: Who, expression: Expr) => `${WHO_NAMES[who]}, $
 
 /** One person, full body, in a pose and expression; fills a 400 x 1000 figure space. */
 export function FlatPerson({ who, expression = "neutral", pose = "idle", label, bust = false }: { who: Who; expression?: Expr; pose?: Pose; label?: string; bust?: boolean }) {
+  const key: string = who;   // (a plain string, so the vector figure below stays typed as a fallback)
+  if (hasSprite(key)) return <StickSprite who={key} pose={spritePose(expression, pose)} bust={bust} meta={{ pose, expression }} label={label ?? personLabel(who, expression)} />;
   const L = LOOKS[who], f = FACES[expression];
   const turn = pose === "at_desk" ? -16 : 0;
   const lean = pose === "at_desk" ? -5 : 0;
@@ -210,7 +213,6 @@ export function FlatPerson({ who, expression = "neutral", pose = "idle", label, 
   return (
     <svg viewBox={bust ? "46 -30 308 372" : "0 0 400 1000"} role="img" aria-label={label ?? personLabel(who, expression)} data-who={who} data-pose={pose} data-expression={expression}>
       <g transform={`rotate(${lean} 200 560)`}>
-        {L.female && who !== "isha" && L.style === "ponytail" ? null : null}
         <path d="M108 556 H196 L188 930 H118 Z" fill={L.trousers} /><path d="M204 556 H292 L282 930 H212 Z" fill={L.trousers} />
         <ellipse cx="146" cy="952" rx="54" ry="22" fill={L.shoes} /><ellipse cx="256" cy="952" rx="54" ry="22" fill={L.shoes} />
         <path d="M70 236 Q70 206 104 198 L150 184 H250 L296 198 Q330 206 330 236 L318 566 H82 Z" fill={L.top} />

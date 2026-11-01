@@ -4,6 +4,10 @@ import { Figure } from "./art/Figure";
 import type { ShotPlan } from "./art/shots";
 import { characterInfo, characterUrl } from "./assets";
 import type { CharacterId, CharacterPlacement, Expression } from "./types";
+import { spritePose, StickSprite, type SpriteWho } from "./stick/StickSprite";
+
+/** The backend's character ids and the sprite sheets they use. */
+const WHO: Partial<Record<CharacterId, SpriteWho>> = { player: "director", arjun: "arjun", kavya: "kavya", nisha: "nisha", raghav: "raghav", isha: "isha" };
 
 function Silhouette({ id }: { id: string }) {
   const { name } = characterInfo(id as never);
@@ -27,6 +31,24 @@ function ImageCharacter({ id, expression }: { id: CharacterId; expression: Expre
     : <Silhouette id={id} />;
 }
 
+/** The drawn stickman sprite; if its picture cannot load, the vector figure takes over (and, if that cannot draw, the boundary's fallback). */
+function PlacedArt({ p, expression, name }: { p: ShotPlan["placements"][number]; expression?: Expression; name: string }) {
+  const [spriteFailed, setSpriteFailed] = useState(false);
+  const who = WHO[p.id];
+  if (who && p.view !== "back" && !spriteFailed) {
+    const emotion = String(p.face?.emotion ?? expression ?? "calm");
+    return (
+      <StickSprite who={who} bust={!p.full} speaking={p.speaking} pose={spritePose(emotion, p.pose)} meta={{ pose: p.pose, expression: emotion }}
+        flip={(p.pose === "point" || p.pose === "point_map") && p.facing === "right"} label={`${name}, ${emotion.replace(/_/g, " ")}`}
+        onError={() => setSpriteFailed(true)} />
+    );
+  }
+  return (
+    <Figure id={p.id} face={p.face} pose={p.pose} facing={p.facing} view={p.view} light={p.light} lightFrom={p.lightFrom} full={p.full}
+      label={p.view === "back" ? `${name}, seen from behind` : `${name}, ${String(p.face?.emotion).replace(/_/g, " ")}`} />
+  );
+}
+
 export function CharacterLayer({ characters, plan }: { characters: CharacterPlacement[]; plan: ShotPlan }) {
   return (
     <div className="characters">
@@ -38,8 +60,7 @@ export function CharacterLayer({ characters, plan }: { characters: CharacterPlac
             data-character={p.id} data-expression={c?.expression} data-emotion={p.face?.emotion} data-pose={p.pose}
             style={{ left: `${p.x}%`, bottom: `${p.bottom}%`, height: `${p.height}%`, zIndex: p.z, filter: p.dim ? `brightness(${1 - p.dim})` : undefined }}>
             <ArtBoundary fallback={<ImageCharacter id={p.id} expression={c?.expression ?? "calm"} />}>
-              <Figure id={p.id} face={p.face} pose={p.pose} facing={p.facing} view={p.view} light={p.light} lightFrom={p.lightFrom} full={p.full}
-                label={p.view === "back" ? `${name}, seen from behind` : `${name}, ${String(p.face?.emotion).replace(/_/g, " ")}`} />
+              <PlacedArt p={p} expression={c?.expression} name={name} />
             </ArtBoundary>
           </div>
         );

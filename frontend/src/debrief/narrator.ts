@@ -1,4 +1,4 @@
-import { chunkText, fetchPiece, naturalVoiceReady, stopSpeaking } from "../a11y/speak";
+import { chunkText, fetchPiece, hasHumanVoices, naturalVoiceReady, stopSpeaking } from "../a11y/speak";
 import { getA11y } from "../a11y/a11y";
 import { audio } from "../audio/audio";
 import { spoken, type Scene } from "./script";
@@ -45,6 +45,8 @@ export class Narrator {
   private smooth = 0;
   private prefetch = new Map<number, Promise<string>>();
   rate = 1;
+  /** A human voice (the librarian) is speaking: it is played as it is, without the deepening and the stone-hall effects made for the offline voices. */
+  private human = false;
 
   constructor(readonly scenes: Scene[], readonly lang: Lang = "en", readonly style: Style = "calm") {
     scenes.forEach((s, si) => {
@@ -128,8 +130,10 @@ export class Narrator {
     const hit = this.prefetch.get(i);
     if (hit) return hit;
     const pr = PRESET[this.style];
-    const tempo = getA11y().speechRate * this.rate * pr.tempo;
-    const p = fetchPiece(this.units[i].text, ARCHIVIST_VOICE(this.lang, this.style), Math.max(0.5, Math.min(2, tempo / pr.depth[this.lang])));   // generated faster, because it is played back slower
+    const speed = getA11y().speechRate * this.rate;
+    const p = this.human
+      ? fetchPiece(this.units[i].text, "librarian", Math.max(0.6, Math.min(1.4, speed)))
+      : fetchPiece(this.units[i].text, ARCHIVIST_VOICE(this.lang, this.style), Math.max(0.5, Math.min(2, (speed * pr.tempo) / pr.depth[this.lang])));   // generated faster, because it is played back slower
     p.catch(() => undefined);
     this.prefetch.set(i, p);
     return p;
@@ -143,6 +147,7 @@ export class Narrator {
       if (!this.analyser) {
         const an = (this.analyser = ctx.createAnalyser()); an.fftSize = 1024; an.smoothingTimeConstant = 0.35;
         this.td = new Uint8Array(an.fftSize); this.fd = new Uint8Array(an.frequencyBinCount);
+        if (this.human) { an.connect(ctx.destination); ctx.createMediaElementSource(el).connect(an); this.wired.add(el); void ctx.resume(); return; }
         const pr = PRESET[this.style];
         const low = ctx.createBiquadFilter(); low.type = "lowshelf"; low.frequency.value = pr.low[0]; low.gain.value = pr.low[1];
         const body = ctx.createBiquadFilter(); body.type = "peaking"; body.frequency.value = pr.chest[0]; body.Q.value = 0.9; body.gain.value = pr.chest[1];   // calm: eases the consonants; commanding: warms the chest
@@ -163,8 +168,9 @@ export class Narrator {
   }
 
   private async run(mine: number): Promise<void> {
-    const natural = await naturalVoiceReady();
+    const natural = getA11y().storyVoices && (await naturalVoiceReady());
     if (mine !== this.token) return;
+    this.human = natural && hasHumanVoices();
     let engine: NarratorState["engine"] = natural ? "natural" : typeof speechSynthesis !== "undefined" && typeof SpeechSynthesisUtterance !== "undefined" ? "browser" : "timed";
     this.set({ engine });
     while (this.cursor < this.units.length) {
@@ -181,7 +187,10 @@ export class Narrator {
           if (i + 1 < this.units.length) void this.fetchUnit(i + 1);
           try { await this.playUrl(url, mine); } finally { URL.revokeObjectURL(url); this.prefetch.delete(i); }
           ok = true;
-        } catch { engine = typeof speechSynthesis !== "undefined" ? "browser" : "timed"; if (mine === this.token) this.set({ engine }); }
+        } catch {                                                  // this line only: read it another way, then try the voice again for the next one
+          this.prefetch.delete(i);
+          if (mine === this.token) { try { await this.waitTimed(u.text, mine); ok = true; } catch { ok = true; } }
+        }
       }
       if (!ok && engine === "browser") { try { await this.sayWithBrowser(u.text, mine); ok = true; } catch { engine = "timed"; if (mine === this.token) this.set({ engine }); } }
       if (!ok && engine === "timed") await this.waitTimed(u.text, mine);
@@ -197,11 +206,16 @@ export class Narrator {
   private playUrl(url: string, mine: number): Promise<void> {
     return new Promise((resolve, reject) => {
       const el = new Audio(url);
-      el.preservesPitch = false;                                          // slowing the playback lowers the pitch, as for a bigger, older voice
-      el.playbackRate = PRESET[this.style].depth[this.lang];
+      if (!this.human) { el.preservesPitch = false; el.playbackRate = PRESET[this.style].depth[this.lang]; }   // slowing the playback lowers the pitch, as for a bigger, older voice
       this.audio = el;
       this.wire(el);
-      const done = () => { if (this.audio === el) this.audio = null; };
+      let last = -1, still = 0;
+      const dog = window.setInterval(() => {                       // audio that stops moving while it should be playing (a stalled stream) must not hold the debrief forever
+        if (mine !== this.token) { window.clearInterval(dog); return; }
+        if (!this.state.playing || el.paused) { still = 0; return; }
+        if (el.currentTime === last) { if (++still >= 8) { window.clearInterval(dog); done(); reject(new Error("playback stalled")); } } else { last = el.currentTime; still = 0; }
+      }, 1000);
+      const done = () => { window.clearInterval(dog); if (this.audio === el) this.audio = null; };
       el.onended = () => { done(); resolve(); };
       el.onerror = () => { done(); reject(new Error("playback failed")); };
       el.onpause = () => { if (mine !== this.token) { done(); resolve(); } };
@@ -220,9 +234,11 @@ export class Narrator {
         if (this.lang === "hi") u.lang = "hi-IN";
         const voice = (synth.getVoices?.() ?? []).find((v) => v.lang.toLowerCase().startsWith(this.lang === "hi" ? "hi" : "en"));
         if (voice) { u.voice = voice; u.lang = voice.lang; }
-        u.onstart = () => { this.synthSpeaking = true; this.speakingSince = performance.now(); };
-        u.onend = () => { this.synthSpeaking = false; resolve(); };
-        u.onerror = (e) => { this.synthSpeaking = false; if ((e as SpeechSynthesisErrorEvent).error === "canceled" || (e as SpeechSynthesisErrorEvent).error === "interrupted") resolve(); else reject(new Error("speech failed")); };
+        // Some desktop builds have no speech voices: speak() then never starts or ends. Give up quickly and let the caller fall back to timed captions.
+        const noStart = window.setTimeout(() => { this.synthSpeaking = false; synth.cancel(); reject(new Error("speech never started")); }, 2500);
+        u.onstart = () => { window.clearTimeout(noStart); this.synthSpeaking = true; this.speakingSince = performance.now(); };
+        u.onend = () => { window.clearTimeout(noStart); this.synthSpeaking = false; resolve(); };
+        u.onerror = (e) => { window.clearTimeout(noStart); this.synthSpeaking = false; if ((e as SpeechSynthesisErrorEvent).error === "canceled" || (e as SpeechSynthesisErrorEvent).error === "interrupted") resolve(); else reject(new Error("speech failed")); };
         synth.speak(u);
       }, 80);
     });

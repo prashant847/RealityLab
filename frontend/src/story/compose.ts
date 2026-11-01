@@ -1,6 +1,6 @@
 import type { ArtLayer, ArtPanelScript, ArtSceneScript } from "../comic/illustrated/scenes";
 import type { Expr, StagePose as Pose, Who } from "../comic/notpetya/Cast";
-import { DESK_ENVS, FLOOR_Y, PERSON_UNITS, type EnvId } from "../comic/notpetya/Env";
+import { DESK_ENVS, type EnvId } from "../comic/notpetya/Env";
 import type { ComicPageData, PanelData } from "../comic/types";
 import type { GameEvent } from "../api/types";
 import { eventTitle, choiceResult, plainPage } from "./plain";
@@ -29,12 +29,6 @@ export function layoutFor(n: number): { columns: string; shapes: { span: 1 | 2; 
   return { columns: "3fr 2fr", shapes: [w, a, b, a, b, w] };
 }
 
-/** Where the floor (or desk top) of a room sits inside a panel of a given shape, as a percentage of panel height. */
-function groundPct(env: EnvId, ratio: number): number {
-  const y = DESK_ENVS.includes(env) ? 640 : FLOOR_Y[env];
-  if (ratio >= 16 / 9) { const vh = 1600 / ratio, y0 = (900 - vh) / 2; return ((y - y0) / vh) * 100; }
-  return (y / 900) * 100;
-}
 
 const X_AT: Record<Cast["at"], number> = { l: 24, c: 50, r: 76 };
 
@@ -69,36 +63,19 @@ export function textReserve(lines: { text: string; at: Cast["at"] }[], narration
 
 const STAFF: Who[] = ["worker", "worker_b", "worker_c", "worker_d"];
 
-function personLayer(c: Cast, env: EnvId, ratio: number, reserve: number, index: number, seed: number): ArtLayer {
-  const desk = DESK_ENVS.includes(env);
-  const ground = groundPct(env, ratio);
-  let h: number, top: number;
-  if (desk) { h = 118; top = ground - 0.5 * h; if (reserve > 0 && top < reserve + 3) { top = reserve + 3; h = Math.max(60, 2 * (ground - top)); } }
-  else { const headAt = reserve > 0 ? Math.max(24, reserve + 4) : 22; h = (ground + 10 - headAt) / 0.966; top = headAt - 0.008 * h; h = Math.min(h, 96); }
-  const w = (0.4 * h) / ratio * 100 * 1.04;
-  const pose: Pose | undefined = c.pose ?? (desk && c.who === "arjun" ? "at_desk" : undefined);
-  return { asset: `person.${c.who}.${index}`, role: "person", person: { who: c.who === "worker" ? STAFF[(seed + index * 3) % STAFF.length] : c.who, expression: c.expr, pose }, box: { x: X_AT[c.at] - w / 2, y: top, w, h } };
-}
+/** Every person is drawn at one scale with their feet on the floor line of the comic background (16:9 pictures whose floor starts well above this line),
+ *  so people and rooms are always in proportion. The sprite's own feet sit 2.2% above the bottom of its box. */
+export const PERSON_H = 60, FLOOR_LINE = 89, PANEL_RATIO = 16 / 9;
+/** `room` is how far down (percent of panel height) the text stack reaches above this person: everyone is drawn smaller (feet fixed) just enough
+ *  to keep their head clear of it, so text never sits on a face. */
+const personBox = (xCenter: number, room = 0) => {
+  const h = room > 0 ? Math.min(PERSON_H, Math.max(30, (FLOOR_LINE - room - 2) / 0.978)) : PERSON_H, w = ((0.4 * h) / PANEL_RATIO) * 100 * 1.04;
+  return { x: xCenter - w / 2, y: FLOOR_LINE + 0.022 * h - h, w, h };
+};
 
-/** Zoom the room so the tallest person in the panel is PERSON_UNITS tall in the room's own scale: doors, racks and vehicles then stay in proportion to people. */
-const ZOOM_MAX = 1.6;
-function zoomRoom(layers: ArtLayer[], env: EnvId, ratio: number) {
-  if (DESK_ENVS.includes(env)) return;
-  const fe = layers[0].flatEnv; if (!fe) return;
-  const visible = ratio >= 16 / 9 ? 1600 / ratio : 900;
-  const tallest = Math.max(0, ...layers.filter((l) => l.role === "person" && l.box).map((l) => (l.box!.h / 100) * visible * 0.966));
-  if (tallest === 0) return;
-  const want = Math.max(1, tallest / PERSON_UNITS);
-  fe.zoom = Math.round(Math.min(ZOOM_MAX, want) * 100) / 100;
-  if (want > ZOOM_MAX) {
-    // Zoom is capped so the room stays readable; people are scaled down (feet fixed) to stay in proportion with it.
-    const k = ZOOM_MAX / want;
-    for (const l of layers) if (l.role === "person" && l.box) {
-      const b = l.box, h = b.h * k, w = b.w * k;
-      l.box = { x: b.x + (b.w - w) / 2, y: b.y + 0.966 * (b.h - h), w, h };
-    }
-  }
-  fe.anchorY = Math.round(groundPct(env, ratio));
+function personLayer(c: Cast, _env: EnvId, _ratio: number, reserve: number, index: number, seed: number): ArtLayer {
+  const pose: Pose | undefined = c.pose;
+  return { asset: `person.${c.who}.${index}`, role: "person", person: { who: c.who === "worker" ? STAFF[(seed + index * 3) % STAFF.length] : c.who, expression: c.expr, pose }, box: personBox(X_AT[c.at], reserve) };
 }
 
 /** Vehicles take up a whole scene, so a room shows at most one: the one the latest decision put there. */
@@ -122,7 +99,6 @@ function panelFromCast(id: string, env: EnvId, props: string[], effects: string[
   // Everyone in a panel is drawn at one size (a person next to a bubble must not make the others look huge): the one the tallest text stack allows.
   const room = Math.max(0, ...cast.map((p) => reserve(X_AT[p.at])));
   cast.forEach((p, i) => layers.push(personLayer(p, env, ratio, room, i, look?.seed ?? 0)));
-  zoomRoom(layers, env, ratio);
   const desk = deskLayer(env);
   if (desk) layers.push(desk);
   return { id, ratio, span, layers, ...opts };
@@ -149,16 +125,12 @@ function castFromPanel(p: PanelData, env: EnvId): Cast[] {
 }
 
 /** A story panel drawn so the picture shows what its words say: an object shot (the thing itself, nobody in front of it) or a speaker shot (the
- *  person talking, from the waist up, in their room, with the room zoomed in so it does not read as a distant view). */
+ *  person talking, full length at the same scale as everyone else, standing in their room). */
 function shotPanel(id: string, spec: PanelShot, env: EnvId, props: string[], effects: string[], ratio: number, span: 1 | 2, reserve: Reserve, seed: number, round: number, opts: Partial<ArtPanelScript> = {}): ArtPanelScript {
-  const layers: ArtLayer[] = [{ asset: `flat.${spec.shot ?? env}.${id}`, role: "flatenv", flatEnv: { env, props: spec.shot ? [] : oneVehicle(props), effects, facts: [], shot: spec.shot, seed, round, ...(spec.shot ? {} : { zoom: 1.7, anchorY: 66 }) } }];
+  const layers: ArtLayer[] = [{ asset: `flat.${spec.shot ?? env}.${id}`, role: "flatenv", flatEnv: { env, props: spec.shot ? [] : oneVehicle(props), effects, facts: [], shot: spec.shot, seed, round } }];
   const people = spec.people ?? [];
-  const H = 138;
-  for (const [i, c] of people.entries()) {
-    const top = Math.max(24, reserve(c.x) + 2);
-    const w = ((0.4 * H) / ratio) * 100 * 1.04;
-    layers.push({ asset: `person.${c.who}.${i}`, role: "person", person: { who: c.who, expression: c.expr, pose: c.pose }, box: { x: c.x - w / 2, y: top, w, h: H } });
-  }
+  const room = Math.max(0, ...people.map((c) => reserve(c.x)));   // one size for everyone in the panel
+  for (const [i, c] of people.entries()) layers.push({ asset: `person.${c.who}.${i}`, role: "person", person: { who: c.who, expression: c.expr, pose: c.pose }, box: personBox(c.x, room) });
   return { id, ratio, span, layers, ...opts };
 }
 

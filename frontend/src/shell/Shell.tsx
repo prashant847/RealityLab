@@ -83,7 +83,7 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
     }, 80);
     return () => clearTimeout(t);
   }, [hash]);
-  const dev = ["gallery", "preview-notpetya", "char-export", "comic-layout"].includes(parts[0] ?? "");
+  const dev = ["gallery", "char-export"].includes(parts[0] ?? "");
   const blackout = parts[0] === "play" && parts[1] === "blackout";            // the comic crisis; everything else is a themed screen
   // Every screen of the app except the developer galleries fits the window without page scrolling (long lists scroll inside their own panel).
   useEffect(() => { document.body.classList.toggle("fit", !dev); }, [dev]);
@@ -144,10 +144,11 @@ function useLoad<T>(fn: () => Promise<T>) {
 const Loading = ({ what }: { what: string }) => <main id="main" tabIndex={-1} className="hub-main"><p className="hub-loading" role="status"><span className="hub-spin" aria-hidden="true" /> {what}</p></main>;
 
 function Library({ api, name }: { api: SimsApi; name: string }) {
-  const { data: both, err, reload } = useLoad(useCallback(() => Promise.all([api.library(), api.careers().catch(() => null)]), [api]));
+  const { data: both, err, reload } = useLoad(useCallback(() => Promise.all([api.library(), api.careers().catch(() => null), Promise.resolve().then(() => api.journey()).catch(() => null)]), [api]));
   if (err) return <main id="main" tabIndex={-1} className="hub-main"><div className="hub-panel hub-center"><h2>Could not load your simulations</h2><p>{err}</p><button type="button" className="hub-btn hub-btn--primary" onClick={reload}>Try again</button></div></main>;
   if (!both) return <Loading what="Loading your simulations…" />;
-  const [data, car] = both;
+  const [data, car, jr] = both;
+  const last = jr?.completed?.length ? [...jr.completed].sort((a, b) => (b.completed_at ?? "").localeCompare(a.completed_at ?? ""))[0] : null;
   const done = data.filter((s) => s.status === "completed").length;
   const badges = car ? achievements(car.careers, data, car.choice) : [];
   const next = car ? upNext(data, car.careers, car.choice) : null;
@@ -158,6 +159,7 @@ function Library({ api, name }: { api: SimsApi; name: string }) {
           <p className="hub-lede">Real moments from demanding professions. Decide, see the consequences, and review what your choices showed.</p></div>
         <div className="hub-stats" aria-label="Your progress"><div><strong>{done}/3</strong><span>completed</span></div><div><strong>{data.filter((s) => s.status === "active").length}</strong><span>in progress</span></div>{car && <div><strong>{badges.filter((b) => b.earned).length}/{badges.length}</strong><span>milestones</span></div>}</div>
       </header>
+      {last && <button type="button" className="hub-next hub-last" onClick={() => go(last.kind === "report" ? `#/report/${last.run_id}` : "#/play/blackout")}><span className="hub-next-tag">Last report</span><span className="hub-next-text"><b>{last.title}: {last.outcome}</b>Attempt {last.attempt}{last.completed_at ? ` · ${new Date(last.completed_at).toLocaleDateString()}` : ""}. Read it or hear the Archivist again.</span><span aria-hidden="true">→</span></button>}
       {next && <button type="button" className="hub-next" onClick={() => { if (/^Continue/.test(next.label)) setIntent("continue"); go(next.to); }}><span className="hub-next-tag">Up next</span><span className="hub-next-text"><b>{next.label}</b>{next.text}</span><span aria-hidden="true">→</span></button>}
       <div className="hub-grid">{data.map((s, i) => <SimCard key={s.id} s={s} i={i} />)}</div>
     </main>
@@ -218,10 +220,10 @@ function JourneyView({ api }: { api: SimsApi }) {
             <div className="hub-skills"><Radar items={data.skills} size={230} />
               <div>{data.skills.map((s) => <div key={s.label} className="hub-skill"><div><span>{s.label}</span><b>{s.percent}%</b></div><div className="hub-bar"><span style={{ width: `${s.percent}%` }} /></div></div>)}</div></div>
             <p className="hub-fine">Average of the skill results in your Bhopal and hospital reports. It describes your choices, not your suitability for a profession.</p></section>}
-          <section className="hub-panel hub-listpanel" aria-labelledby="done-h"><h2 id="done-h">Completed simulations</h2>
+          <section className="hub-panel hub-listpanel" aria-labelledby="done-h"><h2 id="done-h">Completed simulations and their reports</h2>
             <ul className="hub-list">{data.completed.map((c) => (
               <li key={`${c.kind}-${c.run_id}`}><div><b>{c.title}</b><span>Attempt {c.attempt} · {c.outcome} · {c.decisions} decisions{c.completed_at ? ` · ${new Date(c.completed_at).toLocaleDateString()}` : ""}</span></div>
-                <button type="button" className="hub-btn" onClick={() => go(c.kind === "report" ? `#/report/${c.run_id}` : "#/play/blackout")}>{c.kind === "report" ? "Open report" : "Open BLACKOUT"}</button></li>))}</ul></section>
+                <button type="button" className="hub-btn" onClick={() => go(c.kind === "report" ? `#/report/${c.run_id}` : "#/play/blackout")}>View report</button></li>))}</ul></section>
         </div>)}
     </main>
   );

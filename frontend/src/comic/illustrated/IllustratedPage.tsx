@@ -1,3 +1,4 @@
+import { NarratorStick } from "../stick/NarratorStick";
 import { Fragment, useEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { PanelFrame } from "../ComicPanel";
@@ -79,7 +80,7 @@ function InspectDialog({ layer, facts, use, onClose }: { layer: ArtLayer; facts:
   );
 }
 
-function IllustratedPanel({ script, source, index, facts, flat, use }: { script: ArtPanelScript; source?: PanelData; index: number; facts: string[]; flat?: boolean; use?: EvidenceUse }) {
+function IllustratedPanel({ script, source, index, facts, flat, use, narrate }: { script: ArtPanelScript; source?: PanelData; index: number; facts: string[]; flat?: boolean; use?: EvidenceUse; narrate?: boolean }) {
   const assets = script.layers.map((l) => getAsset(l.asset));
   const placeholder = script.layers.some((l, i) => l.role !== "portrait" && l.role !== "vector" && l.role !== "person" && l.role !== "flatenv" && (!assets[i] || assets[i]!.status !== "real"));
   const sideOf = (id: string): Side => script.bubbleSide ?? source?.characters.find((c) => c.id === id)?.side ?? "center";
@@ -99,6 +100,8 @@ function IllustratedPanel({ script, source, index, facts, flat, use }: { script:
   }, [ref, space]);
   const overlay = useMemo(() => (script.overlay ? homographyMatrix3d(SCREEN_W, SCREEN_H, script.overlay.quad) : undefined), [script.overlay]);
   const [inspecting, setInspecting] = useState(false);
+  // what the narrator says on this panel (paged view only): the story's narration, or the caption of a consequence panel
+  const narrationText = (source?.narration ?? script.narration ?? script.caption ?? "").replace(/\s+/g, " ").trim();
   const fg = script.layers.find((l) => l.role === "foreground" || l.role === "vector" || l.role === "flatenv");
   // Pointer parallax: layers drift by depth. Written straight to CSS variables so no React re-render happens per move.
   const onMove = (e: PointerEvent<HTMLElement>) => {
@@ -138,6 +141,7 @@ function IllustratedPanel({ script, source, index, facts, flat, use }: { script:
           <div className="bubbles">{source.dialogue.map((d, i) => <SpeechBubble key={i} line={d} side={sideOf(d.speaker)} />)}</div>
         </div>
       )}
+      {narrate && narrationText && <NarratorStick key={`${script.id}:${narrationText}`} text={narrationText} />}
       {script.inspect && fg && <button type="button" className="inspect-btn" onClick={() => setInspecting(true)}>Inspect evidence</button>}
       {inspecting && fg && <InspectDialog layer={fg} facts={facts} use={use} onClose={() => setInspecting(false)} />}
     </figure>
@@ -184,7 +188,7 @@ export function IllustratedPage({ page, script, title, facts = [], evidence, pag
     <section className="comic-page comic-page--art comic-page--paged" aria-label={title ?? "Comic page"} data-layout="illustrated" data-grade={script.grade ?? "cinematic"}
       onKeyDown={(e) => { if (e.key === "ArrowRight") go(1); else if (e.key === "ArrowLeft") go(-1); }}>
       <div className="paged-stage">
-        <IllustratedPanel key={p.id} script={{ ...p, span: 1 }} index={0} source={safe.panels.find((s) => s.id === p.source)} facts={facts} flat={script.grade === "flat"} use={evidence} />
+        <IllustratedPanel key={p.id} script={{ ...p, span: 1 }} index={0} source={safe.panels.find((s) => s.id === p.source)} facts={facts} flat={script.grade === "flat"} use={evidence} narrate />
       </div>
       {count > 1 && (
         <nav className="pager" aria-label="Comic panels">

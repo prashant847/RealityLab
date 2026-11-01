@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Archivist } from "./Archivist";
 import { Narrator, type Lang, type Style } from "./narrator";
+import { useRetold } from "./retell";
 import type { Scene, Tone } from "./script";
 import { SoundToggle } from "../audio/useAudio";
 import "./debrief.css";
@@ -18,6 +19,7 @@ const TEXT = {
     play: "Pause", resume: "Resume", again: "Hear it again", prev: "Previous section", next: "Next section",
     pace: "Pace", voice: "Voice", calmVoice: "Calm", commandingVoice: "Commanding", slower: "Slower", normal: "Normal", faster: "Faster", captions: "Captions", transcript: "Transcript", language: "Language",
     sections: "Sections of the debrief", playback: "Playback", tone: { good: "good", mid: "so-so", bad: "poor", plain: "" },
+    thinking: "The Archivist is turning the pages…", skipWait: "Skip the wait and use the short telling", told: "Told freshly by the Archivist, from your own ledger.", retell: "Hear it told another way",
     better: "A stronger option", noVoice: "No speech voice is available on this computer, so the debrief is shown as captions.",
     hint: (i: number, n: number, ch: string) => `Space pauses · ← → move between sections · C captions · Section ${i} of ${n}: ${ch}`,
   },
@@ -28,6 +30,7 @@ const TEXT = {
     play: "रोकें", resume: "जारी रखें", again: "फिर सुनें", prev: "पिछला भाग", next: "अगला भाग",
     pace: "गति", voice: "आवाज़", calmVoice: "शांत", commandingVoice: "रोबीली", slower: "धीमी", normal: "सामान्य", faster: "तेज़", captions: "उपशीर्षक", transcript: "पूरा पाठ", language: "भाषा",
     sections: "रिपोर्ट के भाग", playback: "चलाना", tone: { good: "अच्छा", mid: "मिला-जुला", bad: "ख़राब", plain: "" },
+    thinking: "अभिलेखपाल पन्ने पलट रहे हैं…", skipWait: "इंतज़ार छोड़ें और छोटा वर्णन सुनें", told: "आपके अपने खाते से अभिलेखपाल ने नए सिरे से सुनाया।", retell: "इसे दूसरे ढंग से सुनें",
     better: "एक बेहतर विकल्प", noVoice: "इस कंप्यूटर पर कोई बोलने वाली आवाज़ उपलब्ध नहीं है, इसलिए रिपोर्ट उपशीर्षकों में दिखाई जा रही है।",
     hint: (i: number, n: number, ch: string) => `स्पेस से रोकें · ← → से भाग बदलें · C से उपशीर्षक · भाग ${i} / ${n}: ${ch}`,
   },
@@ -39,12 +42,13 @@ const TEXT = {
  */
 export function Debrief({ scenesFor, title, onWritten, children }: { scenesFor: (lang: Lang) => Scene[]; title: string; onWritten: () => void; children?: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>(readLang);
-  const scenes = useMemo(() => scenesFor(lang), [scenesFor, lang]);
+  const base = useMemo(() => scenesFor(lang), [scenesFor, lang]);
+  const [started, setStarted] = useState(false);
+  const { scenes, status: retold, skip: skipWait, again } = useRetold(base, lang, started);
   const [style, setStyleState] = useState<Style>(readStyle);
   const narrator = useMemo(() => new Narrator(scenes, lang, style), [scenes, lang, style]);
   useEffect(() => () => narrator.destroy(), [narrator]);
   const st = useSyncExternalStore(narrator.subscribe, narrator.getState, narrator.getState);
-  const [started, setStarted] = useState(false);
   const [captions, setCaptions] = useState(true);
   const [transcript, setTranscript] = useState(false);
   const [speed, setSpeed] = useState(1);
@@ -79,7 +83,9 @@ export function Debrief({ scenesFor, title, onWritten, children }: { scenesFor: 
     if (r.playing) narrator.play();
   }, [narrator, scenes]);
 
-  const begin = () => { setStarted(true); narrator.play(); };
+  const [want, setWant] = useState(false);
+  const begin = () => { setStarted(true); if (retold === "thinking") { skipWait(); setWant(true); } else narrator.play(); };   // never leave the student waiting: start with the short telling
+  useEffect(() => { if (want && retold !== "thinking") { setWant(false); narrator.play(); } }, [want, retold, narrator]);
   useEffect(() => {
     if (!started) return;
     const on = (e: KeyboardEvent) => {
@@ -122,6 +128,8 @@ export function Debrief({ scenesFor, title, onWritten, children }: { scenesFor: 
             <p>{T.intro}</p>
             <div className="deb-open-acts">
               <button type="button" className="sim-btn sim-btn--primary deb-begin" onClick={begin} autoFocus>{T.begin}</button>
+              {retold === "thinking" && <p className="deb-told" role="status"><span>{T.thinking}</span></p>}
+              {retold === "claude" && <p className="deb-told"><span>{T.told}</span> <button type="button" className="deb-link" onClick={again}>{T.retell}</button></p>}
               <button type="button" className="sim-btn" onClick={onWritten}>{T.written}</button>
             </div>
             {children}

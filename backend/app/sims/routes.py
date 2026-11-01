@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from fastapi import HTTPException, Response
 
-from . import tts
+from . import narrate_ai, tts
 from .service import SimsService
 
 router = APIRouter(prefix="/api")
@@ -36,7 +36,7 @@ class ChoiceBody(BaseModel):
 
 class TtsBody(BaseModel):
     text: str = Field(min_length=1, max_length=tts.MAX_CHARS)
-    voice: str = Field("female", pattern="^(female|male|heroic|hindi)$")
+    voice: str = Field("female", pattern=tts.ROLE_PATTERN)
     rate: float = Field(1.0, ge=0.5, le=2.0)
 
 
@@ -126,17 +126,65 @@ def put_choice(body: ChoiceBody, s: SimsService = S):
     return s.save_choice(body.career, body.reason)
 
 
-@router.get("/tts/status", summary="Which natural read-aloud voices are installed on this computer")
+@router.get("/tts/status", summary="Which read-aloud voices are available on this computer")
 def tts_status() -> dict:
-    return {"voices": tts.available_voices()}
+    return {"voices": tts.available_voices(), "human": tts.human_available(), "roles": sorted(tts.HUMAN)}
 
 
-@router.post("/tts", summary="Speak text with the offline natural voice (WAV)", response_class=Response)
+@router.post("/tts", summary="Speak text with a human voice (MP3) or the offline natural voice (WAV)", response_class=Response)
 def tts_speak(body: TtsBody) -> Response:
     try:
-        wav = tts.synthesize(body.text, body.voice, body.rate)
+        audio, kind = tts.synthesize_audio(body.text, body.voice, body.rate)
     except LookupError:
         raise HTTPException(404, "natural voice not installed")
     except (RuntimeError, ValueError):
         raise HTTPException(502, "speech failed")
-    return Response(wav, media_type="audio/wav", headers={"Cache-Control": "private, max-age=3600"})
+    return Response(audio, media_type=kind, headers={"Cache-Control": "private, max-age=3600"})
+
+
+class VoiceKeyBody(BaseModel):
+    key: str = Field(min_length=16, max_length=200, pattern=r"^[A-Za-z0-9_\-]+$")
+
+
+@router.put("/tts/key", summary="Save an ElevenLabs API key on this computer to enable the human voices")
+def tts_save_key(body: VoiceKeyBody) -> dict:
+    if not tts.check_key(body.key):
+        raise HTTPException(400, "ElevenLabs did not accept that key")
+    tts.set_key(body.key)
+    return {"human": True}
+
+
+@router.delete("/tts/key", summary="Forget the saved ElevenLabs key")
+def tts_forget_key() -> dict:
+    tts.clear_key()
+    return {"human": tts.human_available()}
+
+
+class DebriefScene(BaseModel):
+    id: str = Field(min_length=1, max_length=60)
+    chapter: str = Field("", max_length=160)
+    mood: str = Field("calm", max_length=16)
+    facts: list[str] = Field(min_length=1, max_length=12)
+
+
+class DebriefBody(BaseModel):
+    scenes: list[DebriefScene] = Field(min_length=1, max_length=narrate_ai.MAX_SCENES)
+    lang: str = Field("en", pattern="^(en|hi)$")
+    fresh: bool = False
+
+
+@router.post("/debrief/narrate", summary="The Archivist (Claude, via the Claude CLI on this computer) retells the debrief in his own words")
+def debrief_narrate(body: DebriefBody) -> dict:
+    """`source` is "claude" with the retold lines, or "original" (no CLI, a timeout, or a reply that failed validation) and the caller keeps its own lines."""
+    scenes = [s.model_dump() for s in body.scenes]
+    for s in scenes:
+        s["facts"] = [f[:600] for f in s["facts"]]
+    out = narrate_ai.narrate(scenes, body.lang, body.fresh)
+    if out is None:
+        return {"source": "original", "scenes": []}
+    return {"source": "claude", "scenes": [{"id": i, "lines": ls} for i, ls in out.items()]}
+
+
+@router.get("/debrief/narrate/status", summary="Whether the Claude CLI is available to tell the debrief")
+def debrief_status() -> dict:
+    return {"claude": narrate_ai.enabled()}

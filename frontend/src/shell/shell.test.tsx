@@ -299,7 +299,7 @@ describe("polish: welcome, keyboard play, voices, feedback, milestones", () => {
     const { container } = render(<Shell api={api} />);
     await userEvent.click(await screen.findByRole("button", { name: "Begin" }));
     expect(await screen.findByRole("group", { name: /Page 1 of 3/ })).toBeInTheDocument();         // three comic pages
-    expect(container.querySelectorAll("svg.ck-page clipPath").length).toBeGreaterThanOrEqual(3);      // several panels on the page
+    expect(container.querySelectorAll(".cm-panel").length).toBeGreaterThanOrEqual(3);                  // several inked panels on the page
     await userEvent.click(screen.getByRole("button", { name: "Page 3" }));
     await userEvent.click(screen.getByRole("button", { name: "Make your decision →" }));
     expect(await screen.findByRole("heading", { name: "Step 1 title" })).toBeInTheDocument();      // the original step, unchanged

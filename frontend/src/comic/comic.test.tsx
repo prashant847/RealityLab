@@ -105,7 +105,8 @@ describe("ComicPage", () => {
     const { container } = render(<ComicPanel panel={p} plan={broken} />);
     quiet.mockRestore();
     fireEvent.error(container.querySelector("img.bg")!);
-    fireEvent.error(container.querySelector(".char img")!);
+    fireEvent.error(container.querySelector(".char .stick img")!);   // the drawn sprite cannot load: the vector figure is tried, cannot draw, so
+    fireEvent.error(container.querySelector(".char img")!);           // the original image art shows; when that fails too, the labelled stand-in does
     expect(container.querySelector('[data-fallback="environment"]')).toBeInTheDocument();
     expect(container.querySelector('[data-fallback="character"]')).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /Operations Manager \(image unavailable\)/ })).toBeInTheDocument();
@@ -159,9 +160,10 @@ describe("asset manifest", () => {
   });
 
   it("has a different pose for every expression (no accidental duplicates)", () => {
-    const dir = join(PUBLIC, "characters");
+    const dir = join(PUBLIC, "stick");   // the drawn stickmen (the player is the "director" sheet)
     for (const c of CHARACTER_IDS) {
-      const files = EXPRESSIONS.map((e) => readFileSync(join(dir, `${c}_${e}.svg`), "utf8"));
+      const who = c === "player" ? "director" : c;
+      const files = EXPRESSIONS.map((e) => readFileSync(join(dir, `${who}_${e}.webp`)).toString("base64"));
       expect(new Set(files).size, c).toBe(EXPRESSIONS.length);
     }
   });

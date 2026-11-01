@@ -1,30 +1,12 @@
 import { useEffect, useState } from "react";
-import type { ComicPage } from "./firstSurge";
-import { ArtContext } from "./ink";
+import type { ComicPage } from "./types";
 import { speak, stopSpeaking, canSpeak } from "../../a11y/speak";
 import { useA11y } from "../../a11y/a11y";
 import "./comic.css";
 
 /** Reads a comic one page at a time. ← → turn the page, Enter on the last page continues, and Skip is always there. Each page has a text description for screen readers. */
-/** Finds a finished picture for each page, if one has been added to public/comic/<dir>/. */
-function useArt(pages: ComicPage[], dir: string): Record<string, string> {
-  const [art, setArt] = useState<Record<string, string>>({});
-  useEffect(() => {
-    if (!dir || typeof Image === "undefined") return;
-    let live = true;
-    for (const p of pages) {
-      const tries = ["png", "jpg", "webp"].map((x) => `/comic/${dir}/${p.id}.${x}`);
-      const next = (k: number) => { if (k >= tries.length) return; const im = new Image(); im.onload = () => { if (live) setArt((a) => ({ ...a, [p.id]: tries[k] })); }; im.onerror = () => next(k + 1); im.src = tries[k]; };
-      next(0);
-    }
-    return () => { live = false; };
-  }, [pages, dir]);
-  return art;
-}
-
-export function ComicReader({ pages, title, onDone, dir = "" }: { pages: ComicPage[]; title: string; onDone: () => void; dir?: string }) {
+export function ComicReader({ pages, title, onDone }: { pages: ComicPage[]; title: string; onDone: () => void }) {
   const [i, setI] = useState(0);
-  const art = useArt(pages, dir);
   const a = useA11y();
   const last = i === pages.length - 1;
   const go = (n: number) => { stopSpeaking(); setI(Math.max(0, Math.min(pages.length - 1, n))); };
@@ -45,7 +27,7 @@ export function ComicReader({ pages, title, onDone, dir = "" }: { pages: ComicPa
   return (
     <section className="ck" aria-label={`${title}: the comic`}>
       <div className="ck-stage" key={page.id} role="group" aria-roledescription="comic page" aria-label={`Page ${i + 1} of ${pages.length}. ${page.alt}`}>
-        <ArtContext.Provider value={art[page.id] ?? null}>{page.render()}</ArtContext.Provider>
+        {page.render()}
       </div>
       <div className="ck-bar">
         <button type="button" className="sim-btn" onClick={() => go(i - 1)} disabled={i === 0}>← Back</button>

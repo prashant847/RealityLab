@@ -116,10 +116,12 @@ describe("variety", () => {
 
 describe("one world scale", () => {
   const page = { layout: "single", panels: [{ id: "p1", environment: "loading_dock", characters: [{ id: "raghav", side: "left", expression: "calm" }], dialogue: [], effects: [] }] };
-  it("zooms the room to match the person, never out", () => {
-    const fe = composeRoundPage(10, page, [], []).panels[0].layers[0].flatEnv!;
-    expect(fe.zoom).toBeGreaterThanOrEqual(1);
-    expect(fe.zoom).toBeLessThanOrEqual(2.4);
+  it("shows the whole picture (no room zoom) with people at one scale on the floor line", () => {
+    const l = composeRoundPage(10, page, [], []).panels[0].layers;
+    expect(l[0].flatEnv!.zoom).toBeUndefined();
+    const box = l.find((x) => x.role === "person")!.box!;
+    expect(box.h).toBeCloseTo(60, 0);
+    expect(box.y + box.h * 0.978).toBeCloseTo(89, 0);   // the sprite's feet are on the floor line
   });
   it("does not zoom a panel with nobody in it", () => {
     const empty = { layout: "single", panels: [{ id: "p1", environment: "flooded_highway", characters: [], dialogue: [], effects: [] }] };

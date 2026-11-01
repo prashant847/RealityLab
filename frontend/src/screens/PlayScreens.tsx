@@ -18,6 +18,9 @@ import { SimulationHUD } from "../ui/SimulationHUD";
 import { StakeholderCard } from "../ui/StakeholderCard";
 import { Facts, PlainBrief } from "../ui/PlainGuide";
 import { plainPage, plainRound } from "../story/plain";
+import { ChoiceCutscene, prefetchReaction } from "../comic/stick/ChoiceCutscene";
+import { buildReaction, type Reaction } from "../comic/stick/reaction";
+import type { EnvId } from "../comic/notpetya/Env";
 
 const STAFF_NAMES = { kavya: "Terminal Supervisor", arjun: "IT Lead", nisha: "Operations Manager", raghav: "Network Administrator", isha: "Customer Representative" } as const;
 const STAFF_ROLES = { kavya: "Site safety and terminal operations", arjun: "IT systems and incident analysis", nisha: "Operations and recovery planning", raghav: "Networks, connections and routes", isha: "Customers and communication" } as const;
@@ -112,7 +115,29 @@ export function SceneScreen({ api, view, busy, onDecide }: { api: GameApi; view:
     return { ...artScript, panels: [...ev.panels, ...artScript.panels] };
   }, [artScript, flatStory, scene.events, scene.environment, scene.round]);
   const plain = flatStory ? plainRound(scene.round) : undefined;
-  const decisions = <DecisionList key={`${view.run.id}-${scene.round}`} choices={scene.choices ?? []} busy={busy} onCommit={onDecide} endorsements={endorsements} />;
+  // Committing a choice plays a short comic cutscene (pan, walk-in, reaction, SFX) and then submits it. With reduce-motion on, the scene still plays but nothing travels or shakes.
+  const [cut, setCut] = useState<{ id: string; label: string; reaction: Reaction; third: StakeholderKey } | null>(null);
+  const animate = typeof window !== "undefined" && typeof window.matchMedia === "function";   // (tests have no matchMedia: they submit at once)
+  // The reaction is scripted from this very choice (its cost and time, and what the team said about it); the third person in the room is picked from the id.
+  const reactionFor = (id: string) => {
+    const choices = scene.choices ?? [];
+    const choice = choices.find((c) => c.id === id);
+    if (!choice) return null;
+    const stances = (endorsements[id] ?? []).map((e) => ({ id: e.id as string, verdict: e.verdict }));
+    const others = (["kavya", "arjun", "nisha", "raghav", "isha"] as const).filter((k) => k !== analystId);
+    const third = others[[...id].reduce((a, c) => a + c.charCodeAt(0), 0) % others.length];
+    return { choice, third, reaction: buildReaction(choice, choices, stances, analystId) };
+  };
+  // Choosing an option starts fetching the voices for its reaction, so they are ready by the time it is committed.
+  const prepare = (id: string) => { if (!animate) return; const r = reactionFor(id); if (r) prefetchReaction(r.reaction, { adv: analystId, third: r.third }); };
+  const commit = (id: string) => {
+    if (cut) return;
+    const r = reactionFor(id);
+    if (!animate || !r) { onDecide(id); return; }
+    setCut({ id, label: r.choice.label, reaction: r.reaction, third: r.third });
+  };
+  useEffect(() => { setCut(null); }, [view.run.id, scene.round]);
+  const decisions = <DecisionList key={`${view.run.id}-${scene.round}`} choices={scene.choices ?? []} busy={busy || Boolean(cut)} onCommit={commit} onSelect={prepare} endorsements={endorsements} />;
   const askedSet = new Set(advice.map((a) => a.stakeholder));
   return (
     <div className="bo-scene">
@@ -121,6 +146,8 @@ export function SceneScreen({ api, view, busy, onDecide }: { api: GameApi; view:
           <p className="kicker">{scene.clock} · Round {scene.round} of 10{scene.events.length > 0 ? " · new developments" : ""}</p>
           <h1 ref={heading} tabIndex={-1}>{scene.title}</h1>
         </div>
+        {cut && <ChoiceCutscene env={asEnvironment(scene.environment) as EnvId} label={cut.label} reaction={cut.reaction} who={{ adv: analystId, third: cut.third }}
+          names={{ lead: "Recovery Team Lead", adv: STAFF_NAMES[analystId], third: STAFF_NAMES[cut.third] }} onDone={() => { const id = cut.id; setCut(null); onDecide(id); }} />}
         {pagedScript ? <IllustratedPage paged page={flatStory ? plainPage(scene.page) : scene.page} script={pagedScript} title={scene.title} facts={scene.info ?? []} evidence={flatStory ? evidence : undefined} /> : <ComicPage page={scene.page} title={scene.title} />}
       </main>
       <aside className="bo-rail" aria-label="Decision, situation, team and status">

@@ -1,3 +1,4 @@
+import { VoiceSettings } from "./VoiceSettings";
 import { useState } from "react";
 import type { Profile, SimsApi } from "../api/sims";
 import { A11Y_KEY, TEXT_SIZES, setA11y, useA11y } from "../a11y/a11y";
@@ -64,7 +65,7 @@ export function Settings({ api, profile, onChange }: { api: SimsApi; profile: Pr
           <Switch label="Reduce motion and animation" hint="Stops screens easing in, meters sliding and other movement." on={profile.reduce_motion} onChange={(v) => void save({ reduce_motion: v })} />
           <Switch label="Read-aloud buttons" hint={canSpeak() ? "Adds a Read aloud button (or press R) that speaks the screen in a natural voice." : "Your computer has no speech voice available."} on={a.readAloud} onChange={(v) => setA11y({ readAloud: v })} />
           {a.readAloud && (<>
-            <div className="set-row"><span className="set-text"><b>Reading voice</b><small>A natural voice that works without internet.</small></span>
+            <div className="set-row"><span className="set-text"><b>Reading voice</b><small>A human voice with an ElevenLabs key, otherwise a natural voice that works without internet.</small></span>
               <div className="set-choices" role="radiogroup" aria-label="Reading voice">
                 {([["female", "Female"], ["male", "Male"]] as const).map(([k, l]) => <button key={k} type="button" role="radio" aria-checked={a.voice === k} className={a.voice === k ? "on" : ""} onClick={() => { setA11y({ voice: k }); speak("This is how the read aloud voice will sound."); }}>{l}</button>)}
               </div></div>
@@ -72,6 +73,7 @@ export function Settings({ api, profile, onChange }: { api: SimsApi; profile: Pr
               <span className="set-slider"><input id="rate" type="range" min="0.6" max="1.4" step="0.1" value={a.speechRate} onChange={(e) => setA11y({ speechRate: Number(e.target.value) })} />
                 <button type="button" className="hub-btn" onClick={() => speak("This is how the read aloud voice will sound.")}>Test voice</button></span></div></>)}
           </div>
+          <VoiceSettings />
           {err && <p role="alert" className="hub-err">{err}</p>}
         </>)}
 

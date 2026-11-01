@@ -1,0 +1,16 @@
+/* The tired narrator: shows from the waist up in the bottom-left of a panel, slides in from off the left edge and back out again. */
+.nar { position: absolute; left: 1.2%; bottom: 0; height: 44%; aspect-ratio: 0.9; overflow: hidden; z-index: 9; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; }
+.nar__img { position: absolute; left: 50%; top: 0; height: 205%; width: auto; max-width: none; transform: translateX(-50%); filter: drop-shadow(0 5px 0 rgba(0, 0, 0, .3)); user-select: none; }
+.nar__preload { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.nar--in { animation: nar-in .75s cubic-bezier(.2, .9, .3, 1.05) both; }
+.nar--talk, .nar--sigh { animation: nar-bob 1.3s ease-in-out infinite; transform-origin: 50% 100%; }
+.nar--out { animation: nar-out .65s cubic-bezier(.6, 0, .8, .4) both; }
+@keyframes nar-in { 0% { transform: translateX(-190%) rotate(-4deg); } 60% { transform: translateX(6%) rotate(2deg); } 100% { transform: none; } }
+@keyframes nar-out { from { transform: none; } to { transform: translateX(-220%) rotate(-5deg); } }
+@keyframes nar-bob { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(1.2%) rotate(.6deg); } }
+.nar__puff { position: absolute; left: 70%; top: 14%; width: 26%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, #fff 0 50%, transparent 70%); opacity: 0; animation: nar-puff 1s ease-out both; pointer-events: none; }
+@keyframes nar-puff { 0% { opacity: .9; transform: translate(0, 0) scale(.3); } 100% { opacity: 0; transform: translate(60%, -50%) scale(1.5); } }
+/* with animations off he simply stands there while the words are spoken */
+@media (prefers-reduced-motion: reduce) { .nar, .nar__puff { animation: none !important; } }
+[data-reduce-motion="true"] .nar, [data-reduce-motion="true"] .nar__puff { animation: none !important; }
+[data-reduce-motion="true"] .nar--out { display: none; }
