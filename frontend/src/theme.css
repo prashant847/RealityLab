@@ -465,3 +465,37 @@ hr { border: 0; border-top: 3px solid var(--ink); }
 .cert-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .cert-card:not(.is-earned) .cert-art img { filter: grayscale(.75) brightness(.97); }
 .cert-card .cert-medal { margin-top: -34px; position: relative; z-index: 1; }
+
+/* ---- Demo polish: sidebar brand on one line, the profile card and its mute button laid out on a grid ---- */
+.hub-brand { gap: 10px; padding: 0 4px; } .hub-brand > div { min-width: 0; }
+.hub-brand strong { font-size: .92rem !important; letter-spacing: -.01em; white-space: nowrap; line-height: 1.15; } .hub-brand small { display: block; white-space: nowrap; }
+.hub-mark { flex: none; }
+.hub-foot { display: grid !important; grid-template-columns: 34px minmax(0, 1fr) 34px; gap: 10px; align-items: center; padding: 10px 12px !important; }
+.hub-foot > div { min-width: 0; } .hub-foot strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .hub-foot small { display: block; line-height: 1.25; }
+.hub-foot .hub-avatar { width: 34px; height: 34px; }
+.hub-foot .snd-toggle--side { margin: 0 !important; width: 34px !important; height: 34px !important; justify-self: end; }
+/* every page header: the small label always sits on its own line above the title */
+.hub-head .hub-eyebrow { display: block !important; width: fit-content; margin-bottom: 10px; }
+.hub-head h1 { display: block !important; width: fit-content; max-width: 100%; }
+
+/* ---- Demo polish: buttons that sit side by side share one height and one baseline ---- */
+.pager { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.pager > button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
+.pager > button.next { min-height: 44px; }
+.sim-actions, .gen-actions, .hub-actions { display: flex; align-items: stretch; flex-wrap: wrap; gap: 12px; }
+.sim-actions > .sim-btn, .sim-actions > button, .sim-actions > a { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; text-align: center; line-height: 1.15; }
+.sim-intro-foot .sim-btn--lg { padding-block: 8px; }
+/* the intro screen's labels: a pill the width of its text, with room above and below, and the text column starting level with the picture */
+.sim-intro-body .sim-kicker, .sim-intro-body .sim-domain { width: fit-content; max-width: 100%; }
+.sim-intro-body { justify-content: flex-start !important; padding-top: 6px; gap: 2px; }
+.sim-intro-body > * + * { margin-top: 10px; }
+.ver-row input { border-radius: 14px; min-height: 46px; box-sizing: border-box; } .ver-row .hub-btn { min-height: 46px; }
+.sim-intro-scroll { justify-content: flex-start !important; gap: 10px; }
+
+/* ---- Demo polish: the mute button is the same size and style in every top bar; path cards line their buttons up at the bottom ---- */
+.back-bar { min-height: 48px; padding-block: 0 !important; }
+.back-bar .back-right { gap: 10px; }
+.back-bar .snd-toggle, .sim-top .snd-toggle, .snd-toggle--dark { width: 34px !important; height: 34px !important; background: var(--card) !important; color: var(--ink) !important; border: 3px solid var(--ink) !important; box-shadow: 2px 2px 0 var(--ink); }
+.pt-step { display: flex !important; flex-direction: column; } .pt-btns { margin-top: auto !important; padding-top: 12px; align-items: stretch; }
+.pt-btns .sim-btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.pt-step:not(:last-child)::after { right: -25px !important; width: 30px; height: 30px; display: grid; place-items: center; background: var(--yellow); border: 3px solid var(--ink); border-radius: 50%; font-size: 1rem !important; color: var(--ink) !important; transform: translateY(-50%); }

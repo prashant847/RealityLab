@@ -53,6 +53,8 @@ function fake(over: Partial<SimsApi> = {}): SimsApi {
     current: vi.fn().mockResolvedValue(null), start: vi.fn().mockResolvedValue(view(1)),
     decide: vi.fn().mockResolvedValue({ outcome, view: view(2) }), report: vi.fn().mockRejectedValue(new Error("no report")),
     reflection: vi.fn().mockResolvedValue(null),
+    sealReport: vi.fn().mockImplementation(async (run: string, candidate: string) => ({ code: `RL-${run.slice(0, 8)}-0a1b2c3d`, candidate, issued_at: "2026-01-05T10:00:00Z" })),
+    verifyReport: vi.fn().mockResolvedValue({ valid: false, reason: "No sealed report with that code was found on this server." }),
     saveReflection: vi.fn().mockImplementation(async (run: string, r) => ({ run_id: run, profession: "covid", phase: "workday", ...r })),
     careers: vi.fn().mockResolvedValue(careersView), saveChoice: vi.fn().mockImplementation(async (career: string, reason: string) => (career ? { career, reason, updated_at: "2026-01-01" } : null)), ...over,
   };

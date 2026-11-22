@@ -146,6 +146,20 @@ def run_report(run_id: str, s: SimsService = S):
     return s.report(run_id)
 
 
+class SealBody(BaseModel):
+    candidate: str = Field(min_length=1, max_length=60)
+
+
+@router.post("/runs/{run_id}/seal", summary="Seal a finished report so anyone with its code can verify it")
+def seal_report(run_id: str, body: SealBody, s: SimsService = S):
+    return s.seal_report(run_id, body.candidate)
+
+
+@router.get("/verify/{code}", summary="Public: is this report code genuine, and what does the report say?")
+def verify_report(code: str, s: SimsService = S):
+    return s.verify_code(code)
+
+
 @router.get("/runs/{run_id}/reflection")
 def get_reflection(run_id: str, s: SimsService = S):
     return s.get_reflection(run_id)

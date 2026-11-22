@@ -13,6 +13,7 @@ from . import engine as E
 from .models import Profile, SimRun
 from . import generate as gen
 from .certs import CertsMixin
+from .verify import VerifyMixin
 from .phases import PhasesMixin
 from .registry import ALL, BLACKOUT_META, GENERATED, LABS, PROFESSIONS, SCENARIOS
 from ..db.models import utcnow
@@ -26,7 +27,7 @@ def _meta(sc: E.Scenario) -> dict[str, Any]:
             "description": sc.description, "objectives": list(sc.objectives), "style": sc.id}
 
 
-class SimsService(PhasesMixin, CertsMixin):
+class SimsService(PhasesMixin, CertsMixin, VerifyMixin):
     def __init__(self, sf: sessionmaker):
         self.sf = sf
         gen.load_all()

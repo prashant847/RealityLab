@@ -44,7 +44,11 @@ export interface RunView {
 export interface Outcome { choice_id: string; label: string; rating: Rating; consequence: string; lesson: string; changes: Record<string, number[]>; completed: boolean; events: SimEvent[] }
 export interface Intro extends Omit<LibraryItem, "status" | "completed" | "workday"> { intro: string[]; disclaimer: string; rounds: number; parts: string[]; kind?: "workday" | "crisis" | "technical" | "generated"; profession?: string; prep?: PrepSummary | null }
 export interface SkillResult { id: string; label: string; percent: number; level: string; decisions_counted: number; explanation: string; evidence: { step: string; choice: string; points: number }[] }
+/** The seal on a finished report: a code anyone can check at the Verify page. */
+export interface ReportSeal { code: string; candidate: string; issued_at: string }
+export type VerifyResult = { valid: true; candidate: string; issued_at: string; code: string; report: SimReport } | { valid: false; reason: string };
 export interface SimReport {
+  seal?: ReportSeal;
   simulation: string; simulation_id: string; role: string; run_id: string; completed_at?: string;
   outcome: { id: string; title: string; text: string; tone: "good" | "neutral" | "bad" };
   final_meters: { label: string; value: number; good: string }[];
@@ -96,6 +100,8 @@ export interface SimsApi {
   start(sim: string): Promise<RunView>;
   decide(run: string, choice: string): Promise<{ outcome: Outcome; view: RunView }>;
   report(run: string): Promise<SimReport>;
+  sealReport(run: string, candidate: string): Promise<ReportSeal>;
+  verifyReport(code: string): Promise<VerifyResult>;
   reflection(run: string): Promise<ReflectionView | null>;
   saveReflection(run: string, r: { enjoyment: number; stress: number; daily_interest: number; note: string }): Promise<ReflectionView>;
   careers(): Promise<CareersView>;
@@ -118,6 +124,8 @@ export const simsApi: SimsApi = {
   start: (s) => call("POST", `/sims/${s}/runs`),
   decide: (r, c) => call("POST", `/runs/${r}/decisions`, { choice_id: c }),
   report: (r) => call("GET", `/runs/${r}/report`),
+  sealReport: (r, candidate) => call("POST", `/runs/${r}/seal`, { candidate }),
+  verifyReport: (code) => call("GET", `/verify/${encodeURIComponent(code)}`),
   reflection: (r) => call("GET", `/runs/${r}/reflection`),
   saveReflection: (r, b) => call("POST", `/runs/${r}/reflection`, b),
   careers: () => call("GET", "/careers"),
