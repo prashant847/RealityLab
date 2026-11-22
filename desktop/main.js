@@ -82,6 +82,24 @@ function fatal(message) {
   stopServer(); app.exit(1);
 }
 
+/** After an update (not on a first install), say once what is new. The last version shown is remembered in the user data folder. */
+function announceUpdate() {
+  try {
+    const f = path.join(app.getPath("userData"), "last-version.txt");
+    const prev = fs.existsSync(f) ? fs.readFileSync(f, "utf8").trim() : "";
+    fs.writeFileSync(f, app.getVersion());
+    if (!prev || prev === app.getVersion() || DEV_URL) return;
+    dialog.showMessageBox(win, { type: "info", title: "RealityLab AI updated", message: `RealityLab AI is now version ${app.getVersion()}`,
+      detail: ["What's new:", "",
+        "• Technical labs: build a circuit and perform an appendicectomy",
+        "• A certificate for each simulation, with comic art",
+        "• A professional written report you can print or save as a PDF",
+        "• Every worker on your team now gives opinions",
+        "• The Archivist can speak English or Hinglish",
+        "• A calmer, retro comic look throughout"].join("\n"), buttons: ["Got it"] });
+  } catch { /* the notice is optional */ }
+}
+
 async function main() {
   Menu.setApplicationMenu(null);
   const icon = path.join(__dirname, "assets", "icon.ico");
@@ -108,7 +126,7 @@ async function main() {
       else if (input.key === "-") { e.preventDefault(); setZoom(Math.round((z - 0.25) * 100) / 100, true); }
       else if (input.key === "0") { e.preventDefault(); setZoom(1, true); }
     });
-    win.once("ready-to-show", () => { splash.destroy(); win.show(); });
+    win.once("ready-to-show", () => { splash.destroy(); win.show(); announceUpdate(); });
     win.on("closed", () => { win = null; });
     await win.webContents.session.clearCache();                  // the port is stable, so a cached old page must never win over the version just installed
     await win.loadURL(origin + "/");

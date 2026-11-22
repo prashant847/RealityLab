@@ -1,7 +1,7 @@
 {
   "name": "realitylab-ai",
   "productName": "RealityLab AI",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "RealityLab AI: experience your future before you choose it.",
   "author": "RealityLab AI",
   "main": "main.js",
