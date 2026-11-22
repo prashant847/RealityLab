@@ -28,7 +28,7 @@ describe("sealing a report", () => {
 
 describe("the Verify page", () => {
   it("says a report is genuine, or not verified", async () => {
-    const verifyReport = vi.fn().mockResolvedValueOnce({ valid: true, candidate: "Asha", issued_at: "2026-01-05T10:00:00Z", code: "RL-abcdef12-0a1b2c3d", report: rep() })
+    const verifyReport = vi.fn().mockResolvedValueOnce({ valid: true, candidate: "Asha", issued_at: "2026-01-05T10:00:00Z", code: "RL-abcdef12-0a1b2c3d", report: rep(), score: 100, band: "outstanding", band_label: "Outstanding", benchmark: { n: 8, percentile: 75, mean: 60 } })
       .mockResolvedValueOnce({ valid: false, reason: "This code does not match the report on record." });
     const api = { verifyReport } as unknown as SimsApi;
     render(<Verify api={api} initial="" />);
@@ -36,6 +36,7 @@ describe("the Verify page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Check" }));
     expect(await screen.findByText("Genuine report")).toBeInTheDocument();
     expect(screen.getByText("Asha")).toBeInTheDocument();
+    expect(screen.getByText("75%")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Report code"), { target: { value: "RL-abcdef12-00000000" } });
     fireEvent.click(screen.getByRole("button", { name: "Check" }));
     expect(await screen.findByText("Not verified")).toBeInTheDocument();

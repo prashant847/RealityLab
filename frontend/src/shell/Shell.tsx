@@ -7,6 +7,7 @@ import { CareerCompare } from "./CareerCompare";
 import { Labs } from "./Labs";
 import { CertificatePreview, CertificateView, Certificates } from "./Certificates";
 import { Verify } from "./Verify";
+import { Employers } from "./Employers";
 import { Welcome, WELCOME_KEY } from "./Welcome";
 import { Settings } from "./Settings";
 import { applyA11y, listenForDesktopZoom } from "../a11y/a11y";
@@ -41,6 +42,7 @@ const ICONS: Record<string, ReactNode> = {
   journey: <path d="M5 19V9m7 10V5m7 14v-7" strokeLinecap="round" />,
   labs: <path d="M4 20 14 10m0 0 2-5 4 4-5 2m-1 0 4 4M5 5l3 3" strokeLinecap="round" strokeLinejoin="round" />,
   gen: <path d="M12 3v4m0 10v4M3 12h4m10 0h4M6 6l2.5 2.5m7 7L18 18m0-12-2.5 2.5m-7 7L6 18" strokeLinecap="round" />,
+  employers: <><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 13h18" strokeLinecap="round" /></>,
   verify: <><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.500 7-10V6z" strokeLinejoin="round" /><path d="m9 12 2.200 2.200L15.500 10" strokeLinecap="round" strokeLinejoin="round" /></>,
   certs: <><circle cx="12" cy="9" r="5" /><path d="m9 13-1.5 7L12 18l4.5 2L15 13" strokeLinecap="round" strokeLinejoin="round" /></>,
   compare: <path d="M4 6h7M4 12h7M4 18h7M15 6l5 6-5 6" strokeLinecap="round" strokeLinejoin="round" />,
@@ -120,14 +122,14 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
   if (parts[0] === "blackout-report" && parts[1] && parts[2]) return <>{toastEl}<PastBlackoutReport key={parts[2]} simId={parts[1]} runId={parts[2]} /></>;
   if (parts[0] === "report" && parts[1]) return <>{toastEl}<ReportView api={api} runId={parts[1]} onHome={() => go("#/")} onOpen={(sim, to) => go(sim.startsWith("gen_") ? `#/gen/${sim}` : sim === "circuit" || sim === "surgery" ? `#/lab/${sim}` : to === "crisis" ? (sim === "blackout" ? "#/play/blackout" : `#/crisis/${sim}`) : `#/sim/${sim}`)} /></>;
 
-  const tab = parts[0] === "verify" ? "verify" : parts[0] === "certificates" ? "certs" : parts[0] === "labs" ? "labs" : parts[0] === "journey" ? "journey" : parts[0] === "compare" ? "compare" : parts[0] === "settings" ? "settings" : "home";
+  const tab = parts[0] === "employers" ? "employers" : parts[0] === "verify" ? "verify" : parts[0] === "certificates" ? "certs" : parts[0] === "labs" ? "labs" : parts[0] === "journey" ? "journey" : parts[0] === "compare" ? "compare" : parts[0] === "settings" ? "settings" : "home";
   return (
     <div className="hub">
       {toastEl}
       <aside className="hub-side">
         <div className="hub-brand"><span className="hub-mark" aria-hidden="true">R</span><div><strong>RealityLab AI</strong><small>Career simulations</small></div></div>
         <nav aria-label="Main" className="hub-nav">
-          {([["home", "Simulations", "#/"], ["labs", "Technical labs", "#/labs"], ["certs", "Certificates", "#/certificates"], ["verify", "Verify a report", "#/verify"], ["compare", "Compare careers", "#/compare"], ["journey", "My journey", "#/journey"], ["settings", "Settings", "#/settings"]] as const).map(([k, label, h]) => (
+          {([["home", "Simulations", "#/"], ["labs", "Technical labs", "#/labs"], ["certs", "Certificates", "#/certificates"], ["verify", "Verify a report", "#/verify"], ["employers", "For employers", "#/employers"], ["compare", "Compare careers", "#/compare"], ["journey", "My journey", "#/journey"], ["settings", "Settings", "#/settings"]] as const).map(([k, label, h]) => (
             <a key={k} href={h} aria-current={tab === k ? "page" : undefined} className={tab === k ? "on" : ""}><Icon name={k} />{label}</a>))}
         </nav>
         <div className="hub-foot"><span className="hub-avatar" aria-hidden="true">{(profile?.name || "You").slice(0, 1).toUpperCase()}</span>
@@ -138,6 +140,7 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
         {tab === "home" && <Library api={api} name={profile?.name ?? ""} />}
         {tab === "labs" && <Labs api={api} />}
         {tab === "certs" && <Certificates api={api} />}
+        {tab === "employers" && <Employers api={api} />}
         {tab === "verify" && <Verify key={parts[1] ?? ""} api={api} initial={parts[1] ?? ""} />}
         {tab === "compare" && <CareerCompare api={api} />}
         {tab === "journey" && <JourneyView api={api} />}

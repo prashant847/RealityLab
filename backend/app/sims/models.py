@@ -53,3 +53,37 @@ class CareerChoice(Base):
     career: Mapped[str] = mapped_column(String(32), default="")
     reason: Mapped[str] = mapped_column(Text, default="")
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class Employer(Base):
+    """An employer or institution account: it keeps a shortlist of verified candidate reports."""
+    __tablename__ = "employers"
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    email: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    org: Mapped[str] = mapped_column(String(80), default="")
+    pw_hash: Mapped[str] = mapped_column(String(200))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class AuthSession(Base):
+    """A sign-in. Only a hash of the token is stored, so a copy of the database cannot be used to sign in."""
+    __tablename__ = "auth_sessions"
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    employer_id: Mapped[str] = mapped_column(String(32), index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ShortlistEntry(Base):
+    """One verified candidate report saved by an employer. The snapshot is what the verification returned when it was added."""
+    __tablename__ = "shortlist"
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    employer_id: Mapped[str] = mapped_column(String(32), index=True)
+    code: Mapped[str] = mapped_column(String(24))
+    candidate: Mapped[str] = mapped_column(String(60))
+    simulation: Mapped[str] = mapped_column(String(160))
+    sim_id: Mapped[str] = mapped_column(String(32))
+    score: Mapped[int] = mapped_column(Integer)
+    band: Mapped[str] = mapped_column(String(20))
+    skills: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
+    note: Mapped[str] = mapped_column(String(400), default="")
+    added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

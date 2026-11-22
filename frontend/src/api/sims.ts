@@ -46,7 +46,12 @@ export interface Intro extends Omit<LibraryItem, "status" | "completed" | "workd
 export interface SkillResult { id: string; label: string; percent: number; level: string; decisions_counted: number; explanation: string; evidence: { step: string; choice: string; points: number }[] }
 /** The seal on a finished report: a code anyone can check at the Verify page. */
 export interface ReportSeal { code: string; candidate: string; issued_at: string }
-export type VerifyResult = { valid: true; candidate: string; issued_at: string; code: string; report: SimReport } | { valid: false; reason: string };
+/** How a score compares with the other finished attempts at the same scenario on this server (percentile is null until enough have played). */
+export interface Benchmark { n: number; percentile: number | null; mean: number | null }
+export type VerifyResult = { valid: true; candidate: string; issued_at: string; code: string; report: SimReport; score: number; band: string; band_label: string; benchmark: Benchmark } | { valid: false; reason: string };
+export interface EmployerInfo { id: string; email: string; org: string }
+export interface ShortlistItem { id: string; code: string; candidate: string; simulation: string; sim_id: string; score: number; band: string; band_label: string; skills: { id: string; label: string; percent: number }[]; note: string; added_at: string }
+export interface Analytics { sim_id: string; attempts: number; mean: number | null; distribution: { from: number; to: number; count: number }[]; steps: { step: string; strong: number; mixed: number; weak: number; total: number; strong_rate: number }[] }
 export interface SimReport {
   seal?: ReportSeal;
   simulation: string; simulation_id: string; role: string; run_id: string; completed_at?: string;
@@ -69,10 +74,10 @@ export class SimsApiError extends Error {
   constructor(message: string, readonly status: number) { super(message); }
 }
 
-async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
+async function call<T>(method: string, path: string, body?: unknown, token?: string): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(`/api${path}`, { method, headers: body === undefined ? undefined : { "content-type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
+    res = await fetch(`/api${path}`, { method, headers: { ...(body === undefined ? {} : { "content-type": "application/json" }), ...(token ? { authorization: `Bearer ${token}` } : {}) }, body: body === undefined ? undefined : JSON.stringify(body) });
   } catch {
     throw new SimsApiError("Cannot reach the local simulation service. Close and reopen RealityLab AI.", 0);
   }
@@ -102,6 +107,15 @@ export interface SimsApi {
   report(run: string): Promise<SimReport>;
   sealReport(run: string, candidate: string): Promise<ReportSeal>;
   verifyReport(code: string): Promise<VerifyResult>;
+  employerRegister(email: string, password: string, org: string): Promise<{ token: string; employer: EmployerInfo }>;
+  employerLogin(email: string, password: string): Promise<{ token: string; employer: EmployerInfo }>;
+  employerLogout(token: string): Promise<unknown>;
+  employerMe(token: string): Promise<EmployerInfo>;
+  shortlist(token: string): Promise<ShortlistItem[]>;
+  addCandidate(token: string, code: string): Promise<ShortlistItem>;
+  setCandidateNote(token: string, id: string, note: string): Promise<ShortlistItem>;
+  removeCandidate(token: string, id: string): Promise<unknown>;
+  analytics(simId: string): Promise<Analytics>;
   reflection(run: string): Promise<ReflectionView | null>;
   saveReflection(run: string, r: { enjoyment: number; stress: number; daily_interest: number; note: string }): Promise<ReflectionView>;
   careers(): Promise<CareersView>;
@@ -125,6 +139,15 @@ export const simsApi: SimsApi = {
   decide: (r, c) => call("POST", `/runs/${r}/decisions`, { choice_id: c }),
   report: (r) => call("GET", `/runs/${r}/report`),
   sealReport: (r, candidate) => call("POST", `/runs/${r}/seal`, { candidate }),
+  employerRegister: (email, password, org) => call("POST", "/employers/register", { email, password, org }),
+  employerLogin: (email, password) => call("POST", "/employers/login", { email, password }),
+  employerLogout: (token) => call("POST", "/employers/logout", {}, token),
+  employerMe: (token) => call("GET", "/employers/me", undefined, token),
+  shortlist: (token) => call("GET", "/employers/shortlist", undefined, token),
+  addCandidate: (token, code) => call("POST", "/employers/shortlist", { code }, token),
+  setCandidateNote: (token, id, note) => call("PUT", `/employers/shortlist/${id}/note`, { note }, token),
+  removeCandidate: (token, id) => call("DELETE", `/employers/shortlist/${id}`, undefined, token),
+  analytics: (simId) => call("GET", `/analytics/${simId}`),
   verifyReport: (code) => call("GET", `/verify/${encodeURIComponent(code)}`),
   reflection: (r) => call("GET", `/runs/${r}/reflection`),
   saveReflection: (r, b) => call("POST", `/runs/${r}/reflection`, b),

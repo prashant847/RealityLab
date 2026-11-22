@@ -1,0 +1,13 @@
+services:
+  realitylab:
+    build: .
+    ports: ["8000:8000"]
+    volumes: ["realitylab-data:/data"]
+    environment:
+      # set a long random value and keep it secret: it signs every report seal. Without it a key is generated in /data on first run.
+      REALITYLAB_SEAL_KEY: ${REALITYLAB_SEAL_KEY:-}
+      REALITYLAB_RATE_LIMIT: "30"
+      REALITYLAB_CORS: ${REALITYLAB_CORS:-http://localhost:8000}
+    restart: unless-stopped
+volumes:
+  realitylab-data:

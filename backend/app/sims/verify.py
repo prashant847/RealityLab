@@ -22,6 +22,7 @@ from sqlalchemy import select
 
 from ..services.simulations import BadRequest, Conflict, NotFound
 from . import tts
+from .assess import band_of, score_of
 from .models import SimRun
 
 CODE = re.compile(r"^RL-([0-9a-f]{8})-([0-9a-f]{8})$", re.I)
@@ -55,6 +56,19 @@ def _signature(report: dict[str, Any], candidate: str, issued_at: str) -> str:
 
 def code_for(run_id: str, report: dict[str, Any], candidate: str, issued_at: str) -> str:
     return f"RL-{run_id[:8].lower()}-{_signature(report, candidate, issued_at)}"
+
+
+MIN_BENCH = 5
+
+
+def benchmark(db, sim_id: str, score: int, exclude_run: str | None = None) -> dict[str, Any]:
+    """How this score compares with every other finished attempt at the same scenario on this server. Not given until at least MIN_BENCH others have played."""
+    others = [score_of(r.report) for r in db.scalars(select(SimRun).where(SimRun.sim_id == sim_id, SimRun.status == "completed")).all()
+              if r.report and r.id != exclude_run]
+    n = len(others)
+    if n < MIN_BENCH:
+        return {"n": n, "percentile": None, "mean": round(sum(others) / n) if n else None}
+    return {"n": n, "percentile": round(100 * sum(1 for x in others if x < score) / n), "mean": round(sum(others) / n)}
 
 
 class VerifyMixin:
@@ -91,7 +105,9 @@ class VerifyMixin:
                     continue
                 good = _signature(run.report, seal["candidate"], seal["issued_at"])
                 if hmac.compare_digest(good, sig) and hmac.compare_digest(seal["code"].lower(), code.strip().lower()):
-                    return {"valid": True, "candidate": seal["candidate"], "issued_at": seal["issued_at"], "code": seal["code"], "report": {k: v for k, v in run.report.items() if k != "seal"}}
+                    score = score_of(run.report); key, label = band_of(score)
+                    return {"valid": True, "candidate": seal["candidate"], "issued_at": seal["issued_at"], "code": seal["code"], "report": {k: v for k, v in run.report.items() if k != "seal"},
+                            "score": score, "band": key, "band_label": label, "benchmark": benchmark(db, run.sim_id, score, run.id)}
             tampered = any((r.report or {}).get("seal") for r in runs)
         return {"valid": False, "reason": ("This code does not match the report on record. The report may have been changed, or the code was copied wrongly." if tampered
                                            else "No sealed report with that code was found on this server.")}

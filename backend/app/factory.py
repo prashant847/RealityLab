@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from .api.errors import install_error_handlers
 from .api.routes import router
 from .sims import models as _sim_models  # noqa: F401  (registers the tables before create_all)
+from .sims.employers import EmployerService, Limiter, router as employers_router
 from .sims.routes import router as sims_router
 from .sims.service import SimsService
 from .db.session import make_engine, make_session_factory
@@ -48,12 +49,15 @@ def create_app(db_url: str | None = None, voice: Voice | None = None,
     sessions = make_session_factory(make_engine(db_url))
     app.state.service = SimulationService(sessions, voice or Voice(provider_from_env()))
     app.state.sims = SimsService(sessions)
+    app.state.employers = EmployerService(app.state.sims)
+    app.state.limiter = Limiter(limit=int(os.environ.get("REALITYLAB_RATE_LIMIT", "30")))      # per client, per minute, for sign-in, sign-up and code checks
     app.state.service.prep_provider = lambda: app.state.sims.latest_prep("blackout")   # a BLACKOUT game starts with its workday head start
-    app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    app.add_middleware(CORSMiddleware, allow_origins=[o.strip() for o in os.environ.get("REALITYLAB_CORS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if o.strip()],
                        allow_methods=["*"], allow_headers=["*"])
     install_error_handlers(app)
     app.include_router(router)
     app.include_router(sims_router)
+    app.include_router(employers_router)
     dist = find_frontend(frontend_dir)
     if dist is not None:                         # mounted last, so every /api route wins
         app.mount("/", StaticFiles(directory=dist, html=True), name="frontend")

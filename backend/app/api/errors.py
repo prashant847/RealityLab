@@ -7,6 +7,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from ..services.simulations import ServiceError
+from ..sims.employers import RateLimited, Unauthorized
 
 log = logging.getLogger("realitylab")
 
@@ -25,6 +26,14 @@ def install_error_handlers(app: FastAPI) -> None:
         details = [{"field": ".".join(str(p) for p in e["loc"] if p != "body"), "message": e["msg"]}
                    for e in exc.errors()]
         return JSONResponse(status_code=422, content=_body("validation_error", "Request validation failed.", details))
+
+    @app.exception_handler(Unauthorized)
+    async def unauthorized(_: Request, exc: Unauthorized):
+        return JSONResponse(status_code=401, content=_body("unauthorized", str(exc)))
+
+    @app.exception_handler(RateLimited)
+    async def rate_limited(_: Request, exc: RateLimited):
+        return JSONResponse(status_code=429, content=_body("rate_limited", str(exc)))
 
     @app.exception_handler(Exception)
     async def unexpected(_: Request, exc: Exception):

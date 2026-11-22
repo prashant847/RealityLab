@@ -239,3 +239,17 @@ RealityLab AI ships as an installable Windows app: an Electron window that start
 - Run from source without installing: `powershell -ExecutionPolicy Bypass -File scripts\dev-desktop.ps1`.
 - The installer is unsigned, so Windows SmartScreen may ask for confirmation on first run.
 - Simulations: BLACKOUT (comic, its own engine), Bhopal and the COVID-era hospital (generic scenario engine in `backend/app/sims`, themed interfaces in `frontend/src/sims`).
+
+## Product features (demo branch)
+
+- **Verifiable reports.** A finished report can be *sealed*: it gets a code (`RL-<run>-<signature>`) signed on the server. Anyone can check it at
+  *Verify a report* (`GET /api/verify/{code}`); editing a decision, score or name breaks the code.
+- **Employer portal.** Employers create an account, add candidates' codes (each is verified first) and compare the shortlist side by side, ranked
+  by score, with every competency, notes, and how scores are spread for the scenario (`/api/employers/*`, `/api/analytics/{sim}`).
+- **Benchmarks.** A verified report shows how its score compares with the other attempts at the same scenario on that server.
+- **Runs without any AI.** Nothing above, and nothing else in the app, needs Claude or an API key; AI only rewords the Archivist's debrief when present.
+- **Run it as a service.** `docker compose up --build` serves the API and the web app on port 8000 (`/api/health` for health checks, `/docs` for the API).
+  Set `REALITYLAB_SEAL_KEY` to a long random secret. Passwords are PBKDF2-hashed, sign-in tokens are stored hashed, and sign-in/sign-up/code checks are rate-limited.
+- **CI.** `.github/workflows/ci.yml` runs the backend and frontend tests (with AI switched off) on every push.
+
+Not done yet: Postgres, schema migrations, e-mail verification and password reset, and a candidate-side account (reports are sealed on the computer that ran them).

@@ -44,6 +44,9 @@ export function Verify({ api, initial }: { api: SimsApi; initial: string }) {
             <div><dt>Date completed</dt><dd>{res.report.completed_at ? dateOf(res.report.completed_at) : "—"}</dd></div>
             <div><dt>Report code</dt><dd>{res.code}</dd></div>
           </dl>
+          <p className="ver-bench" role="note">{res.benchmark.percentile !== null
+            ? <>Scored higher than <b>{res.benchmark.percentile}%</b> of the {res.benchmark.n} other attempts at this scenario (average {res.benchmark.mean}).</>
+            : <>Not enough other attempts at this scenario yet to compare with ({res.benchmark.n} so far).</>}</p>
           <div className="ver-score">
             <div className={`pro-score pro-score--${a.band}`}><strong>{a.score}</strong><span>out of 100</span><em>{a.bandLabel}</em></div>
             <div><p>{a.indication}</p><p className="pro-fine">{res.report.summary.decisions} decision{res.report.summary.decisions === 1 ? "" : "s"}: {res.report.summary.strong} strongest option, {res.report.summary.mixed} acceptable, {res.report.summary.weak} weak.</p></div>

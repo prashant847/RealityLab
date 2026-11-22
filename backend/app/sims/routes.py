@@ -156,7 +156,8 @@ def seal_report(run_id: str, body: SealBody, s: SimsService = S):
 
 
 @router.get("/verify/{code}", summary="Public: is this report code genuine, and what does the report say?")
-def verify_report(code: str, s: SimsService = S):
+def verify_report(code: str, request: Request, s: SimsService = S):
+    request.app.state.limiter.check(f"verify:{request.client.host if request.client else '?'}")
     return s.verify_code(code)
 
 
