@@ -50,7 +50,14 @@ export function buildReaction(choice: Choice, choices: Choice[], stances: { id: 
     oppose: ["Are you sure? I'd have said no.", "That worries me. But you're the lead.", "Really?! ...Okay. Okay."],
     neutral: [`Understood. ${cap(price)}, ${time}.`, "Okay. Let's see what happens.", "Right. Moving."],
   };
-  const third: Record<Mood, string | null> = { support: null, caution: pick(["Ouch.", "Hmm."], seed), oppose: pick(["Whoa.", "Oh no."], seed), neutral: null };
+  return compose(mood, lead, pick(adv[mood], seed), mood === "caution" ? pick(["Ouch.", "Hmm."], seed) : mood === "oppose" ? pick(["Whoa.", "Oh no."], seed) : null);
+}
+
+/**
+ * The same scene with the words supplied: the lead announces, the advisor answers in their own voice and, for some moods, a bystander adds a word.
+ * Used where the lines are written for a particular choice (the workday).
+ */
+export function compose(mood: Mood, lead: string, advText: string, thirdText: string | null): Reaction {
   const leadAfter: Record<Mood, Beat> = {
     support: { who: "lead", pose: "determined", fx: "hop" }, caution: { who: "lead", pose: "worried", fx: "lean" },
     oppose: { who: "lead", pose: "surprised", fx: "shake" }, neutral: { who: "lead", pose: "determined", fx: "none" },
@@ -65,11 +72,11 @@ export function buildReaction(choice: Choice, choices: Choice[], stances: { id: 
 
   const steps: Step[] = [
     { line: { who: "lead", text: lead }, during: [{ who: "lead", pose: "speaking", fx: "lean" }], after: [{ who: "lead", pose: "calm" }] },
-    { line: { who: "adv", text: pick(adv[mood], seed) }, sfx: sfx[mood], shake: mood === "oppose",
+    { line: { who: "adv", text: advText }, sfx: sfx[mood], shake: mood === "oppose",
       during: [{ who: "adv", pose: "speaking", fx: mood === "oppose" ? "shake" : "hop" }, leadAfter[mood], thirdReact[mood]],
       after: [{ who: "adv", pose: advSettled[mood], fx: "hop" }] },
   ];
-  if (third[mood]) steps.push({ line: { who: "third", text: third[mood]! }, during: [{ who: "third", pose: "speaking", fx: "lean" }], after: [thirdReact[mood]] });
+  if (thirdText) steps.push({ line: { who: "third", text: thirdText }, during: [{ who: "third", pose: "speaking", fx: "lean" }], after: [thirdReact[mood]] });
   steps.push({ during: [{ who: "adv", pose: advFinale[mood], fx: "lean" }], pauseMs: 700 });
   return { mood, steps };
 }

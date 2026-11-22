@@ -4,7 +4,9 @@ from __future__ import annotations
 from dataclasses import replace
 
 from .bhopal import BHOPAL
+from .clarity import clarify
 from .covid import COVID
+from .technical import LABS
 from .voices import VOICES
 from .workdays import WORKDAYS
 
@@ -13,7 +15,9 @@ def _voiced(sc):
     return replace(sc, rounds=tuple(replace(rd, voice=VOICES.get(rd.id, ())) for rd in sc.rounds))
 
 
-SCENARIOS = {k: _voiced(v) for k, v in {"bhopal": BHOPAL, "covid": COVID, **{f"{p}_workday": w for p, w in WORKDAYS.items()}}.items()}
+SCENARIOS = {k: _voiced(clarify(v)) for k, v in {"bhopal": BHOPAL, "covid": COVID, **{f"{p}_workday": w for p, w in WORKDAYS.items()}}.items()}
+GENERATED: dict = {}                            # simulations the player had written (see generate.py): id -> {kind, scenario}
+ALL = {**SCENARIOS, **LABS}                    # every scenario that can be run; LABS (the technical-work ones) are not careers, so they are listed apart
 PROFESSIONS = ("blackout", "bhopal", "covid")
 BLACKOUT_META = {
     "id": "blackout", "title": "BLACKOUT: The NotPetya Incident", "tagline": "Lead a terminal through the first ten days of a cyberattack.",

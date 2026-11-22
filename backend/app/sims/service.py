@@ -11,8 +11,10 @@ from ..db.models import Report, Run, Simulation
 from ..services.simulations import BadRequest, Conflict, NotFound
 from . import engine as E
 from .models import Profile, SimRun
+from . import generate as gen
+from .certs import CertsMixin
 from .phases import PhasesMixin
-from .registry import BLACKOUT_META, PROFESSIONS, SCENARIOS
+from .registry import ALL, BLACKOUT_META, GENERATED, LABS, PROFESSIONS, SCENARIOS
 from ..db.models import utcnow
 
 ORDER = ("blackout", "bhopal", "covid")
@@ -24,9 +26,10 @@ def _meta(sc: E.Scenario) -> dict[str, Any]:
             "description": sc.description, "objectives": list(sc.objectives), "style": sc.id}
 
 
-class SimsService(PhasesMixin):
+class SimsService(PhasesMixin, CertsMixin):
     def __init__(self, sf: sessionmaker):
         self.sf = sf
+        gen.load_all()
 
     # ------------------------------------------------------------------ profile
     def profile(self) -> dict[str, Any]:
@@ -90,6 +93,54 @@ class SimsService(PhasesMixin):
                 out.append(m)
         return out
 
+    def labs(self) -> list[dict[str, Any]]:
+        """The technical-work simulations (circuit, surgery) with this player's progress. Kept apart from the careers, which are compared with each other."""
+        out = []
+        with self.sf() as db:
+            for sid, sc in LABS.items():
+                m = _meta(sc); m.update(status="none", completed=0, disclaimer=sc.disclaimer, steps=len(sc.rounds))
+                act = self._latest_generic(db, sid)
+                done = db.scalars(select(SimRun).where(SimRun.sim_id == sid, SimRun.status == "completed").order_by(SimRun.completed_at.desc())).all()
+                m["completed"] = sum(1 for r in done if r.ending == "success")
+                m["attempts"] = len(done)
+                if act:
+                    n = act.state["round"]; m.update(status="active", run_id=act.id, progress=f"Step {n} of {len(sc.rounds)}", percent=round(100 * (n - 1) / len(sc.rounds)))
+                elif done:
+                    m.update(status="completed" if done[0].ending == "success" else "failed", run_id=done[0].id, progress="Built" if done[0].ending == "success" else "Failed at step " + str(len(done[0].state["decisions"])), percent=100 if done[0].ending == "success" else round(100 * (len(done[0].state["decisions"]) - 1) / len(sc.rounds)), ending=done[0].ending)
+                out.append(m)
+            for sid, g in reversed(list(GENERATED.items())):
+                if g["kind"] == "technical":
+                    out.append(self._item(db, sid, g["scenario"], "technical"))
+        return out
+
+    def _item(self, db: Session, sid: str, sc: E.Scenario, kind: str) -> dict[str, Any]:
+        m = _meta(sc); m.update(status="none", completed=0, disclaimer=sc.disclaimer, steps=len(sc.rounds), attempts=0, generated=True, kind=kind)
+        act = self._latest_generic(db, sid)
+        done = db.scalars(select(SimRun).where(SimRun.sim_id == sid, SimRun.status == "completed").order_by(SimRun.completed_at.desc())).all()
+        good = "success" if kind == "technical" else "good"
+        m["completed"] = sum(1 for r in done if r.ending == good)
+        m["attempts"] = len(done)
+        if act:
+            n = act.state["round"]; m.update(status="active", run_id=act.id, progress=f"Step {n} of {len(sc.rounds)}", percent=round(100 * (n - 1) / len(sc.rounds)))
+        elif done:
+            ok = done[0].ending == good
+            m.update(status="completed" if ok else "failed", run_id=done[0].id, progress="Finished" if ok else "Stopped at step " + str(len(done[0].state["decisions"])), percent=100 if ok else round(100 * (len(done[0].state["decisions"]) - 1) / len(sc.rounds)), ending=done[0].ending)
+        return m
+
+    def generated(self) -> list[dict[str, Any]]:
+        """Every simulation the player had written, newest first."""
+        with self.sf() as db:
+            return [self._item(db, sid, g["scenario"], g["kind"]) for sid, g in reversed(list(GENERATED.items()))]
+
+    def delete_generated(self, sid: str) -> bool:
+        if sid not in GENERATED:
+            return False
+        with self.sf() as db:
+            for r in db.scalars(select(SimRun).where(SimRun.sim_id == sid)).all():
+                db.delete(r)
+            db.commit()
+        return gen.delete(sid)
+
     # ------------------------------------------------------------------ runs
     def _phase(self, db: Session, wid: str) -> dict[str, Any]:
         sc = SCENARIOS[wid]
@@ -105,12 +156,12 @@ class SimsService(PhasesMixin):
         return p
 
     def _scenario(self, sim_id: str) -> E.Scenario:
-        if sim_id not in SCENARIOS:
+        if sim_id not in ALL:
             raise NotFound(f"No simulation called '{sim_id}'.")
-        return SCENARIOS[sim_id]
+        return ALL[sim_id]
 
     def _view(self, run: SimRun) -> dict[str, Any]:
-        sc = SCENARIOS[run.sim_id]
+        sc = ALL[run.sim_id]
         return {"run": {"id": run.id, "sim_id": run.sim_id, "status": run.status, "attempt": run.attempt},
                 "scenario": {"id": sc.id, "title": sc.title, "role": sc.role, "disclaimer": sc.disclaimer, "kind": sc.kind, "profession": sc.profession},
                 "scene": E.scene_view(sc, run.state),
@@ -152,7 +203,7 @@ class SimsService(PhasesMixin):
     def decide(self, run_id: str, choice_id: str) -> dict[str, Any]:
         with self.sf() as db:
             run = self._run(db, run_id)
-            sc = SCENARIOS[run.sim_id]
+            sc = ALL[run.sim_id]
             if run.status != "active":
                 raise Conflict("This run has already finished.")
             try:
@@ -183,10 +234,12 @@ class SimsService(PhasesMixin):
         done = {r.sim_id for r in db.scalars(select(SimRun).where(SimRun.status == "completed")).all()}
         if db.scalars(select(Run.id).where(Run.status == "completed")).first():
             done.add("blackout")
-        titles = {"blackout": BLACKOUT_META["title"], **{k: v.title for k, v in SCENARIOS.items()}}
+        titles = {"blackout": BLACKOUT_META["title"], **{k: v.title for k, v in ALL.items()}}
         why = {"blackout": "Practise leading through a crisis where facts arrive slowly and every action has a price.",
                "bhopal": "Study how safeguards, cost pressure and warnings add up in industrial safety.",
-               "covid": "Experience the pressure of prioritising, communicating and caring for staff in a hospital surge."}
+               "covid": "Experience the pressure of prioritising, communicating and caring for staff in a hospital surge.",
+               "circuit": "Build a working circuit, where one correct choice at each step separates a glowing LED from a burnt part.",
+               "surgery": "Take a fictional patient through an operation, where each step has one technically correct way to do it."}
         for nxt in sc.next_up:
             if nxt not in done:
                 return {"id": nxt, "title": titles[nxt], "reason": why[nxt]}
@@ -203,14 +256,14 @@ class SimsService(PhasesMixin):
     def journey(self) -> dict[str, Any]:
         with self.sf() as db:
             runs = db.scalars(select(SimRun).where(SimRun.status == "completed").order_by(SimRun.completed_at.desc())).all()
-            done = [{"kind": "report", "run_id": r.id, "sim_id": r.sim_id, "title": SCENARIOS[r.sim_id].title, "attempt": r.attempt,
+            done = [{"kind": "report", "run_id": r.id, "sim_id": r.sim_id, "title": ALL[r.sim_id].title, "attempt": r.attempt,
                      "outcome": r.report["outcome"]["title"], "tone": r.report["outcome"]["tone"],
                      "completed_at": r.completed_at.isoformat() if r.completed_at else None,
                      "decisions": r.report["summary"]["decisions"], "strong": r.report["summary"]["strong"]} for r in runs]
             bo = db.scalars(select(Run).where(Run.status == "completed").order_by(Run.updated_at.desc())).all()
             for r in bo:
                 rep = db.scalars(select(Report).where(Report.run_id == r.id)).first()
-                done.append({"kind": "blackout", "run_id": r.id, "sim_id": "blackout", "title": BLACKOUT_META["title"], "attempt": r.attempt,
+                done.append({"kind": "blackout", "run_id": r.id, "simulation_id": r.simulation_id, "sim_id": "blackout", "title": BLACKOUT_META["title"], "attempt": r.attempt,
                              "outcome": r.state.get("final", {}).get("ending_title") or (r.ending or "Completed"), "tone": "neutral",
                              "completed_at": r.updated_at.isoformat(), "decisions": len(r.state.get("decisions", [])),
                              "score": rep.score if rep else None})

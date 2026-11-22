@@ -2,9 +2,9 @@ import { useEffect, useRef } from "react";
 import { uiUrl } from "../comic/assets";
 import type { Problem } from "../game/useGame";
 
-export function Topbar({ clock, round, attempt, kind, rewindsLeft, paused, onPause, onHistory, onLeave }: {
+export function Topbar({ clock, round, attempt, kind, rewindsLeft, paused, onPause, onHistory }: {
   clock?: string; round?: number; attempt: number; kind: string; rewindsLeft: number; paused: boolean;
-  onPause: () => void; onHistory: () => void; onLeave: () => void;
+  onPause: () => void; onHistory: () => void; onLeave?: () => void;
 }) {
   return (
     <header className="topbar">
@@ -16,7 +16,6 @@ export function Topbar({ clock, round, attempt, kind, rewindsLeft, paused, onPau
       <span className="spacer" />
       <button type="button" className="ghost small" onClick={onHistory}>Event log &amp; history</button>
       <button type="button" className="ghost small" onClick={onPause} aria-pressed={paused}>Pause</button>
-      <button type="button" className="ghost small" onClick={onLeave}>Exit</button>
     </header>
   );
 }

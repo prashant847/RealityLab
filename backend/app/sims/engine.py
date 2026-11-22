@@ -39,6 +39,7 @@ class Choice:
     requires: tuple[tuple[Cond, str], ...] = ()      # (condition, reason shown when locked)
     skills: dict[str, int] = field(default_factory=dict)   # skill -> -2..+2 evidence from this decision
     lesson: str = ""
+    fails: bool = False          # a technical failure: the build or the operation stops here, with the "failed" flag set
 
 
 @dataclass(frozen=True)
@@ -55,6 +56,7 @@ class Round:
     scene: str = ""              # name of the scene the frontend draws
     sources: tuple[str, ...] = ()
     voice: tuple[str, ...] = ()   # (name, role, line): who is in the room and what they say
+    comic: dict | None = None     # a generated simulation's comic: backdrop, team, replies and the team's opinions (see generate.py); the front end draws it
 
 
 @dataclass(frozen=True)
@@ -205,11 +207,11 @@ def decide(sc: Scenario, st: dict[str, Any], choice_id: str) -> tuple[dict[str, 
     if not ok:
         raise InvalidChoice(why)
     s = copy.deepcopy(st)
-    changes = _apply(s, ch.effects, ch.flags)
+    changes = _apply(s, ch.effects, ch.flags + (("failed",) if ch.fails else ()))
     s["decisions"].append({"round": rnd.id, "n": s["round"], "title": rnd.title, "choice_id": ch.id, "label": ch.label,
                            "rating": ch.rating, "consequence": ch.consequence, "lesson": ch.lesson, "changes": changes,
                            "skills": ch.skills, "kind": rnd.kind, "part": rnd.part})
-    if s["round"] >= len(sc.rounds):
+    if ch.fails or s["round"] >= len(sc.rounds):
         s["status"] = "completed"
         s["round_events"] = []
         s["ending"] = next(e.id for e in sc.endings if all(test(s, c) for c in e.conds))
@@ -242,7 +244,7 @@ def scene_view(sc: Scenario, st: dict[str, Any]) -> dict[str, Any]:
         choices.append({"id": c.id, "label": c.label, "summary": c.summary, "available": ok, "reason": why})
     return {**base, "step": {"id": r.id, "title": r.title, "clock": r.clock, "kind": r.kind, "brief": r.brief, "question": r.question,
                              "facts": list(r.facts), "choices": choices, "part": r.part, "scene": r.scene, "sources": list(r.sources),
-                             "voice": {"name": r.voice[0], "role": r.voice[1], "line": r.voice[2]} if r.voice else None},
+                             "voice": {"name": r.voice[0], "role": r.voice[1], "line": r.voice[2]} if r.voice else None, "comic": r.comic},
             "events": st.get("round_events", [])}
 
 

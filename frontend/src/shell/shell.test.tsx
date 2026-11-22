@@ -43,6 +43,9 @@ const careersView: CareersView = {
 function fake(over: Partial<SimsApi> = {}): SimsApi {
   return {
     library: vi.fn().mockResolvedValue([item("blackout"), item("bhopal", { status: "active", progress: "Step 3 of 13", percent: 15 }), item("covid", { status: "completed", progress: "Completed", percent: 100, run_id: "r9" })]),
+    labs: vi.fn().mockResolvedValue([]),
+    certificates: vi.fn().mockResolvedValue([]),
+    generate: vi.fn(), generationJobs: vi.fn().mockResolvedValue({ enabled: true, jobs: [] }), generated: vi.fn().mockResolvedValue([]), deleteGenerated: vi.fn(),
     journey: vi.fn().mockResolvedValue({ completed: [], skills: [] }),
     profile: vi.fn().mockResolvedValue({ name: "Asha", large_text: false, reduce_motion: false }),
     saveProfile: vi.fn().mockImplementation(async (p) => ({ name: "Asha", large_text: false, reduce_motion: false, ...p })),
@@ -80,7 +83,7 @@ describe("library", () => {
 });
 
 describe("player", () => {
-  it("opens the hospital's first step with a comic: once per run, always skippable, then the usual situation and decision", async () => {
+  it("opens the hospital's first step with a comic: once per run, always skippable, then the crisis layout with the decision", async () => {
     window.location.hash = "#/crisis/covid";
     const first = view(1);
     first.scene.step = { ...first.scene.step!, id: "c1" };
@@ -92,8 +95,7 @@ describe("player", () => {
     expect(screen.queryByRole("heading", { name: "Step 1 title" })).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Skip the comic" }));
     expect(await screen.findByRole("heading", { name: "Step 1 title" })).toBeInTheDocument();    // then the step, as before
-    await userEvent.click(screen.getByRole("button", { name: /make your decision/i }));
-    expect(screen.getByRole("button", { name: "Confirm decision" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /select an option/i })).toBeInTheDocument();         // the decision sits in the rail beside the comic, as in the crisis
     unmount();
     window.location.hash = "#/crisis/covid";
     render(<Shell api={fake({ start: vi.fn().mockResolvedValue(first), current: vi.fn().mockResolvedValue(first) })} />);
@@ -153,7 +155,7 @@ describe("report, journey, settings", () => {
     window.location.hash = "#/report/r1";
     render(<Shell api={fake({ report: vi.fn().mockResolvedValue(rep) })} />);
     await userEvent.click(await screen.findByRole("button", { name: "Read the written report instead" }));
-    for (const h of ["The hospital held", "Major decisions", "Key challenges you faced", "Skills shown by your decisions", "Areas for improvement", "Important lessons", "Recommended next"])
+    for (const h of ["Performance assessment report", "Executive summary", "Competency assessment", "Behavioural evidence", "Complete decision record", "Strengths", "Development areas", "Outcome and impact", "Key lessons for the candidate", "How to read this report", "Recommended next"])
       expect(await screen.findByRole("heading", { name: h })).toBeInTheDocument();
     expect(screen.getByText(/A stronger option was: “Audit use”/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Open it" }));
@@ -303,8 +305,7 @@ describe("polish: welcome, keyboard play, voices, feedback, milestones", () => {
     await userEvent.click(screen.getByRole("button", { name: "Page 3" }));
     await userEvent.click(screen.getByRole("button", { name: "Make your decision →" }));
     expect(await screen.findByRole("heading", { name: "Step 1 title" })).toBeInTheDocument();      // the original step, unchanged
-    await userEvent.click(screen.getByRole("button", { name: /make your decision/i }));
-    expect(screen.getByLabelText(/structured plan/i)).toBeInTheDocument();                         // and its choices
+    expect(screen.getByRole("radio", { name: /structured plan/i })).toBeInTheDocument();           // and its choices, in the rail
     vi.unstubAllGlobals();
     localStorage.removeItem("rl.comic.r-gn.c1");
   });

@@ -5,6 +5,7 @@ import type { SimReport } from "../api/sims";
 import type { Report } from "../api/types";
 import { scriptForBlackout, scriptForSim, spoken } from "./script";
 import { hn, hiText, scriptForBlackoutHi, scriptForSimHi } from "./hi";
+import { scriptForBlackoutHinglish, scriptForSimHinglish } from "./hinglish";
 
 const sim = (over: Partial<SimReport> = {}): SimReport => ({
   simulation: "COVID-era Hospital", simulation_id: "covid", role: "Duty Medical Lead", run_id: "r1", kind: "crisis",
@@ -97,6 +98,9 @@ describe("the Archivist's script is built from the report, never invented", () =
       reveal: { recorded_units: 100, true_units: 70, records_overstated_by: 30, verified_units: 40, existing_but_unverified: 30, note: "" },
     } as unknown as Report;
     const scenes = scriptForBlackout(rep, 1);
+    const mixed = scriptForBlackoutHinglish(rep, 1);
+    expect(mixed.map((s) => s.id)).toEqual(scenes.map((s) => s.id));
+    expect(mixed.flatMap((s) => s.lines).join(" ")).toMatch(/aapne|aaiye|baithiye/i);
     const all = scenes.flatMap((s) => s.lines).join(" ");
     expect(all).toContain("Restore from backup");
     expect(all).toMatch(/had warned you|had spoken up/);
@@ -291,9 +295,9 @@ describe("the debrief stage", () => {
       },
     }));
     const { Debrief } = await import("./Debrief");
-    const en = scriptForSim(sim(), 3), hi = scriptForSimHi(hiSim());
+    const en = scriptForSim(sim(), 3), hi = scriptForSimHi(hiSim()), hing = scriptForSimHinglish(sim(), 3);
     const hello = en[0].lines[0];
-    const scenesFor = (l: "en" | "hi") => (l === "hi" ? hi : en);
+    const scenesFor = (l: "en" | "hi" | "hinglish") => (l === "hi" ? hi : l === "hinglish" ? hing : en);
     const onWritten = vi.fn();
     render(<Debrief scenesFor={scenesFor} title="COVID" onWritten={onWritten} />);
     expect(screen.getByRole("heading", { name: "The Archivist has read your ledger" })).toBeInTheDocument();
@@ -318,10 +322,31 @@ describe("the debrief stage", () => {
     expect(made.at(-1)!.lang).toBe("hi");
     expect(made.at(-1)!.calls).toEqual(["goto0", "play"]);
     expect(localStorage.getItem("rl.debriefLang")).toBe("hi");
-    expect(screen.getByRole("button", { name: "लिखित रिपोर्ट" })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "लिखित रिपोर्ट" }));
+    // the buttons and labels stay in English whatever the narration language is
+    expect(screen.getByRole("button", { name: "Written report" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Transcript" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Written report" }));
     expect(onWritten).toHaveBeenCalledTimes(2);
+    // and there is a Hinglish voice, Hindi and English mixed
+    await userEvent.click(screen.getAllByRole("radio", { name: "Hinglish" })[0]);
+    expect(made.at(-1)!.lang).toBe("hinglish");
+    expect(localStorage.getItem("rl.debriefLang")).toBe("hinglish");
+    expect(screen.getByRole("button", { name: "Written report" })).toBeInTheDocument();
     localStorage.removeItem("rl.debriefLang");
     vi.doUnmock("./narrator");
+  });
+});
+
+describe("the Hinglish Archivist", () => {
+  it("speaks Hindi and English mixed in Roman letters, keeps the scenes and cards, and never leaves a scene empty (so it works for every simulation)", () => {
+    const rep = sim();
+    const en = scriptForSim(rep, 5), hing = scriptForSimHinglish(rep, 5);
+    expect(hing.map((s) => s.id)).toEqual(en.map((s) => s.id));
+    expect(hing.every((s) => s.lines.length > 0)).toBe(true);
+    const all = hing.flatMap((s) => s.lines).join(" ");
+    expect(all).toMatch(/\b(aapne|aap|aaiye|baithiye|decision|strong)\b/i);
+    expect(/[ऀ-ॿ]/.test(all)).toBe(false);                       // Roman letters only, so the one voice can read it
+    expect(hing[0].card).toEqual(en[0].card);
+    expect(hing.flatMap((s) => s.lines)).not.toEqual(en.flatMap((s) => s.lines));
   });
 });

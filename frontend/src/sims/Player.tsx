@@ -13,6 +13,12 @@ import type { ComicPage } from "./comic/types";
 import { AppBar } from "../shell/AppBar";
 const NAMES: Record<string, string> = { blackout: "BLACKOUT", bhopal: "Bhopal", covid: "COVID-era Hospital" };
 import { ROUND1_STORY } from "./comic/round1Story";
+import { WorkdayOutcome, WorkdayStep } from "./comic/WorkdayStep";
+import { isWorkdayStep, registerComic } from "./comic/workdayData";
+import { LabOutcome, LabStep, isLabView } from "./lab/LabStep";
+import { GenArt } from "../shell/Generate";
+
+const LAB_ART: Record<string, string> = { circuit: "lc7", surgery: "ls4" };
 import "./sims.css";
 
 const KIND_LABEL = { documented: "Documented record", hypothetical: "Fictional exercise", simulation: "Simulation", workday: "A normal day" } as const;
@@ -62,13 +68,15 @@ export function SimPlayer({ api, simId, onReport }: { api: SimsApi; simId: strin
     setPhase({ k: "outcome", view: next, outcome, prev: view });
   });
 
+  const stepNow = phase.k === "step" ? phase.view.scene.step : phase.k === "outcome" ? phase.prev.scene.step : null;
+  if (stepNow) registerComic(stepNow);                 // a generated simulation's comic is added to the comic tables before the step is drawn
   const theme = simId.split("_")[0] as Theme;           // covid | bhopal | blackout, for both the workday and the crisis
   const title = phase.k === "intro" ? phase.intro.title : phase.k === "step" || phase.k === "outcome" ? phase.view.scenario.title : "";
   const scene = phase.k === "step" || phase.k === "outcome" ? phase.view.scene : null;
   const pct = scene ? Math.round((100 * (scene.status === "completed" ? scene.total_rounds : scene.round - 1)) / scene.total_rounds) : 0;
   return (
     <div className={`sim sim--${theme}`}>
-      <AppBar crumbs={[{ label: NAMES[theme] ?? title, to: `#/sim/${theme}` }, { label: simId.endsWith("_workday") ? "A normal day" : "The crisis" }]} progress={scene ? pct : undefined}>
+      <AppBar crumbs={simId.startsWith("gen_") ? [{ label: "Generate", to: "#/generate" }, { label: title || "Simulation" }] : simId in LAB_ART ? [{ label: "Technical labs", to: "#/labs" }, { label: title || "Lab" }] : [{ label: NAMES[theme] ?? title, to: `#/sim/${theme}` }, { label: simId.endsWith("_workday") ? "A normal day" : "The crisis" }]} progress={scene ? pct : undefined}>
         {scene && <span className="sim-pill" aria-label="Progress">{scene.status === "completed" ? "Finished" : `Step ${scene.round} of ${scene.total_rounds}`}</span>}
         {scene && <span className="sim-pill sim-pill--soft">Saved automatically</span>}
         <SoundToggle />
@@ -81,10 +89,22 @@ export function SimPlayer({ api, simId, onReport }: { api: SimsApi; simId: strin
           <div className="sim-card sim-center"><h2>Something went wrong</h2><p>{phase.message}</p>
             <button type="button" className="sim-btn sim-btn--primary" onClick={() => void load()}>Try again</button></div>)}
         {phase.k === "intro" && <IntroScreen simId={simId} intro={phase.intro} current={phase.current} onBegin={(fresh) => void begin(fresh, phase.current)} />}
-        {phase.k === "step" && phase.view.scene.step && (
+        {phase.k === "step" && phase.view.scene.step && isLabView(phase.view) && (
+          <LabStep key={phase.view.scene.round} view={phase.view} picked={phase.picked} busy={phase.busy} mode={phase.view.scenario.kind === "generated" ? "normal" : "lab"}
+            onPick={(id) => setPhase({ ...phase, picked: id })} onConfirm={() => phase.picked && void confirm(phase.view, phase.picked)} />)}
+        {phase.k === "outcome" && phase.prev.scene.step && isLabView(phase.prev) && (
+          <LabOutcome mode={phase.prev.scenario.kind === "generated" ? "normal" : "lab"} outcome={phase.outcome} prev={phase.prev} view={phase.view} onRetry={() => void begin(true, null)}
+            onNext={() => phase.outcome.completed ? onReport(phase.view.run.id) : setPhase({ k: "step", view: phase.view, picked: null, busy: false })} />)}
+        {phase.k === "step" && phase.view.scene.step && isWorkdayStep(phase.view.scene.step.id) && (
+          <WorkdayEntry key={phase.view.scene.round} view={phase.view} picked={phase.picked} busy={phase.busy}
+            onPick={(id) => setPhase({ ...phase, picked: id })} onConfirm={() => phase.picked && void confirm(phase.view, phase.picked)} />)}
+        {phase.k === "step" && phase.view.scene.step && !isWorkdayStep(phase.view.scene.step.id) && !isLabView(phase.view) && (
           <StepScreen key={phase.view.scene.round} theme={theme} view={phase.view} picked={phase.picked} busy={phase.busy}
             onPick={(id) => setPhase({ ...phase, picked: id })} onConfirm={() => phase.picked && void confirm(phase.view, phase.picked)} />)}
-        {phase.k === "outcome" && (
+        {phase.k === "outcome" && phase.prev.scene.step && isWorkdayStep(phase.prev.scene.step.id) && (
+          <WorkdayOutcome outcome={phase.outcome} prev={phase.prev} view={phase.view} tech={phase.view.scenario.kind === "technical" && simId.startsWith("gen_") ? { onRetry: () => void begin(true, null) } : undefined}
+            onNext={() => phase.outcome.completed ? onReport(phase.view.run.id) : setPhase({ k: "step", view: phase.view, picked: null, busy: false })} />)}
+        {phase.k === "outcome" && !(phase.prev.scene.step && (isWorkdayStep(phase.prev.scene.step.id) || isLabView(phase.prev))) && (
           <OutcomeScreen theme={theme} outcome={phase.outcome} prev={phase.prev} view={phase.view}
             onNext={() => phase.outcome.completed ? onReport(phase.view.run.id) : setPhase({ k: "step", view: phase.view, picked: null, busy: false })} />)}
       </main>
@@ -95,7 +115,7 @@ export function SimPlayer({ api, simId, onReport }: { api: SimsApi; simId: strin
 function IntroScreen({ simId, intro, current, onBegin }: { simId: string; intro: Intro; current: RunView | null; onBegin: (fresh: boolean) => void }) {
   return (
     <section className="sim-intro" aria-labelledby="intro-h">
-      <div className="sim-intro-art"><Preview id={(intro.profession ?? simId) as Theme} />
+      <div className="sim-intro-art">{simId.startsWith("gen_") ? <GenArt title={intro.title} kind={intro.kind === "technical" ? "technical" : "normal"} /> : simId in LAB_ART ? <img className="pv" src={`${import.meta.env.BASE_URL}assets/scene/lab/${LAB_ART[simId]}.webp`} alt="" draggable={false} /> : <Preview id={(intro.profession ?? simId) as Theme} />}
         <div className="sim-intro-meta"><span>{intro.minutes} min</span><span>{intro.rounds} steps</span><span>{intro.domain.split("·")[0].trim()}</span></div></div>
       <div className="sim-intro-body">
         <div className="sim-intro-scroll">
@@ -125,6 +145,15 @@ function IntroScreen({ simId, intro, current, onBegin }: { simId: string; intro:
       </div>
     </section>
   );
+}
+
+/** The crisis layout for a step. A step that has its own opening comic (the hospital's first surge) shows it once per run first; it can always be skipped. */
+function WorkdayEntry(props: { view: RunView; picked: string | null; busy: boolean; onPick: (id: string) => void; onConfirm: () => void }) {
+  const step = props.view.scene.step!;
+  const comic = COMICS[step.id];
+  const [reading, setReading] = useState(() => !!comic && !comicSeen(props.view.run.id, step.id));
+  if (reading && comic) return <ComicReader pages={comic} title={step.title} onDone={() => { try { localStorage.setItem(seenKey(props.view.run.id, step.id), "1"); } catch { /* shown again next time */ } setReading(false); }} />;
+  return <WorkdayStep {...props} />;
 }
 
 function StepScreen({ theme, view, picked, busy, onPick, onConfirm }: { theme: string; view: RunView; picked: string | null; busy: boolean; onPick: (id: string) => void; onConfirm: () => void }) {

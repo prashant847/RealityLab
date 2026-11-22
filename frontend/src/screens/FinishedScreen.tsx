@@ -8,17 +8,19 @@ import { ReflectionForm } from "../sims/Reflection";
 import { Debrief } from "../debrief/Debrief";
 import { newSeed, scriptForBlackout } from "../debrief/script";
 import { scriptForBlackoutHi } from "../debrief/hi";
+import { scriptForBlackoutHinglish } from "../debrief/hinglish";
+import type { Lang } from "../debrief/narrator";
 
 /** The ending plus the scored report (fetched from the server; scores are never computed here). */
 export function FinishedScreen({ api, simId, runId, final, state, onTryDifferent, onRewind, onRestart, onCompare }: {
   api: GameApi; simId: string; runId: string; final: FinalDispatch; state: WorldView;
-  onTryDifferent: () => void; onRewind: () => void; onRestart: () => void; onCompare: () => void;
+  onTryDifferent?: () => void; onRewind?: () => void; onRestart?: () => void; onCompare?: () => void;
 }) {
   const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [debrief, setDebrief] = useState(false);
   const [seed] = useState(newSeed);
-  const scenesFor = useCallback((lang: "en" | "hi") => (report ? (lang === "hi" ? scriptForBlackoutHi(report, seed) : scriptForBlackout(report, seed)) : []), [report, seed]);
+  const scenesFor = useCallback((lang: Lang) => (report ? (lang === "hi" ? scriptForBlackoutHi(report, seed) : lang === "hinglish" ? scriptForBlackoutHinglish(report, seed) : scriptForBlackout(report, seed)) : []), [report, seed]);
   useEffect(() => {
     if (!debrief) return;
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setDebrief(false); };

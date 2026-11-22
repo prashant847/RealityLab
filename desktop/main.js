@@ -13,6 +13,11 @@ let server = null;          // the child process
 let win = null;
 let quitting = false;
 
+// Developer mode (the "RealityLab AI (dev)" shortcut): show the live dev site instead of starting the packaged service, so changes appear as soon as they are saved.
+// It keeps its own settings folder, so it can run next to the installed app.
+const DEV_URL = !app.isPackaged && process.env.REALITYLAB_DEV_URL ? process.env.REALITYLAB_DEV_URL.replace(/\/$/, "") : "";
+if (DEV_URL) app.setPath("userData", path.join(app.getPath("appData"), "RealityLab AI Dev"));
+
 if (!app.requestSingleInstanceLock()) { app.quit(); }
 else app.on("second-instance", () => { if (win) { if (win.isMinimized()) win.restore(); win.focus(); } });
 
@@ -83,14 +88,14 @@ async function main() {
   const splash = new BrowserWindow({ width: 420, height: 300, frame: false, resizable: false, show: true, icon, backgroundColor: "#0a0f18", alwaysOnTop: true });
   splash.loadFile(path.join(__dirname, "splash.html"));
   try {
-    const port = await freePort();
-    startServer(port);
-    await waitHealthy(port, 45000);
+    let port = 0;
+    if (!DEV_URL) { port = await freePort(); startServer(port); await waitHealthy(port, 45000); }
+    else if (!(await new Promise((ok) => { const q = http.get(DEV_URL, { timeout: 2500 }, (r) => { r.resume(); ok(true); }); q.on("error", () => ok(false)); q.on("timeout", () => { q.destroy(); ok(false); }); }))) throw new Error(`The dev site at ${DEV_URL} is not running. Start it with scripts\serve-web.cmd.`);
     win = new BrowserWindow({
       width: 1360, height: 880, minWidth: 960, minHeight: 640, show: false, title: "RealityLab AI", icon, backgroundColor: "#0a0f18", autoHideMenuBar: true,
       webPreferences: { preload: path.join(__dirname, "preload.js"), contextIsolation: true, nodeIntegration: false, sandbox: true, autoplayPolicy: "no-user-gesture-required" },
     });
-    const origin = `http://127.0.0.1:${port}`;
+    const origin = DEV_URL || `http://127.0.0.1:${port}`;
     win.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:/.test(url) && !url.startsWith(origin)) shell.openExternal(url); return { action: "deny" }; });
     win.webContents.on("will-navigate", (e, url) => { if (!url.startsWith(origin)) e.preventDefault(); });
     // Text size: the page asks for a zoom factor, and Ctrl and + / - / 0 work too (the application menu is removed, so they are handled here).
@@ -105,6 +110,7 @@ async function main() {
     });
     win.once("ready-to-show", () => { splash.destroy(); win.show(); });
     win.on("closed", () => { win = null; });
+    await win.webContents.session.clearCache();                  // the port is stable, so a cached old page must never win over the version just installed
     await win.loadURL(origin + "/");
   } catch (e) {
     if (!splash.isDestroyed()) splash.destroy();

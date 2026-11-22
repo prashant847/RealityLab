@@ -44,6 +44,7 @@ export function useRetold(base: Scene[], lang: Lang, locked = false): { scenes: 
         fresh.current = false;
         const j = r.ok ? await r.json() as { source: string; scenes: { id: string; lines: string[] }[] } : null;
         if (!j || j.source !== "claude") { setStatus("original"); return; }
+        if (lockRef.current || ac.signal.aborted) { setStatus("original"); return; }      // the debrief has already begun with the scripted lines: never swap them mid-way (that would stop the Archivist and start him over)
         setTold({ for: base, lines: Object.fromEntries(j.scenes.map((x) => [x.id, x.lines])) });
         setStatus("claude");
       } catch { if (!ac.signal.aborted || ctl.current === ac) setStatus((s) => (s === "thinking" ? "original" : s)); }

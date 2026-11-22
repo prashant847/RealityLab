@@ -1,135 +1,52 @@
 import { useCallback, useEffect, useState } from "react";
-import type { PrepItem, SimReport, SimsApi } from "../api/sims";
-import { ReflectionForm } from "./Reflection";
+import type { Certificate, SimReport, SimsApi } from "../api/sims";
+import { ProReport } from "./ProReport";
 import { SoundToggle } from "../audio/useAudio";
 import { AppBar } from "../shell/AppBar";
-import { Radar } from "./Radar";
 import { Debrief } from "../debrief/Debrief";
 import { newSeed, scriptForSim } from "../debrief/script";
 import { scriptForSimHi } from "../debrief/hi";
+import { scriptForSimHinglish } from "../debrief/hinglish";
+import type { Lang } from "../debrief/narrator";
 import "./sims.css";
 
-const RATING = { strong: "Strong", mixed: "Mixed", weak: "Weak" } as const;
-const TABS = [["overview", "Overview"], ["decisions", "Decisions"], ["skills", "Skills"], ["improve", "Improve"], ["prep", "Preparation"], ["lessons", "Lessons & next"], ["felt", "How it felt"]] as const;
-type Tab = (typeof TABS)[number][0];
+const REPNAME: Record<string, string> = { blackout: "BLACKOUT", bhopal: "Bhopal", covid: "COVID-era Hospital", circuit: "Technical labs", surgery: "Technical labs" };
+const crumbTo = (theme: string) => (theme === "circuit" || theme === "surgery" ? "#/labs" : theme === "gen" ? "#/generate" : `#/sim/${theme}`);
 
-const REPNAME: Record<string, string> = { blackout: "BLACKOUT", bhopal: "Bhopal", covid: "COVID-era Hospital" };
-const STATUS = { full: "Set up", part: "Half set up", missed: "Not set up" } as const;
+/** Shown on a report when this very run completed the set of best-choice runs for a certificate. */
+function CertBanner({ api, runId }: { api: SimsApi; runId: string }) {
+  const [cert, setCert] = useState<Certificate | null>(null);
+  useEffect(() => { api.certificates().then((all) => setCert(all.find((c) => c.earned && c.run_ids.includes(runId)) ?? null)).catch(() => undefined); }, [api, runId]);
+  if (!cert) return null;
+  return <p className="cert-banner no-print" role="status">★ Certificate earned: {cert.title}<button type="button" className="hub-btn hub-btn--primary" onClick={() => { window.location.hash = `#/certificate/${cert.id}`; }}>View certificate</button></p>;
+}
 
 export function ReportView({ api, runId, onHome, onOpen }: { api: SimsApi; runId: string; onHome: () => void; onOpen: (simId: string, to?: string) => void }) {
   const [rep, setRep] = useState<SimReport | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>("overview");
-  const [skill, setSkill] = useState(0);
-  const [open, setOpen] = useState<number | null>(null);
+  const [name, setName] = useState("Candidate");
   const [view, setView] = useState<"debrief" | "written">("debrief");
   const [seed] = useState(newSeed);                  // a different way of saying things each time a debrief is opened, the same within it
-  const scenesFor = useCallback((lang: "en" | "hi") => (rep ? (lang === "hi" ? scriptForSimHi(rep, seed) : scriptForSim(rep, seed)) : []), [rep, seed]);
+  const scenesFor = useCallback((lang: Lang) => (rep ? (lang === "hi" ? scriptForSimHi(rep, seed) : lang === "hinglish" ? scriptForSimHinglish(rep, seed) : scriptForSim(rep, seed)) : []), [rep, seed]);
   useEffect(() => { api.report(runId).then(setRep).catch((e: Error) => setErr(e.message)); }, [api, runId]);
+  useEffect(() => { Promise.resolve().then(() => api.profile()).then((p) => { if (p?.name?.trim()) setName(p.name.trim()); }).catch(() => undefined); }, [api]);
 
   if (err) return <main className="rep"><div className="sim-card sim-center"><h2>Report not available</h2><p>{err}</p><button type="button" className="sim-btn sim-btn--primary" onClick={onHome}>Back to all simulations</button></div></main>;
   if (!rep) return <main className="rep"><p className="sim-loading" role="status"><span className="sim-spin" aria-hidden="true" /> Preparing your report…</p></main>;
   const theme = (rep.profession ?? rep.simulation_id).split("_")[0];
-  const nx = rep.recommended_next;
-  const s = rep.summary;
-  const sk = rep.skills[Math.min(skill, rep.skills.length - 1)];
   if (view === "debrief") return (
     <main className={`rep rep--${rep.profession ?? rep.simulation_id} rep--debrief`} id="main" tabIndex={-1}>
-      <AppBar crumbs={[{ label: REPNAME[theme] ?? rep.simulation, to: `#/sim/${theme}` }, { label: "Report" }]}><SoundToggle /></AppBar>
-      <header className="rep-deb-head"><div><p className="sim-kicker">Career experience report</p><h1>{rep.simulation}</h1></div></header>
+      <AppBar crumbs={[{ label: REPNAME[theme] ?? rep.simulation, to: crumbTo(theme) }, { label: "Report" }]}><SoundToggle /></AppBar>
+      <CertBanner api={api} runId={runId} />
+      <header className="rep-deb-head"><div><p className="sim-kicker">{rep.kind === "technical" ? "Technical lab report" : rep.kind === "generated" ? "Simulation report" : "Career experience report"}</p><h1>{rep.simulation}</h1></div></header>
       <Debrief scenesFor={scenesFor} title={rep.simulation} onWritten={() => setView("written")} />
     </main>
   );
   return (
-    <main className={`rep rep--${rep.profession ?? rep.simulation_id}`} id="main" tabIndex={-1}>
-      <AppBar crumbs={[{ label: REPNAME[theme] ?? rep.simulation, to: `#/sim/${theme}` }, { label: "Report" }]}><button type="button" className="rep-act rep-act--archivist" onClick={() => setView("debrief")}>Hear the Archivist</button><button type="button" className="rep-act no-print" onClick={() => window.print()}>Print or save as PDF</button><SoundToggle /></AppBar>
-      <section className={`rep-hero rep-hero--${rep.outcome.tone}`}>
-        <div>
-          <p className="sim-kicker">Career experience report</p>
-          <h1>{rep.simulation}</h1>
-          <p className="sim-meta"><b>Role experienced:</b> {rep.role}{rep.completed_at ? ` · Completed ${new Date(rep.completed_at).toLocaleDateString(undefined, { dateStyle: "long" })}` : ""}</p>
-          <p className="sim-fine rep-note" role="note">{rep.note}</p>
-        </div>
-        <div className="rep-badge"><span>Outcome</span><strong>{rep.outcome.title}</strong>
-          <div className="rep-split" role="img" aria-label={`${s.strong} strong, ${s.mixed} mixed, ${s.weak} weak decisions`}>
-            <i className="s" style={{ flex: s.strong }} /><i className="m" style={{ flex: s.mixed }} /><i className="w" style={{ flex: s.weak }} /></div>
-          <small>{s.decisions} decisions: {s.strong} strong · {s.mixed} mixed · {s.weak} weak</small></div>
-      </section>
-      <nav className="rep-tabs no-print" role="tablist" aria-label="Report sections">
-        {TABS.map(([k, label]) => <button key={k} role="tab" type="button" aria-selected={tab === k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{label}</button>)}
-        <span className="sim-spacer" />
-      </nav>
-
-      <div className="rep-panels">
-        <section className={`rep-panel${tab === "overview" ? " on" : ""}`} aria-labelledby="r-ov">
-          <div className="rep-cols">
-            <div><h2 id="r-ov">{rep.outcome.title}</h2><p className="rep-big">{rep.outcome.text}</p>
-              {rep.challenges.length > 0 && <><h3>Key challenges you faced</h3><ul>{rep.challenges.map((c, i) => <li key={i}><b>{/[.?!]$/.test(c.title) ? c.title : `${c.title}.`}</b> {c.text}</li>)}</ul></>}</div>
-            <div className="rep-finals"><h3>Where things ended</h3>
-              {rep.final_meters.filter((m) => m.label !== "Understanding of the record").map((m) => {
-                const good = m.good === "high" ? m.value : 100 - m.value;
-                return <div key={m.label} className="rep-final"><span>{m.label}</span><div className="sm-meter-track"><div className={`sm-meter-fill sm-meter-fill--${good >= 65 ? "ok" : good >= 40 ? "mid" : "low"}`} style={{ width: `${m.value}%` }} /></div><b>{m.value}</b></div>;
-              })}</div>
-          </div>
-        </section>
-
-        <section className={`rep-panel${tab === "decisions" ? " on" : ""}`} aria-labelledby="r-dec">
-          <h2 id="r-dec">Major decisions</h2>
-          <ol className="rep-decisions">{rep.major_decisions.map((d, i) => (
-            <li key={i} className={open === i ? "open" : ""}>
-              <button type="button" className="rep-dec-btn" aria-expanded={open === i} onClick={() => setOpen(open === i ? null : i)}>
-                <span className={`sim-rating sim-rating--${d.rating}`}>{RATING[d.rating]}</span><b>{d.step}</b><em>{d.chose}</em></button>
-              <div className="rep-dec-more"><span className="sim-fine">{d.part}</span><p>{d.consequence}</p>{d.dilemma && !d.stronger_option && <p className="sim-fine"><b>A real dilemma:</b> no option here was free of cost, and this was the best one on offer.</p>}</div>
-            </li>))}</ol>
-        </section>
-
-        <section className={`rep-panel${tab === "skills" ? " on" : ""}`} aria-labelledby="r-sk">
-          <h2 id="r-sk">Skills shown by your decisions</h2>
-          <div className="rep-cols rep-cols--skills">
-            <div><Radar items={rep.skills.map((x) => ({ label: x.label, percent: x.percent }))} size={250} />
-              <p className="sim-fine">Each score comes only from the decisions in this run that tested the skill, compared with the best and worst option available in each.</p></div>
-            <div>
-              <div className="rep-skills">{rep.skills.map((x, i) => (
-                <button key={x.id} type="button" className={`rep-skill${i === skill ? " on" : ""}`} onClick={() => setSkill(i)} aria-pressed={i === skill}>
-                  <span>{x.label}</span><div className="sm-meter-track" role="meter" aria-label={x.label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={x.percent}><div className="sm-meter-fill sm-meter-fill--ok" style={{ width: `${x.percent}%` }} /></div><b>{x.level} · {x.percent}%</b></button>))}</div>
-              {sk && <div className="rep-skill-detail"><b>{sk.label}</b><p>{sk.explanation} Based on {sk.decisions_counted} decision{sk.decisions_counted === 1 ? "" : "s"}.</p></div>}
-            </div>
-          </div>
-        </section>
-
-        <section className={`rep-panel${tab === "improve" ? " on" : ""}`} aria-labelledby="r-im">
-          <h2 id="r-im">Areas for improvement</h2>
-          {rep.improve.length === 0 ? <p className="rep-big">Every decision was rated strong. Replaying with different choices will show how the alternatives play out.</p> :
-            <ul className="rep-improve">{rep.improve.map((m, i) => (
-              <li key={i}><b>{m.step}:</b> you chose “{m.chose}”. {m.why}{m.stronger_option && <> A stronger option was: “{m.stronger_option}”.</>}</li>))}</ul>}
-          {rep.focus_areas.length > 0 && <><h3>Skills to focus on next</h3><ul>{rep.focus_areas.map((f, i) => <li key={i}>{f}</li>)}</ul></>}
-        </section>
-
-        <section className={`rep-panel${tab === "prep" ? " on" : ""}`} aria-labelledby="r-pr">
-          <h2 id="r-pr">{rep.kind === "workday" ? "What this day set up for the crisis" : "The head start you brought into the crisis"}</h2>
-          {rep.kind === "workday" && rep.prep && rep.prep.length > 0 ? (
-            <ul className="prep-list">{rep.prep.map((p: PrepItem) => (
-              <li key={p.flag} className={`prep--${p.status}`}><span className="prep-badge">{STATUS[p.status]}</span><div><b>{p.label}</b><span>{p.text}</span>{p.effects.length > 0 && <em>{p.effects.join(" · ")}</em>}</div></li>))}</ul>
-          ) : rep.prepared && rep.prepared.length > 0 ? (
-            <ul className="prep-list">{rep.prepared.map((p) => (
-              <li key={p.flag} className={p.full ? "prep--full" : "prep--part"}><span className="prep-badge">{p.full ? "Set up" : "Half set up"}</span><div><b>{p.label}</b><span>{p.text}</span></div></li>))}</ul>
-          ) : <p className="rep-big">{rep.kind === "workday" ? "Nothing from this day carries into the crisis." : "You began this crisis without a workday behind you, so there was no head start. Doing the ordinary day first changes how the crisis begins."}</p>}
-        </section>
-
-        <section className={`rep-panel${tab === "felt" ? " on" : ""}`}>
-          <ReflectionForm api={api} runId={runId} />
-        </section>
-
-        <section className={`rep-panel${tab === "lessons" ? " on" : ""}`} aria-labelledby="r-ls">
-          <div className="rep-cols">
-            <div><h2 id="r-ls">Important lessons</h2><ul>{rep.lessons.map((l, i) => <li key={i}>{l}</li>)}</ul>
-              {rep.sources.length > 0 && <><h3>Sources</h3><ul className="rep-src">{rep.sources.map((x) => <li key={x.url}>{x.label} <span className="sim-fine">({x.url})</span></li>)}</ul>
-                <p className="sim-fine">These are summaries consulted when writing this simulation. Check primary reports before quoting any detail.</p></>}</div>
-            {nx.id && <div className="rep-next no-print"><h2>Recommended next</h2><p><b>{nx.title}</b></p><p>{nx.reason}</p>
-              <button type="button" className="sim-btn sim-btn--primary" onClick={() => onOpen(nx.id!, nx.to)}>{nx.to === "crisis" ? "Begin the crisis" : nx.id === rep.simulation_id ? "Replay this simulation" : "Open it"}</button></div>}
-          </div>
-        </section>
-      </div>
+    <main className={`rep rep--${rep.profession ?? rep.simulation_id} rep--pro`} id="main" tabIndex={-1}>
+      <AppBar crumbs={[{ label: REPNAME[theme] ?? rep.simulation, to: crumbTo(theme) }, { label: "Report" }]}><button type="button" className="rep-act rep-act--archivist" onClick={() => setView("debrief")}>Hear the Archivist</button><button type="button" className="rep-act no-print" onClick={() => window.print()}>Print or save as PDF</button><SoundToggle /></AppBar>
+      <CertBanner api={api} runId={runId} />
+      <ProReport api={api} rep={rep} name={name} onOpen={onOpen} />
     </main>
   );
 }

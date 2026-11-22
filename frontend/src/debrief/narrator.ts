@@ -8,7 +8,7 @@ export interface Mouth { open: number; wide: number }
 
 interface Unit { scene: number; line: number; text: string; caption: string }
 
-export type Lang = "en" | "hi";
+export type Lang = "en" | "hi" | "hinglish";
 const BEAT = 900;                                  // a breath between scenes
 const LINE_GAP = 380;                              // and a pause between lines, so each one lands
 export type Style = "calm" | "commanding";
@@ -17,10 +17,10 @@ export type Style = "calm" | "commanding";
  * manner of a heroic leader: an American voice, lowered a little more, warm in the chest, slower, with room around it. Hindi has one voice and takes the same two settings.
  */
 const PRESET: Record<Style, { depth: Record<Lang, number>; tempo: number; low: [number, number]; chest: [number, number]; edge: number; air: number; ratio: number; hall: number; gain: Record<Lang, number>; en: string }> = {
-  calm:       { depth: { en: 0.98, hi: 0.93 }, tempo: 0.9,  low: [200, 2.5], chest: [3200, -1.5], edge: 5500, air: -2,   ratio: 1.8, hall: 0.06, gain: { en: 0.85, hi: 0.85 }, en: "male" },
-  commanding: { depth: { en: 0.93, hi: 0.9 },  tempo: 0.85, low: [150, 5],   chest: [260, 2.5],   edge: 5200, air: -2.5, ratio: 2.4, hall: 0.1,  gain: { en: 1.2, hi: 0.8 }, en: "heroic" },
+  calm:       { depth: { en: 0.98, hi: 0.93, hinglish: 0.93 }, tempo: 0.9,  low: [200, 2.5], chest: [3200, -1.5], edge: 5500, air: -2,   ratio: 1.8, hall: 0.06, gain: { en: 0.85, hi: 0.85, hinglish: 0.85 }, en: "male" },
+  commanding: { depth: { en: 0.93, hi: 0.9, hinglish: 0.9 },  tempo: 0.85, low: [150, 5],   chest: [260, 2.5],   edge: 5200, air: -2.5, ratio: 2.4, hall: 0.1,  gain: { en: 1.2, hi: 0.8, hinglish: 0.8 }, en: "heroic" },
 };
-export const ARCHIVIST_VOICE = (lang: Lang, style: Style): string => (lang === "hi" ? "hindi" : PRESET[style].en);
+export const ARCHIVIST_VOICE = (lang: Lang, style: Style): string => (lang === "hi" ? "hindi" : lang === "hinglish" ? "hinglish" : PRESET[style].en);
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /**
@@ -45,6 +45,8 @@ export class Narrator {
   private smooth = 0;
   private prefetch = new Map<number, Promise<string>>();
   rate = 1;
+  private wd = 0;
+  private alive = 0;                    // when a line last started: the watchdog restarts playback if this goes stale while he should be talking
   /** A human voice (the librarian) is speaking: it is played as it is, without the deepening and the stone-hall effects made for the offline voices. */
   private human = false;
 
@@ -90,12 +92,15 @@ export class Narrator {
     stopSpeaking();                                                       // the read-aloud feature and the Archivist never talk over each other
     if (this.state.ended) { this.cursor = 0; this.set({ ended: false, scene: 0, line: 0 }); }
     this.set({ playing: true });
+    this.alive = performance.now();
+    this.watch();
     if (this.audio && this.audio.paused && this.audio.currentTime > 0 && !this.audio.ended) { void this.ctx?.resume(); void this.audio.play().catch(() => undefined); return; }
     if (this.synthSpeaking && typeof speechSynthesis !== "undefined") { speechSynthesis.resume(); return; }
     void this.run(++this.token);
   }
   pause(): void {
     if (!this.state.playing) return;
+    window.clearInterval(this.wd);
     this.set({ playing: false });
     this.audio?.pause();
     if (this.synthSpeaking && typeof speechSynthesis !== "undefined") speechSynthesis.pause();
@@ -105,12 +110,13 @@ export class Narrator {
     const s = Math.max(0, Math.min(this.scenes.length - 1, scene));
     this.halt();
     this.cursor = this.firstOf[s];
+    this.alive = performance.now();
     this.set({ scene: s, line: 0, ended: false });
     if (this.state.playing) { this.set({ playing: true }); void this.run(++this.token); }
   }
   next(): void { this.goto(this.state.scene + 1); }
   prev(): void { this.goto(this.state.scene > 0 && this.cursor - this.firstOf[this.state.scene] < 2 ? this.state.scene - 1 : this.state.scene); }
-  destroy(): void { audio.duck(false); this.halt(); this.listeners.clear(); void this.ctx?.close().catch(() => undefined); this.ctx = null; this.analyser = null; }
+  destroy(): void { window.clearInterval(this.wd); audio.duck(false); this.halt(); this.listeners.clear(); void this.ctx?.close().catch(() => undefined); this.ctx = null; this.analyser = null; }
 
   private halt(): void {
     this.token++;
@@ -132,7 +138,7 @@ export class Narrator {
     const pr = PRESET[this.style];
     const speed = getA11y().speechRate * this.rate;
     const p = this.human
-      ? fetchPiece(this.units[i].text, "librarian", Math.max(0.6, Math.min(1.4, speed)))
+      ? fetchPiece(this.units[i].text, this.lang === "hinglish" ? "hinglish" : "librarian", Math.max(0.6, Math.min(1.4, speed)))
       : fetchPiece(this.units[i].text, ARCHIVIST_VOICE(this.lang, this.style), Math.max(0.5, Math.min(2, (speed * pr.tempo) / pr.depth[this.lang])));   // generated faster, because it is played back slower
     p.catch(() => undefined);
     this.prefetch.set(i, p);
@@ -167,7 +173,28 @@ export class Narrator {
     } catch { /* no analysis or effects available: plain playback, and the mouth falls back to a rhythm */ }
   }
 
+  /** Plays from the cursor to the end of the report. If anything in the loop throws it carries on from the same line, so the Archivist only ever stops when the report is complete or he is stopped by hand. */
   private async run(mine: number): Promise<void> {
+    for (let tries = 0; tries < 8 && mine === this.token; tries++) {
+      try { await this.loop(mine); return; } catch (e) { console.warn("debrief playback hiccup, carrying on", e); await sleep(700); }
+    }
+    if (mine === this.token) this.set({ playing: false });          // eight failures in a row: stop honestly instead of looking as if he were talking
+  }
+
+  /** If nothing has started for a long time while he is meant to be talking (a voice request that never answered, a stuck player), start again from the current line. */
+  private watch(): void {
+    window.clearInterval(this.wd);
+    this.wd = window.setInterval(() => {
+      if (!this.state.playing || this.state.ended) return;
+      if (performance.now() - this.alive < 70000) return;
+      this.alive = performance.now();
+      this.halt();
+      this.set({ playing: true });
+      void this.run(++this.token);
+    }, 5000);
+  }
+
+  private async loop(mine: number): Promise<void> {
     const natural = getA11y().storyVoices && (await naturalVoiceReady());
     if (mine !== this.token) return;
     this.human = natural && hasHumanVoices();
@@ -178,7 +205,7 @@ export class Narrator {
       const i = this.cursor, u = this.units[i];
       if (i > 0 && this.units[i - 1].scene !== u.scene) { this.set({ scene: u.scene, line: 0 }); await sleep(BEAT); if (mine !== this.token) return; }
       this.set({ scene: u.scene, line: u.line });
-      this.speakingSince = performance.now();
+      this.speakingSince = this.alive = performance.now();
       let ok = false;
       if (engine === "natural") {
         try {
@@ -200,7 +227,7 @@ export class Narrator {
       const nx = this.units[i + 1];
       if (nx && nx.scene === u.scene && nx.line !== u.line) { await sleep(LINE_GAP); if (mine !== this.token) return; }
     }
-    if (mine === this.token) { this.set({ playing: false, ended: true }); }
+    if (mine === this.token) { window.clearInterval(this.wd); this.set({ playing: false, ended: true }); }
   }
 
   private playUrl(url: string, mine: number): Promise<void> {
@@ -231,14 +258,20 @@ export class Narrator {
         if (mine !== this.token) { resolve(); return; }
         const u = new SpeechSynthesisUtterance(text);
         u.rate = Math.max(0.5, getA11y().speechRate * this.rate * PRESET[this.style].tempo); u.pitch = this.style === "commanding" ? 0.2 : 0.4;
-        if (this.lang === "hi") u.lang = "hi-IN";
-        const voice = (synth.getVoices?.() ?? []).find((v) => v.lang.toLowerCase().startsWith(this.lang === "hi" ? "hi" : "en"));
+        if (this.lang === "hi") u.lang = "hi-IN"; else if (this.lang === "hinglish") u.lang = "en-IN";
+        const all = synth.getVoices?.() ?? [];
+        const voice = this.lang === "hinglish" ? all.find((v) => /^en-in/i.test(v.lang)) ?? all.find((v) => /^hi/i.test(v.lang)) ?? all.find((v) => /^en/i.test(v.lang)) : all.find((v) => v.lang.toLowerCase().startsWith(this.lang === "hi" ? "hi" : "en"));
         if (voice) { u.voice = voice; u.lang = voice.lang; }
         // Some desktop builds have no speech voices: speak() then never starts or ends. Give up quickly and let the caller fall back to timed captions.
         const noStart = window.setTimeout(() => { this.synthSpeaking = false; synth.cancel(); reject(new Error("speech never started")); }, 2500);
+        // Some speech engines never report the end of a long sentence (the voice stops mid-way and `end` never fires). Past a generous reading time, move on to the next line.
+        let cap = 0;
+        const stop = () => { window.clearTimeout(noStart); window.clearTimeout(cap); };
+        const arm = (ms: number) => { cap = window.setTimeout(() => { if (!this.state.playing) { arm(3000); return; } this.synthSpeaking = false; synth.cancel(); resolve(); }, ms); };   // never while he is paused by hand
+        arm(Math.max(8000, text.split(/\s+/).length * 700 + 4000));
         u.onstart = () => { window.clearTimeout(noStart); this.synthSpeaking = true; this.speakingSince = performance.now(); };
-        u.onend = () => { window.clearTimeout(noStart); this.synthSpeaking = false; resolve(); };
-        u.onerror = (e) => { window.clearTimeout(noStart); this.synthSpeaking = false; if ((e as SpeechSynthesisErrorEvent).error === "canceled" || (e as SpeechSynthesisErrorEvent).error === "interrupted") resolve(); else reject(new Error("speech failed")); };
+        u.onend = () => { stop(); this.synthSpeaking = false; resolve(); };
+        u.onerror = (e) => { stop(); this.synthSpeaking = false; if ((e as SpeechSynthesisErrorEvent).error === "canceled" || (e as SpeechSynthesisErrorEvent).error === "interrupted") resolve(); else reject(new Error("speech failed")); };
         synth.speak(u);
       }, 80);
     });

@@ -12,17 +12,17 @@ export type Tone = "good" | "mid" | "bad" | "plain";
 export interface Card { kicker: string; heading: string; chips: { text: string; tone: Tone }[]; rows: { label: string; value: string; tone: Tone }[]; better?: string }
 export interface Scene { id: string; chapter: string; mood: Mood; lines: string[]; card?: Card }
 
-const clip = (t: string, max = 240): string => {
+export const clip = (t: string, max = 240): string => {
   const s = t.replace(/\s+/g, " ").trim();
   if (s.length <= max) return s;
   const cut = s.slice(0, max);
   const end = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("; "));
   return (end > 80 ? cut.slice(0, end + 1) : cut.slice(0, cut.lastIndexOf(" ")) + "…").trim();
 };
-const dot = (t: string): string => (/[.!?…”"]$/.test(t.trim()) ? t.trim() : `${t.trim()}.`);
-const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
-const lowerFirst = (t: string): string => t.charAt(0).toLowerCase() + t.slice(1);
-const nameOf = (id: string): string => { try { return characterInfo(id as CharacterId).name; } catch { return id; } };
+export const dot = (t: string): string => (/[.!?…”"]$/.test(t.trim()) ? t.trim() : `${t.trim()}.`);
+export const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
+export const lowerFirst = (t: string): string => t.charAt(0).toLowerCase() + t.slice(1);
+export const nameOf = (id: string): string => { try { return characterInfo(id as CharacterId).name; } catch { return id; } };
 
 /** What the voice actually says: symbols and shorthand a speech engine would stumble over are written the way a person would say them. */
 export function spoken(text: string): string {
@@ -198,7 +198,7 @@ export function scriptForSim(r: SimReport, seed: number = newSeed()): Scene[] {
 }
 
 // -------------------------------------------------------------------------- BLACKOUT (the scored report)
-const sign = (n: number): string => `${n > 0 ? "plus" : n < 0 ? "minus" : ""} ${Math.abs(Math.round(n * 10) / 10)}`.trim();
+export const sign = (n: number): string => `${n > 0 ? "plus" : n < 0 ? "minus" : ""} ${Math.abs(Math.round(n * 10) / 10)}`.trim();
 
 export function scriptForBlackout(r: Report, seed: number = newSeed()): Scene[] {
   const say = voice(seed);

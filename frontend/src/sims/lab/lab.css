@@ -1,0 +1,17 @@
+/* The technical-work comic: one detailed picture of the job, a camera that drifts to a detail on each page, the narrator bottom left. */
+.lab-frame { position: relative; width: 100%; height: 100%; overflow: hidden; container-type: size; background: #fbf3e0; }
+.lab-world { position: absolute; inset: 0; transition: transform 1.4s cubic-bezier(.3, .6, .2, 1); will-change: transform; }
+.lab-bg { width: 100%; height: 100%; object-fit: cover; display: block; user-select: none; }
+.lab-frame .nar { height: 44%; }
+.lab-frame--fail .lab-bg { filter: saturate(.7) contrast(1.05); }
+.lab-stamp { position: absolute; right: 4%; top: 6%; z-index: 7; padding: .15em .6em; font-family: var(--font-head, Impact, sans-serif); font-size: clamp(1.4rem, 7cqw, 3.6rem); text-transform: uppercase; letter-spacing: .04em; border: .12em solid currentColor; border-radius: .2em; transform: rotate(-9deg); background: rgba(255, 250, 240, .9); box-shadow: .08em .08em 0 #141414; animation: lab-stamp .45s cubic-bezier(.2, 1.7, .4, 1) .5s both; pointer-events: none; }
+.lab-stamp--ok { color: #1f8a54; } .lab-stamp--fail { color: #d1341f; }
+@keyframes lab-stamp { from { opacity: 0; transform: rotate(-9deg) scale(2.6); } to { opacity: 1; transform: rotate(-9deg) scale(1); } }
+.lab-fx { position: absolute; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; }
+.lab-smoke { position: absolute; bottom: 18%; width: 16%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(60, 60, 60, .75), rgba(60, 60, 60, 0) 70%); animation: lab-smoke 2.6s ease-out infinite; opacity: 0; }
+.lab-smoke--a { left: 42%; } .lab-smoke--b { left: 52%; animation-delay: .8s; } .lab-smoke--c { left: 47%; animation-delay: 1.5s; }
+@keyframes lab-smoke { 0% { opacity: 0; transform: translateY(0) scale(.4); } 25% { opacity: .85; } 100% { opacity: 0; transform: translateY(-260%) scale(2); } }
+.lab-warn { margin: 0 0 8px; padding: 6px 12px; border: 3px solid #141414; border-radius: 12px; background: #ffc933; font-weight: 700; font-size: .85rem; }
+.lab-right { margin: 8px 0; padding: 8px 12px; border: 3px solid #141414; border-radius: 12px; background: #59c3b0; } .lab-retry { margin-top: 8px; width: 100%; }
+@media (prefers-reduced-motion: reduce) { .lab-world { transition: none; } .lab-smoke, .lab-stamp { animation: none; opacity: 1; } .lab-smoke { opacity: .5; } }
+[data-reduce-motion="true"] .lab-world { transition: none; } [data-reduce-motion="true"] .lab-smoke, [data-reduce-motion="true"] .lab-stamp { animation: none; opacity: 1; }

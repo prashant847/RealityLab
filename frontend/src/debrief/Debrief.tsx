@@ -9,8 +9,9 @@ import "./debrief.css";
 const LANG_KEY = "rl.debriefLang";
 const STYLE_KEY = "rl.debriefVoice";
 const readStyle = (): Style => { try { return localStorage.getItem(STYLE_KEY) === "commanding" ? "commanding" : "calm"; } catch { return "calm"; } };
-export const readLang = (): Lang => { try { return localStorage.getItem(LANG_KEY) === "hi" ? "hi" : "en"; } catch { return "en"; } };
+export const readLang = (): Lang => { try { const v = localStorage.getItem(LANG_KEY); return v === "hi" || v === "hinglish" ? v : "en"; } catch { return "en"; } };
 
+/** The buttons and labels are always in English. Only what the Archivist says (the captions, the card and the transcript) follows the language chosen. */
 const TEXT = {
   en: {
     kicker: "Your debrief", title: "The Archivist has read your ledger",
@@ -21,18 +22,7 @@ const TEXT = {
     sections: "Sections of the debrief", playback: "Playback", tone: { good: "good", mid: "so-so", bad: "poor", plain: "" },
     thinking: "The Archivist is turning the pages…", skipWait: "Skip the wait and use the short telling", told: "Told freshly by the Archivist, from your own ledger.", retell: "Hear it told another way",
     better: "A stronger option", noVoice: "No speech voice is available on this computer, so the debrief is shown as captions.",
-    hint: (i: number, n: number, ch: string) => `Space pauses · ← → move between sections · C captions · Section ${i} of ${n}: ${ch}`,
-  },
-  hi: {
-    kicker: "आपकी रिपोर्ट", title: "अभिलेखपाल ने आपका खाता पढ़ लिया है",
-    intro: "वे आपके हर चुनाव के बारे में बताएँगे: उसका नतीजा क्या हुआ, कहाँ चूक हुई, और आप क्या बेहतर कर सकते थे। इसमें कुछ मिनट लगते हैं। उपशीर्षक हमेशा दिखते हैं।",
-    begin: "मेरी रिपोर्ट सुनें", written: "इसके बजाय लिखित रिपोर्ट पढ़ें", writtenShort: "लिखित रिपोर्ट",
-    play: "रोकें", resume: "जारी रखें", again: "फिर सुनें", prev: "पिछला भाग", next: "अगला भाग",
-    pace: "गति", voice: "आवाज़", calmVoice: "शांत", commandingVoice: "रोबीली", slower: "धीमी", normal: "सामान्य", faster: "तेज़", captions: "उपशीर्षक", transcript: "पूरा पाठ", language: "भाषा",
-    sections: "रिपोर्ट के भाग", playback: "चलाना", tone: { good: "अच्छा", mid: "मिला-जुला", bad: "ख़राब", plain: "" },
-    thinking: "अभिलेखपाल पन्ने पलट रहे हैं…", skipWait: "इंतज़ार छोड़ें और छोटा वर्णन सुनें", told: "आपके अपने खाते से अभिलेखपाल ने नए सिरे से सुनाया।", retell: "इसे दूसरे ढंग से सुनें",
-    better: "एक बेहतर विकल्प", noVoice: "इस कंप्यूटर पर कोई बोलने वाली आवाज़ उपलब्ध नहीं है, इसलिए रिपोर्ट उपशीर्षकों में दिखाई जा रही है।",
-    hint: (i: number, n: number, ch: string) => `स्पेस से रोकें · ← → से भाग बदलें · C से उपशीर्षक · भाग ${i} / ${n}: ${ch}`,
+    hint: (i: number, n: number, ch: string) => `Space pauses · ← → move between sections · C captions · Section ${i} of ${n}${ch ? `: ${ch}` : ""}`,
   },
 } as const;
 
@@ -55,7 +45,8 @@ export function Debrief({ scenesFor, title, onWritten, children }: { scenesFor: 
   const [turn, setTurn] = useState(0);
   const getMouth = useCallback(() => narrator.mouth(), [narrator]);
   const scene = scenes[Math.min(st.scene, scenes.length - 1)];
-  const T = TEXT[lang];
+  const T = TEXT.en;
+  const spokenLang = lang === "hi" ? "hi" : "en";   // for the captions, card and transcript: the Devanagari font is only needed for Hindi
 
   useEffect(() => { setTurn((t) => (started ? t + 1 : t)); }, [st.scene, started]);
   useEffect(() => { narrator.rate = speed; }, [narrator, speed]);
@@ -111,13 +102,13 @@ export function Debrief({ scenesFor, title, onWritten, children }: { scenesFor: 
       </select></label>
   );
   const LangPick = ({ className }: { className?: string }) => (
-    <div className={`deb-lang ${className ?? ""}`} role="radiogroup" aria-label={`${TEXT.en.language} / ${TEXT.hi.language}`}>
-      {([["en", "English"], ["hi", "हिन्दी"]] as const).map(([k, l]) => <button key={k} type="button" role="radio" lang={k} aria-checked={lang === k} className={lang === k ? "on" : ""} onClick={() => setLang(k)}>{l}</button>)}
+    <div className={`deb-lang ${className ?? ""}`} role="radiogroup" aria-label="Narration language">
+      {([["en", "English"], ["hi", "हिन्दी"], ["hinglish", "Hinglish"]] as const).map(([k, l]) => <button key={k} type="button" role="radio" lang={k === "hi" ? "hi" : "en"} title={k === "hinglish" ? "Hindi and English mixed, the way people talk" : undefined} aria-checked={lang === k} className={lang === k ? "on" : ""} onClick={() => setLang(k)}>{l}</button>)}
     </div>
   );
 
   return (
-    <section className="deb" data-debrief lang={lang} aria-label={`${title}: your debrief with the Archivist`}>
+    <section className="deb" data-debrief lang="en" data-lang={lang} aria-label={`${title}: your debrief with the Archivist`}>
       <div className="deb-stage">
         <Archivist mood={started ? scene.mood : "calm"} getMouth={getMouth} turn={turn} active={st.playing} />
         {!started && (
@@ -136,7 +127,7 @@ export function Debrief({ scenesFor, title, onWritten, children }: { scenesFor: 
           </div>
         )}
         {started && scene.card && (
-          <aside key={scene.id} className={`deb-card deb-card--${scene.mood}`} aria-label="What the Archivist is describing">
+          <aside key={scene.id} lang={spokenLang} className={`deb-card deb-card--${scene.mood}`} aria-label="What the Archivist is describing">
             <p className="deb-kicker">{scene.card.kicker}</p>
             <h3>{scene.card.heading}</h3>
             {scene.card.chips.length > 0 && <p className="deb-chips">{scene.card.chips.map((c, i) => <span key={i} className={`deb-chip deb-chip--${c.tone}`}>{c.text}</span>)}</p>}
@@ -145,7 +136,7 @@ export function Debrief({ scenesFor, title, onWritten, children }: { scenesFor: 
           </aside>
         )}
         {started && captions && (
-          <p className="deb-caption" aria-live="off">{scene.lines[Math.min(st.line, scene.lines.length - 1)]}</p>
+          <p className="deb-caption" lang={spokenLang} aria-live="off">{scene.lines[Math.min(st.line, scene.lines.length - 1)]}</p>
         )}
         {started && st.engine === "timed" && <p className="deb-note" role="status">{T.noVoice}</p>}
       </div>
@@ -176,10 +167,10 @@ export function Debrief({ scenesFor, title, onWritten, children }: { scenesFor: 
           </div>
         </div>
       )}
-      {started && <p className="deb-hint sim-fine no-print">{T.hint(Math.min(st.scene + 1, scenes.length), scenes.length, scene.chapter)}</p>}
+      {started && <p className="deb-hint sim-fine no-print">{T.hint(Math.min(st.scene + 1, scenes.length), scenes.length, lang === "hi" ? "" : scene.chapter)}</p>}
 
       {transcript && (
-        <div className="deb-transcript" role="region" aria-label={`${T.transcript}`}>
+        <div className="deb-transcript" lang={spokenLang} role="region" aria-label={`${T.transcript}`}>
           {scenes.map((s) => <div key={s.id}><h3>{s.chapter}</h3>{s.lines.map((l, i) => <p key={i}>{l}</p>)}</div>)}
         </div>
       )}

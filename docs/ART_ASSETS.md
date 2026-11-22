@@ -106,3 +106,22 @@ The ten people (the six named characters plus four staff extras) are now drawn s
 - **COVID Hospital round 1** is eleven generated comic panels (`public/assets/scene/covid/<panel>.webp`, sources in `art-staging/covid`) on three printed sheets, with live comic lettering (bubbles, captions, sound effects, and the "31 WAITING" board) on top. The old SVG drawing kit (`ink.tsx`, `firstSurge.tsx`) and `flat/World.tsx` are deleted.
 - **Captions** now live inside their panel, so the Next/Back buttons can no longer overlap them. **Dialogue** is always visible, including with Reduce motion on, and the choice reaction scene plays calmly (poses, bubbles and the sound-effect word, no movement) under that setting.
 - Still present but unused by the active screens: the older vector renderers under `src/comic/vector`, `toons`, `portraits` and `art` (used only by a non-default page style and the dev gallery).
+
+### The BLACKOUT workday as a comic
+- Seven rooms for the seven steps of "A Monday at the Terminal", generated with ElevenLabs (`gemini-3.1-flash-lite-image`, about 5.6 US cents each, using an existing backdrop as the style reference): `frontend/public/assets/scene/workday/bow1..bow7.webp` (sources in `frontend/art-staging/workday`).
+- Each step opens with a two-page comic (`src/sims/comic/workday.tsx`): the room, the cast as stickmen, a caption and speech bubble written from the step's own brief, facts, voice line and question, and the tired comic narrator reading it. Staging and the colleagues' replies are in `src/sims/comic/workdayData.ts`; nothing there decides an outcome.
+- Committing an option plays the same voiced reaction scene as the crisis (`ChoiceCutscene` with the room as its picture): you announce it, the colleague answers in their own voice, and a shaky call draws one more reaction. The narrator and the reaction voices use the settings in Settings → Accessibility → Voices.
+- The picture beside the decision is now the step's room with its people (replacing the old SVG terminal drawing for these steps).
+
+### All four stories in the crisis layout (BLACKOUT's day, Bhopal, the hospital)
+- `frontend/public/assets/scene/workday/<step>.webp` now holds a room for all 42 steps: BLACKOUT's seven (`bow1-7`), Bhopal's day (`bw1-7`), the record and the crisis (`h1-7`, `f1-6`), and the hospital's day (`cw1-7`) and surge (`c1-8`). The 35 new ones were made with ElevenLabs (`gemini-3.1-flash-lite-image`, about 5.6 US cents each, style-referenced to the BLACKOUT rooms); sources are in `frontend/art-staging/wd2`.
+- `src/sims/comic/workdayData.ts` is the one table that stages every step (the room, who stands where, who the step is about) and holds the colleagues' replies to each option. `PEOPLE` says who each stickman is in each story (for example `worker_d` is Lena Okafor in Bhopal). The words on the pages come from the step itself.
+- `src/sims/comic/WorkdayStep.tsx` lays every one of these steps out like the BLACKOUT crisis: comic in the stage (the camera moves between pages), Decide / Situation / Team / Status in the rail, a voiced reaction scene when you commit (skippable), then a result page. A speech bubble is placed above whoever is speaking and its tail points at them.
+- `backend/app/sims/clarity.py` holds the plain-language description of every option (what you would do, what it takes, what it leaves undone); the registry applies it. The extra stickmen have their own voices (`char_worker`, `char_worker_b/c/d` in `tts.py`).
+
+## Technical labs (circuit, operation)
+
+`frontend/public/assets/scene/lab/<id>.webp`: 14 detailed comic pictures, `lc1`-`lc7` (breadboard LED circuit) and `ls1`-`ls7` (appendicectomy, a fictional patient). Made with ElevenLabs
+(`gemini-3.1-flash-lite-image`, 1376x768, about 5.6 cents each, style-referenced to the ops-office backdrop on the same flow), saved as 1280 px wide WebP. The sources are in
+`frontend/art-staging/lab`. The scenarios live in `backend/app/sims/technical.py` (outside the career list on purpose); the screens are `frontend/src/sims/lab/LabStep.tsx`
+and `frontend/src/shell/Labs.tsx`. At each step one option works and two fail (`fails=True`), which ends the run with the `failed` ending.

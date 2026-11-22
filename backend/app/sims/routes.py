@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from fastapi import HTTPException, Response
 
-from . import narrate_ai, tts
+from . import generate, narrate_ai, tts
 from .service import SimsService
 
 router = APIRouter(prefix="/api")
@@ -49,6 +49,51 @@ class ProfileBody(BaseModel):
 @router.get("/library", summary="All simulations with this player's progress")
 def library(s: SimsService = S):
     return s.library()
+
+
+@router.get("/labs", summary="The technical-work simulations (circuit, surgery) with this player's progress")
+def labs(s: SimsService = S):
+    return s.labs()
+
+
+@router.get("/certificates", summary="One certificate per simulation: earned by making the best choice at every step")
+def certificates(s: SimsService = S):
+    return s.certificates()
+
+
+class GenerateBody(BaseModel):
+    prompt: str = Field(min_length=12, max_length=generate.MAX_PROMPT)
+    kind: str = Field(pattern="^(technical|normal)$")
+
+
+JOBS = generate.Jobs()
+
+
+@router.post("/generate", status_code=202, summary="Have the Claude CLI write a new simulation from a description (runs in the background)")
+def start_generation(body: GenerateBody):
+    if not generate.enabled():
+        raise HTTPException(503, "The Claude CLI is not available on this computer, so simulations cannot be written.")
+    try:
+        return JOBS.start(body.prompt.strip(), body.kind)
+    except RuntimeError:
+        raise HTTPException(409, "A simulation is already being written. Wait for it to finish.")
+
+
+@router.get("/generate/jobs", summary="Recent generation jobs, newest first")
+def generation_jobs():
+    return {"enabled": generate.enabled(), "jobs": JOBS.recent()}
+
+
+@router.get("/generated", summary="The simulations the player had written")
+def generated(s: SimsService = S):
+    return s.generated()
+
+
+@router.delete("/generated/{sim_id}", summary="Delete a generated simulation and its runs")
+def delete_generated(sim_id: str, s: SimsService = S):
+    if not s.delete_generated(sim_id):
+        raise HTTPException(404, "No generated simulation with that id.")
+    return {"deleted": sim_id}
 
 
 @router.get("/journey", summary="Completed simulations and skills across them")
@@ -169,7 +214,7 @@ class DebriefScene(BaseModel):
 
 class DebriefBody(BaseModel):
     scenes: list[DebriefScene] = Field(min_length=1, max_length=narrate_ai.MAX_SCENES)
-    lang: str = Field("en", pattern="^(en|hi)$")
+    lang: str = Field("en", pattern="^(en|hi|hinglish)$")
     fresh: bool = False
 
 

@@ -10,8 +10,8 @@ type Prof = "blackout" | "bhopal" | "covid";
 const THEME_TITLE = { blackout: "BLACKOUT", bhopal: "Bhopal", covid: "COVID-era Hospital" } as const;
 const crisisRoute = (p: string) => (p === "blackout" ? "#/play/blackout" : `#/crisis/${p}`);
 
-function Top({ profession, label }: { profession: Prof; label: string }) {
-  return <AppBar crumbs={[{ label: THEME_TITLE[profession] }]}><span className="sim-pill sim-pill--soft">{label}</span><SoundToggle /></AppBar>;
+function Top({ profession }: { profession: Prof; label?: string }) {
+  return <AppBar crumbs={[{ label: THEME_TITLE[profession] }]}><SoundToggle /></AppBar>;
 }
 
 function useAsync<T>(fn: () => Promise<T>, deps: unknown[]) {

@@ -37,7 +37,7 @@ export function ComicReader({ pages, title, onDone }: { pages: ComicPage[]; titl
         <button type="button" className="sim-btn sim-btn--ghost" onClick={onDone}>Skip the comic</button>
         {last ? <button type="button" className="sim-btn sim-btn--primary" onClick={onDone}>Make your decision →</button> : <button type="button" className="sim-btn sim-btn--primary" onClick={() => go(i + 1)}>Next page →</button>}
       </div>
-      <p className="sim-fine ck-note">Page {i + 1} of {pages.length} · ← → turn the page · A fictional hospital and fictional people.</p>
+      <p className="sim-fine ck-note">Page {i + 1} of {pages.length} · ← → turn the page · Fictional people and places.</p>
     </section>
   );
 }

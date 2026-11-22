@@ -1,0 +1,1928 @@
+{
+ "bow1": {
+  "kavya": {
+   "for": "strong",
+   "say": "Asking each lead for a risk and a need catches safety problems early, before a ship and a gate queue arrive together.",
+   "against": "weak",
+   "why": "With a ship due and trucks queuing, going without a briefing means nobody knows who is watching what."
+  },
+  "arjun": {
+   "for": "mixed",
+   "say": "The usual round is quick, but I would add one question: what could go wrong in your area today?",
+   "against": "weak",
+   "why": "Skipping the briefing leaves problems unspoken until they land on someone mid-shift."
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "Ask each lead for one risk and one need. Then nobody leaves without knowing what they own.",
+   "against": "weak",
+   "why": "If we skip it, the team scatters and nobody owns the day's problems."
+  },
+  "raghav": {
+   "for": "mixed",
+   "say": "The usual round is fine. It's short, and I need to get back to checking my connections before the ship arrives.",
+   "against": "weak",
+   "why": "Skipping it means I could miss something that affects the network and only hear about it too late."
+  },
+  "isha": {
+   "for": "strong",
+   "say": "If I say my customer worry out loud and someone owns it, I can answer callers with confidence today.",
+   "against": "weak",
+   "why": "With no briefing, customer problems reach me last, and I'd be guessing what to tell people."
+  },
+  "worker": {
+   "for": "weak",
+   "say": "Trucks are already lining up at the gate. I'd rather get to my post than sit in a meeting.",
+   "against": null,
+   "why": null
+  }
+ },
+ "bow2": {
+  "kavya": {
+   "for": null,
+   "say": "Patching closes known weaknesses, but an hour's outage hits gate and yard work, and the schedule is tight. I'd want to know the rollback plan. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "Patch this week, in a quiet slot, with a way to undo it. Known holes are the cheapest way in for an attacker.",
+   "against": "weak",
+   "why": "Putting it off because we're busy leaves known holes open, and we're always busy."
+  },
+  "nisha": {
+   "for": null,
+   "say": "Unpatched servers worry me, yet an outage and a ship-schedule gap hurt too. I'd want recovery steps ready whatever timing you pick. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "raghav": {
+   "for": "mixed",
+   "say": "If the week is too tight, next month is a fair compromise. Just do not let it slip again.",
+   "against": "weak",
+   "why": "Putting it off with no new date is how updates get forgotten for good."
+  },
+  "isha": {
+   "for": "mixed",
+   "say": "Next month gives me time to warn customers about the delay, so nobody is caught off guard by the outage.",
+   "against": "weak",
+   "why": "Skipping it altogether worries me. If something went wrong later, customers would blame us for ignoring a known fix."
+  },
+  "worker": {
+   "for": null,
+   "say": "Gate and yard systems down for an hour means trucks backing up and us scrambling. Still, old servers without fixes worry me too. Your call.",
+   "against": null,
+   "why": null
+  }
+ },
+ "bow3": {
+  "kavya": {
+   "for": "mixed",
+   "say": "Checking that the jobs completed is quick and gives some comfort, though I'd still want someone to try a real restore soon.",
+   "against": "weak",
+   "why": "Assuming it's fine is a gamble. If the yard system failed, we'd be stuck on a guess."
+  },
+  "arjun": {
+   "for": "mixed",
+   "say": "A green status shows the job ran, not that the data comes back. I would still try one restore.",
+   "against": "weak",
+   "why": "Trusting nightly runs that nobody has ever restored is just hoping, and we'd find out too late."
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "If the yard system failed, I need to know how long recovery takes. One hour and a spare machine is a small price.",
+   "against": "weak",
+   "why": "Leaving it means we'd learn on the worst day whether the backups work, with no time to fix it."
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "A backup nobody has restored is only a hope. Rebuild one system from the offline copy and time it.",
+   "against": "weak",
+   "why": "Assuming it's fine because it runs nightly is exactly how people get caught out."
+  },
+  "isha": {
+   "for": "weak",
+   "say": "The backups run every night, and my customers need us busy moving cargo. I'd rather not spend an hour and a spare machine on this.",
+   "against": "strong",
+   "why": "Tying up a spare machine and an hour for a test feels like a lot when nothing has gone wrong."
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "If the jobs show as done, that sounds reassuring to me. I'm not sure what else I'd check from the gate.",
+   "against": null,
+   "why": null
+  }
+ },
+ "bow4": {
+  "kavya": {
+   "for": null,
+   "say": "A hospital supplier needs a real way to reach us. I'd want to know any contact works when screens are down. That's for you to decide.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": null,
+   "say": "A general inbox won't help if systems are down, and I can't promise what never happens. I'd want any contact to work offline. Your call.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "I agree: the general inbox only works while the systems are up. An afternoon on a paper list is worth it.",
+   "against": "weak",
+   "why": "Claiming we've never gone down gives no help in a crisis, and it hurts trust if it ever happens."
+  },
+  "raghav": {
+   "for": null,
+   "say": "If the network failed, email would fail with it. I'd want whatever we tell them to still work then. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "isha": {
+   "for": "strong",
+   "say": "Give them a named person and a paper phone list. That works even when our systems are down.",
+   "against": "weak",
+   "why": "Saying we've never gone down doesn't answer their question, and it loses their trust if anything happens."
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "Sending the email again is easy and nobody has to change anything. I don't know who else they'd ring.",
+   "against": "weak",
+   "why": "Telling them we've never gone down could come back on us at the gate if cargo ever gets stuck."
+  }
+ },
+ "bow5": {
+  "kavya": {
+   "for": "strong",
+   "say": "Run the drill at the quietest hour. We will find out which forms do not work while it is cheap to fix them.",
+   "against": "weak",
+   "why": "We've put this off for a year. If the screens went blank today, my team would be learning it live."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "If our systems go down, paper is all the gate has. I'd rather find the gaps in a drill than during a real outage.",
+   "against": "weak",
+   "why": "Saying not now means paper forms stay untested, and we'd find the faults in a real outage."
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "Practising in the quietest hour costs little. It shows us what breaks, and the forms can be fixed afterwards.",
+   "against": "weak",
+   "why": "The queue will always be long. Waiting for a perfect moment means the drill never happens."
+  },
+  "raghav": {
+   "for": "mixed",
+   "say": "A short briefing covers the basics with less disruption, though a real run-through would show up more problems.",
+   "against": "weak",
+   "why": "Never practising leaves gate staff with a plan on paper only, and I'd worry what happens when the screens go."
+  },
+  "isha": {
+   "for": null,
+   "say": "If screens go blank, customers will want answers fast. A drill slows the queue for an hour, but staff have never practised this. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "A short briefing is easier on the queue, but we have never actually checked trucks in on paper.",
+   "against": "weak",
+   "why": "Putting it off again means we'd still be working out paper checks for the first time when the screens go dark."
+  }
+ },
+ "bow6": {
+  "kavya": {
+   "for": "strong",
+   "say": "If a fault on the office side reached the cranes and gates, people on the yard could get hurt. Two weeks is a fair price. I'd approve it all.",
+   "against": "weak",
+   "why": "Waiting until something goes wrong means the first problem is on the crane network, where safety is at stake."
+  },
+  "arjun": {
+   "for": "mixed",
+   "say": "Half now is better than nothing, but the links left open are still a way across.",
+   "against": "weak",
+   "why": "Saying no leaves the two networks linked just because it was convenient. That convenience is the exact risk."
+  },
+  "nisha": {
+   "for": null,
+   "say": "Nothing has gone wrong yet, but the linked networks could let a problem spread. The cost is modest, the work takes two weeks. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "Approve all of it and ask for the order of work. Separating the office and yard networks is what stops a spread.",
+   "against": "weak",
+   "why": "Refusing keeps the networks linked. One bad day in the office could reach the cranes and gates."
+  },
+  "isha": {
+   "for": "mixed",
+   "say": "Customers only notice if the gates stop. Half now keeps the cost down, and we still make progress. I'd rather not wait longer than that.",
+   "against": "weak",
+   "why": "If we do nothing and the yard stops, I'm the one explaining delays to customers."
+  },
+  "worker": {
+   "for": "strong",
+   "say": "If the gate system went down, I'd have trucks queuing and no way to check them in. Please just do the work.",
+   "against": "weak",
+   "why": "Waiting until something breaks means I'm the one stuck at the gate with a line of trucks."
+  }
+ },
+ "bow7": {
+  "kavya": {
+   "for": null,
+   "say": "One carrier moving most urgent cargo is a worry, but nobody asked for this and your hour is limited. I'd want to know what you'd drop. Your call.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": null,
+   "say": "A single carrier is a risk if they can't be reached. A new one needs approving and briefing, though. I'd want to see the effort. Your call.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "Phone the second carrier today and write their number on the paper list. It is cheap insurance.",
+   "against": "weak",
+   "why": "Doing nothing leaves us with no way to move urgent cargo if the carrier fails. Fine until it isn't."
+  },
+  "raghav": {
+   "for": null,
+   "say": "Relying on one carrier leaves no route if they fail. Then again, they've worked fine so far, and this is extra work. Your call.",
+   "against": null,
+   "why": null
+  },
+  "isha": {
+   "for": "mixed",
+   "say": "I would at least note it for next week, but nothing is agreed until someone calls.",
+   "against": "weak",
+   "why": "If the carrier failed, customers would wait on urgent cargo and I'd have nothing to tell them."
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "Passing it to the assistant is sensible, since you have a lot on. Just make sure someone briefs the new carrier before they arrive at my gate.",
+   "against": "weak",
+   "why": "If the carrier fails and a stranger shows up at the gate, I won't know what to do."
+  }
+ },
+ "bw1": {
+  "kavya": {
+   "for": "strong",
+   "say": "Walk the open permits with me. I want you to see that every interlock is really back in service.",
+   "against": "weak",
+   "why": "I'm tired, but a quick signature on an interlock marked under test is not fair to you or the plant."
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "Reading the log is the normal routine, but it only covers what Marta remembered to write.",
+   "against": "weak",
+   "why": "Signing fast when an interlock is marked under test is risky. My maintenance work is exactly what could be missed."
+  },
+  "worker_d": {
+   "for": "strong",
+   "say": "Walking the permits is worth it. I work around that tank, and I want to know the interlock is back in service.",
+   "against": "weak",
+   "why": "A quick signature leaves the under-test interlock as a guess. Marta being tired doesn't make the tank any safer."
+  },
+  "worker_b": {
+   "for": null,
+   "say": "Marta's tired and I get that, but three open permits and an interlock under test affect my work. I'd want to know they're safe. Your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": "weak",
+   "say": "Marta has been up fourteen hours and the log is there. A quick sign-off keeps things moving, and I assume the plant has its layers of protection.",
+   "against": "strong",
+   "why": "I'd rather not hear later that a handover was rushed. Walking each permit takes more time, but it's a small cost."
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "That tank holds something toxic and I live nearby. Please take the time to check each permit and interlock, even if it's tedious.",
+   "against": "weak",
+   "why": "A rushed signature because someone is tired is not what I want protecting my street."
+  },
+  "raghav": {
+   "for": null,
+   "say": "Marta has been up fourteen hours and needs rest. But a toxic tank, open permits and an interlock under test matter. I'd want clarity. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": "mixed",
+   "say": "The log is the record I'll read later, so it matters. But a walk-through catches what never got written down.",
+   "against": "weak",
+   "why": "Signing quickly leaves nothing in the record about the interlock under test. That's a gap I can't close afterwards."
+  }
+ },
+ "bw2": {
+  "kavya": {
+   "for": "mixed",
+   "say": "Booking it for next week is tempting, but the unit runs unprotected until then.",
+   "against": "weak",
+   "why": "Carrying on because it has run fine for years ignores the overdue sticker and the bypass tag on the panel."
+  },
+  "worker": {
+   "for": "strong",
+   "say": "Take the bypass off and run the alarm test now. It is overdue, and someone should own the next one.",
+   "against": "weak",
+   "why": "Saying it has run fine for years doesn't tell us the alarm would work. The tag may be a month old."
+  },
+  "worker_d": {
+   "for": null,
+   "say": "I'd want to know who left that tag and why. A quick test now and a later one both have sense to me. It's your call, boss.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "Noting it and scheduling the test sounds reasonable. I don't know who left the tag, and I'd rather not touch it myself.",
+   "against": "weak",
+   "why": "Ignoring it because it's been fine doesn't sit right. Someone ought to find out who put that tag there."
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "A scheduled test next week sounds like a sensible middle way. It gets recorded without stopping work today.",
+   "against": "strong",
+   "why": "Doing nothing is hard to defend if the unit ever failed. A dull overdue sticker would look very bad afterwards."
+  },
+  "nisha": {
+   "for": null,
+   "say": "I live by the fence and don't understand cooling units. I'd want to know it's safe, but I see why checking takes time. Your call.",
+   "against": null,
+   "why": null
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "An overdue test and an unexplained bypass on the cooling unit is not something I'd leave. Fix it now and name who owns it.",
+   "against": "weak",
+   "why": "Carrying on lets a safeguard stay switched off on a guess that it was probably fine."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "An overdue sticker and a bypass tag together mean the record can't show the alarm works. Test it, log it and assign the next one.",
+   "against": "weak",
+   "why": "Leaving it on the argument that it has run for years leaves a gap in the record and in the protection."
+  }
+ },
+ "bw3": {
+  "kavya": {
+   "for": "mixed",
+   "say": "Fixing the valve is right. If you keep it quiet, nobody else learns from it.",
+   "against": "weak",
+   "why": "Telling Lena to be more careful makes her feel blamed. Next time she may say nothing at all."
+  },
+  "worker": {
+   "for": null,
+   "say": "Fixing the valve is my job either way. Telling others might help the shift, and Lena's feelings matter too. I'll fix whatever you decide.",
+   "against": null,
+   "why": null
+  },
+  "worker_d": {
+   "for": "strong",
+   "say": "Thank me and log it as a near miss. Then tell the whole shift, so the next person speaks up too.",
+   "against": "weak",
+   "why": "Telling me to be more careful is exactly what I was afraid of. It would make me think twice before reporting."
+  },
+  "worker_b": {
+   "for": null,
+   "say": "I'm only a contractor, so I'll go along with it. Sharing it could help everyone, but I know people worry about blame. Your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": null,
+   "say": "I don't know the plant side. Open sharing sounds useful, but I can see why Lena is nervous. I'd want to hear what happens next. Up to you.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "I'm glad she stopped it and spoke up. Please record it and let everyone on the shift hear what was learned.",
+   "against": "weak",
+   "why": "Scolding her might stop the next person from speaking up, and I live next to this plant."
+  },
+  "raghav": {
+   "for": null,
+   "say": "No one was hurt, and I want people to speak up. I also want Lena treated fairly. How we handle this sets the tone. Your decision.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "A logged near miss gives me something real to learn from. Without the record, there's nothing to spot patterns in later.",
+   "against": "mixed",
+   "why": "Fixing it quietly leaves no record. Nobody could see if the same valve or others have done this before."
+  }
+ },
+ "bw4": {
+  "kavya": {
+   "for": "strong",
+   "say": "The scrubber is a protection layer. I'd refuse and book an offline window with a safe alternative. The work still gets done, just not with the alarm off.",
+   "against": "weak",
+   "why": "Switching off an alarm because the day is short is how people get hurt on night shifts."
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "A supervisor watching helps, but a person is not the same as the alarm.",
+   "against": "weak",
+   "why": "I want the two hours too, but allowing it just because the day is short leaves nothing protecting us."
+  },
+  "worker_d": {
+   "for": "strong",
+   "say": "I work next to that scrubber. If the alarm is off, I can't trust what I'm standing beside. Book a proper window.",
+   "against": "mixed",
+   "why": "One supervisor can't see everything a working alarm sees. People get distracted."
+  },
+  "worker_b": {
+   "for": "strong",
+   "say": "Say no to the bypass but give us a booked window. We do the job safely, just later.",
+   "against": "weak",
+   "why": "I don't want to be working beside a protection layer that's switched off, whatever the clock says."
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "Two hours of schedule is real money. With a supervisor watching the whole time, it sounds like a fair compromise.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": null,
+   "say": "I live near that scrubber. I know a deadline is real pressure for the contractor, but I worry about the alarm being off. It's your decision.",
+   "against": null,
+   "why": null
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "A protection layer stays on. Offer a scheduled window and a safe alternative. A missed noon deadline can be recovered; an incident can't.",
+   "against": "weak",
+   "why": "Allowing it because the day is short sets a precedent I don't want anyone on this site to follow."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "The record shows bypasses done for one day often become routine. Refusing and offering a planned window keeps the layer in place.",
+   "against": "weak",
+   "why": "Removing a protection layer for convenience leaves nothing between the work and a release."
+  }
+ },
+ "bw5": {
+  "kavya": {
+   "for": "strong",
+   "say": "Please do not tell head office that safety will not be affected unless you are sure. We are already thin.",
+   "against": "weak",
+   "why": "Promising no safety impact and sending full cuts would strip a night shift that's already stretched."
+  },
+  "worker": {
+   "for": "strong",
+   "say": "Maintenance and training keep this place safe. Show head office the register so they see what each cut would cost us.",
+   "against": "weak",
+   "why": "Saying safety won't be affected is a guess, and my team would pay if it turns out wrong."
+  },
+  "worker_d": {
+   "for": "mixed",
+   "say": "Send them a list so they stay friendly, but keep it quiet. I don't want a fight that puts our jobs at risk.",
+   "against": "weak",
+   "why": "Cutting the full amount means fewer people trained, and I'd be the one on the floor short-handed."
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "Give them a list. It's easier than arguing, and head office is under pressure too. Keep safety out of it.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": "strong",
+   "say": "Send savings that stay away from safety items and attach the risk register. It will be a hard call, but an honest one.",
+   "against": "weak",
+   "why": "Telling my board nothing is affected without any evidence puts me in a bad spot if something goes wrong."
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "I'd want the people running the plant next to my home to protect safety first. Cuts should come from elsewhere, and be openly explained.",
+   "against": "weak",
+   "why": "Telling them safety won't be affected without knowing worries me, as I live by the fence."
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "Give Jonas savings that avoid safety-critical items and show the register. He's never opened it, so this is the moment to explain it.",
+   "against": "weak",
+   "why": "Reassuring head office without checking is a promise I can't stand behind."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "The register already records what each cut would cost. Sharing it with the list lets head office decide with the facts in front of them.",
+   "against": "mixed",
+   "why": "Leaving safety out of the discussion means the risks are never put on the table."
+  }
+ },
+ "bw6": {
+  "kavya": {
+   "for": null,
+   "say": "I work nights, so the siren matters to me. Neighbours deserve to know, but nobody has had time before. I see both sides. Your call.",
+   "against": null,
+   "why": null
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "Telling her it is a test is true, but she will not know what to do if it is real.",
+   "against": "weak",
+   "why": "Saying don't worry is not an answer. She asked a fair question and deserves one."
+  },
+  "worker_d": {
+   "for": "strong",
+   "say": "She lives beside the fence. A plain explanation and a card on her fridge could matter a lot on the day. I'd help with the open day.",
+   "against": "mixed",
+   "why": "Calling it a test only covers the monthly sound. It says nothing about the real thing."
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "I'd tell her it's a test so she isn't alarmed. I'm only a contractor, so I'd leave the bigger plans to the plant.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "Reassure her it's a test. An open day sounds nice, but nobody has had time before and it adds cost and effort.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "A plain explanation and a one-page card would help me. I would come to an open day.",
+   "against": "weak",
+   "why": "Being told not to worry doesn't help. I'd still not know what to do when it sounds."
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "Neighbours should know what our siren means. Explain it, hand over the card, and let's finally make the open day happen.",
+   "against": "weak",
+   "why": "Brushing her off leaves a neighbour unprepared, and that's our responsibility, not hers."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "Most neighbours have never been told what the siren means. A clear explanation and card close that gap before it matters.",
+   "against": "weak",
+   "why": "Saying it's nothing to worry about answers the question without telling her what to do."
+  }
+ },
+ "bw7": {
+  "kavya": {
+   "for": "mixed",
+   "say": "If the hour is short, walk the route at least. But a drill is what makes it stick.",
+   "against": "weak",
+   "why": "Slides then home won't prepare anyone for a real alarm. Training shouldn't be the first thing cut."
+  },
+  "worker": {
+   "for": "strong",
+   "say": "Put them in a mock alarm with the radios and the exit route. They'll remember doing it far better than reading slides.",
+   "against": "weak",
+   "why": "Slides alone mean four people could start Monday without ever hearing the alarm or using a radio."
+  },
+  "worker_d": {
+   "for": "strong",
+   "say": "When I started, hearing the alarm and finding the assembly point for real helped most. Do the exercise and debrief it.",
+   "against": "weak",
+   "why": "A slide deck doesn't tell your legs where to go when the alarm sounds."
+  },
+  "worker_b": {
+   "for": null,
+   "say": "I've sat through plenty of slides, and I know people are tired and short on time. A drill takes the whole hour though. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": "weak",
+   "say": "The slides are ready and cover the content. Training time is expensive and the schedule is tight, so keep it short.",
+   "against": "strong",
+   "why": "A full mock exercise takes the whole hour, and I see that time as hard to justify right now."
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "People working next to my home should have practised for an emergency, not only read about it. I'd want them to run the drill.",
+   "against": "weak",
+   "why": "Slides then going home sounds like training done only to tick a box."
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "Run the mock exercise. People remember the siren and the radio far better than slides.",
+   "against": "weak",
+   "why": "Only slides is the kind of training that gets cut when schedules are tight, and it shows later."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "The exercise gives them practice with the real radios and exit route. A debrief turns it into something they'll remember on Monday.",
+   "against": "weak",
+   "why": "Slides alone leave the new operators untested on the alarm, radios and route they'd actually use."
+  }
+ },
+ "h1": {
+  "kavya": {
+   "for": "strong",
+   "say": "A release hurts whoever is downwind. Where the plant sits, how much space there is around it, and what the neighbours are told all matter.",
+   "against": "weak",
+   "why": "Saying only the chemical matters ignores the people sleeping nearby, who we'd see first."
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "Insurance matters, but it counts the cost after the harm, not who gets hurt.",
+   "against": "weak",
+   "why": "Hazard doesn't depend only on the chemical. The same release hurts more where more people live."
+  },
+  "worker_d": {
+   "for": "strong",
+   "say": "If homes are close to the fence, a leak reaches them fast. Planning has to include the neighbours and how they'd be warned.",
+   "against": "mixed",
+   "why": "Property and insurance are about money, but the first worry for an operator is the people nearby."
+  },
+  "worker_b": {
+   "for": "strong",
+   "say": "Same chemical, very different outcome depending on who is close by. Buffer zones and emergency plans for the community make sense.",
+   "against": "weak",
+   "why": "Pretending location doesn't matter ignores that settlements grew close to the plant."
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "From a finance view, location drives property loss and insurance exposure. That's what I'd naturally look at first.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": null,
+   "say": "I live close to a plant like this. I'd want to know what's nearby and what to do. Other things might matter to the company too. You decide.",
+   "against": null,
+   "why": null
+  },
+  "raghav": {
+   "for": null,
+   "say": "As a plant director I worry about cost and insurance, but I know people live nearby. I'd want to hear your thinking before choosing. Your call.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "Look at who lives beside the plant. The danger depends on who could be hurt, not only on the chemical.",
+   "against": "weak",
+   "why": "If hazard were only about the chemical, the growing neighbourhoods would not change the risk. They clearly do."
+  }
+ },
+ "h3": {
+  "kavya": {
+   "for": "strong",
+   "say": "Fewer people and less training means fewer eyes on night shift. Cuts like that need a proper safety review before they happen.",
+   "against": "weak",
+   "why": "Staffing and training matter a great deal. A good design still needs people who know how to run it."
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "Budgets are tight everywhere, but accepting the cuts without review is how margins disappear.",
+   "against": "weak",
+   "why": "Good design doesn't fix itself. Without maintenance and trained people, the equipment still lets you down."
+  },
+  "worker_d": {
+   "for": null,
+   "say": "I've seen less training and fewer hands make things slip. But money is tight everywhere, and I can see both sides. What I'd want to know is who checks the savings. Your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": null,
+   "say": "As a contractor I notice when maintenance gets trimmed. Still, budgets are real, and design matters too. I'd want to know what was cut and who reviewed it. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "Demand fell, so costs had to come down. That's just business, and safety has to cope with leaner budgets.",
+   "against": "strong",
+   "why": "A safety review on every saving would slow decisions at head office, and the plant needs to cut costs."
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "Saving money on staff and upkeep sounds harmless until something goes wrong. People living nearby deserve to know someone checked first.",
+   "against": "mixed",
+   "why": "Telling safety to just cope with cuts means neighbours carry the danger. That isn't fair to us."
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "Cost pressure is real, but I should be asking what each cut does to maintenance, training and staffing before I approve it.",
+   "against": "weak",
+   "why": "Believing good design makes people optional is wrong. Equipment fails without trained staff and upkeep."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "Savings on maintenance and staff quietly remove safety margins. They deserve a safety review.",
+   "against": "weak",
+   "why": "Staffing and training clearly affect safety. Design alone cannot cover for missing people and worn equipment."
+  }
+ },
+ "h4": {
+  "kavya": {
+   "for": "strong",
+   "say": "A worker died in 1981, and concerns kept coming. Each finding needs a name and a date, or it gets lost between shifts.",
+   "against": "weak",
+   "why": "Treating small leaks as normal teaches people to ignore warnings. Small leaks can point to bigger trouble."
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "Fixing things when budget allows is common, but that is how findings pile up unfixed.",
+   "against": "weak",
+   "why": "Calling leaks normal means nobody looks closely, and the next one could be worse."
+  },
+  "worker_d": {
+   "for": null,
+   "say": "Past leaks worry me, since we're the ones standing near them. But fixing everything costs money and time. I'd want to know who owns each finding. Your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "Nobody can fix everything at once. Noting problems and fixing them when money allows seems a sensible way to go.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": null,
+   "say": "From finance, I see limited budgets and a long list of demands. But unresolved warnings worry me too. I'd want to know what's open and who's accountable. Up to you.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "A man died in 1981 and the papers wrote about it in 1982. Those warnings should have been followed through until fixed.",
+   "against": "mixed",
+   "why": "Waiting until there's money means problems stay unsolved while we live next door to them."
+  },
+  "raghav": {
+   "for": null,
+   "say": "As director I weigh budget against old warnings and I feel both pulls. What worries me is findings sitting open without an owner. I'd want the full picture. Your call.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "Treat each warning as evidence: give it an owner and a deadline and follow it to closure.",
+   "against": "weak",
+   "why": "Calling small leaks normal throws away the clearest early signs that the system is weakening."
+  }
+ },
+ "h5": {
+  "kavya": {
+   "for": "strong",
+   "say": "On shift you work with what you know for sure. The release, the missing safeguards and the lack of warning are clear. The rest should stay open.",
+   "against": "mixed",
+   "why": "Choosing a version because it sounds right means the real gaps in the plant go unexamined."
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "Choosing the most convincing story is easy, but then you stop looking at the rest.",
+   "against": "weak",
+   "why": "Skipping the causes means we learn nothing about how to stop it happening again."
+  },
+  "worker_d": {
+   "for": "strong",
+   "say": "Some things are clear: too much MIC in the tank, safeguards down, no warning. I can learn from those even while the cause is argued.",
+   "against": "weak",
+   "why": "Ignoring causes because they're disputed throws away lessons about maintenance and procedures that apply to every plant."
+  },
+  "worker_b": {
+   "for": null,
+   "say": "Some of this is clear and some is argued over, and I can see why people want a simple answer. I'd want to know what's actually established. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": null,
+   "say": "People want one clean story, and I understand that. But the causes are disputed and the damage isn't. I'd want to know what we can say with confidence. Your call.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "What I know for sure is that gas came over us while we slept and the siren was switched off. That should never be brushed aside.",
+   "against": "weak",
+   "why": "Skipping the causes because people disagree feels like walking away from those of us who were affected."
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "I should be able to say plainly what is known, such as the release and the safeguards, and admit what is still argued.",
+   "against": "mixed",
+   "why": "Treating one convenient story as fact, especially one that favours the company, would damage trust and hide real lessons."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "Separate what is well established from what is disputed. Learn from both and do not hide behind the dispute.",
+   "against": "weak",
+   "why": "Skipping the causes wastes a chance to learn, and it lets the dispute become an excuse."
+  }
+ },
+ "h6": {
+  "kavya": {
+   "for": null,
+   "say": "As a supervisor I know the company holds details responders may need. But sharing information has its own concerns. I'd want to know who needed what, and when. Your call.",
+   "against": null,
+   "why": null
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "Reviewing it first sounds careful, but it delays the people who need to act.",
+   "against": "weak",
+   "why": "If ordinary people don't understand the hazards, they can't protect themselves or act when something goes wrong."
+  },
+  "worker_d": {
+   "for": null,
+   "say": "If doctors don't know what the gas is, they can't treat it. But I see why a company is careful with information. I'd want to know who was told. Your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "Having the company check information first seems reasonable, so nobody gets wrong facts. I'd feel safer if it came from official sources.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "Information getting out unchecked could cause panic or legal trouble. The company should look it over first and then share it.",
+   "against": "strong",
+   "why": "Sharing everything with responders and the community in advance sounds costly and could create worry, so I'm cautious about it."
+  },
+  "nisha": {
+   "for": null,
+   "say": "Living next to the plant, I'd have wanted to know what to do. But I can see information being checked first. What worries me is the gap. Your call.",
+   "against": null,
+   "why": null
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "Doctors, responders and neighbours should be told about the hazards and the emergency plans well beforehand. Keeping that inside the company helps nobody.",
+   "against": "mixed",
+   "why": "Holding information back for company review risks slowing down the people who need it when time matters."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "Hazard information must reach doctors, responders and neighbours before anything happens.",
+   "against": "weak",
+   "why": "Assuming ordinary people don't need to understand hazards leaves whole communities unprepared and puts them at greater risk."
+  }
+ },
+ "h7": {
+  "kavya": {
+   "for": null,
+   "say": "The numbers differ widely and the effects went on for years. I can see several lessons here. What I'd want to know is who is still affected today. Your call.",
+   "against": null,
+   "why": null
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "Compensation matters, but it does not close the question of prevention.",
+   "against": "weak",
+   "why": "If we write it off as too extreme, we stop checking our own equipment, and that's how it starts."
+  },
+  "worker_d": {
+   "for": null,
+   "say": "It's hard to know what to take from this. Payments, prevention and honest reporting all seem to matter somehow. I'd want to know how survivors are doing. Your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "Compensation counts for something, and people need money to live. But I'd still want to know the site was made safe afterward.",
+   "against": "weak",
+   "why": "Saying it has no bearing on us is convenient, but contractors like me would be first in the way of harm."
+  },
+  "worker_c": {
+   "for": null,
+   "say": "As a finance person, I see a settlement as a way to close things. But the problems kept going for decades. I'd want to know what was left unresolved. Up to you.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": null,
+   "say": "People near the plant are still living with this. A settlement matters, but so does what came after. I'd want to know what happened to survivors. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "raghav": {
+   "for": null,
+   "say": "I can see why a plant director might call this extreme, yet the questions about accountability feel close to home. I'd want to know what lasted. Your call.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "Harm outlasts the event. Prevention, honest reporting and care for survivors all stay part of the job.",
+   "against": "weak",
+   "why": "It treats a hard lesson as someone else's story, when the same habits can exist in any workplace."
+  }
+ },
+ "f1": {
+  "kavya": {
+   "for": "mixed",
+   "say": "Cooling first is right. I would not leave the scrubber and flare untested for a whole quarter.",
+   "against": "weak",
+   "why": "Putting it off to the next budget cycle means my night crew works beside a full tank with no real protection."
+  },
+  "worker": {
+   "for": "strong",
+   "say": "I'd want cooling, scrubber and flare all working and tested before more goes in. Those are the things that save us if something goes wrong.",
+   "against": "weak",
+   "why": "A line in a risk register doesn't fix anything. It just means we knew and waited."
+  },
+  "worker_d": {
+   "for": null,
+   "say": "I'm the one who works near that tank. Fixing everything costs time and money while head office pushes production. I'd want to know what's stored and what's tested. Your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "Fix the cooling now, that's obvious. The rest can follow shortly, as long as it really gets done and nobody forgets.",
+   "against": "weak",
+   "why": "Just recording the risk and moving on feels like nobody owns it, and contractors get blamed when things go wrong."
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "Cooling now is easy to justify. Splitting the rest into next quarter keeps spending manageable while head office sees a plan.",
+   "against": "strong",
+   "why": "Full restoration and testing before storing anything stops output at once, and head office will react badly to that."
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "There's a toxic tank right behind our homes. Please test every safeguard properly before putting more in it.",
+   "against": "weak",
+   "why": "Waiting on a budget cycle means we carry the risk while paperwork catches up."
+  },
+  "raghav": {
+   "for": "mixed",
+   "say": "Get the cooling back immediately. I'm under pressure on output, so spacing out the scrubber and flare checks seems a workable compromise.",
+   "against": "weak",
+   "why": "Leaving everything until the next budget cycle is too risky. If something happened, I'd be the one explaining it."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "Stop adding product until cooling is back and the scrubber and flare are load-tested. It costs output, but these are the barriers.",
+   "against": "weak",
+   "why": "Logging the risk without acting leaves a known hazard sitting next to a toxic tank."
+  }
+ },
+ "f3": {
+  "kavya": {
+   "for": null,
+   "say": "I'd want to know if the leak is growing or the gauge is just faulty. A delayed shipment matters, but so do my crew. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "Extra manual checks keep the schedule, but we would still be working with a gauge we do not trust.",
+   "against": "weak",
+   "why": "Calling it minor and carrying on ignores that the gauge may be hiding a real pressure problem."
+  },
+  "worker_d": {
+   "for": "strong",
+   "say": "Halt transfers, isolate the line and fix the gauge. And tell us what happened, we are the ones standing there.",
+   "against": "weak",
+   "why": "Logging it as minor and carrying on leaves us beside a leak with a gauge we can't believe."
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "Extra checks sound sensible and keep the customer happy. A short delay is fine, but I don't want to be blamed for stopping everything.",
+   "against": "weak",
+   "why": "Treating it as minor and ignoring it is risky. If it gets worse, the person at the line takes the blame."
+  },
+  "worker_c": {
+   "for": null,
+   "say": "From finance, a late shipment costs us with the customer. But I don't know the risk of a leak. I'd want that explained. Your call.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "A leak is a leak, even a small one. Stop it, fix the gauge, and let the workers know. I'd rather the shipment waited.",
+   "against": "weak",
+   "why": "Calling it minor and carrying on is how people next door end up breathing something they shouldn't."
+  },
+  "raghav": {
+   "for": null,
+   "say": "A late customer shipment is a real cost. So is a leak with a gauge we can't trust. I'd like to know more before deciding. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "An unreliable gauge means we can't see pressure properly. Stop, isolate, repair, and keep the workers informed before restarting.",
+   "against": "weak",
+   "why": "Logging it as minor treats a possible warning sign as paperwork."
+  }
+ },
+ "f4": {
+  "kavya": {
+   "for": "mixed",
+   "say": "A leaflet helps, but practising together is what makes people act.",
+   "against": "weak",
+   "why": "Staying silent leaves neighbours unprepared, and my night crew would be the ones facing them in an emergency."
+  },
+  "worker": {
+   "for": "strong",
+   "say": "If something happens, people next door need to know what the alarm means. A joint drill with the authorities makes that real.",
+   "against": "weak",
+   "why": "Hiding the hazards doesn't make them go away. It just means nobody nearby knows what to do."
+  },
+  "worker_d": {
+   "for": "strong",
+   "say": "A real drill and an alarm people can hear would give me confidence. Residents shouldn't be guessing what's going on.",
+   "against": "weak",
+   "why": "Keeping quiet to avoid worry means neighbours are left unprepared if something goes wrong."
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "An internal drill and a leaflet seem like a sensible start. It tells people something without turning it into a big public event.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "A leaflet and an internal drill are low cost and show we've made an effort, without stirring up too much attention.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "Run a drill with the authorities and put in an alarm we can hear. Tell us what to do in plain words.",
+   "against": "weak",
+   "why": "Saying nothing to avoid alarming us leaves us with no idea what to do if something happens."
+  },
+  "raghav": {
+   "for": null,
+   "say": "Some of my managers fear that talking openly will worry people or draw attention. Residents next door also have a right to know. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "Residents should know what's stored, hear a clear alarm, and practise with the authorities. Telling them is part of managing the risk.",
+   "against": "weak",
+   "why": "Staying quiet to avoid alarm leaves people unprepared if something goes wrong."
+  }
+ },
+ "f5": {
+  "kavya": {
+   "for": "mixed",
+   "say": "Sending the night team to check is reasonable, but thirty minutes is a long time if it is real.",
+   "against": "weak",
+   "why": "Waiting for the day shift ignores a steady rise in temperature and pressure. If it's real, we lose hours."
+  },
+  "worker": {
+   "for": null,
+   "say": "I can see it being a bad fault or just a bad instrument. Acting early costs a lot if it's false. Waiting costs more if it's real. Your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_d": {
+   "for": "strong",
+   "say": "Temperature and pressure are both climbing steadily. I've watched that pattern and it doesn't look like one bad gauge. I'd start the procedure.",
+   "against": "weak",
+   "why": "Waiting until morning means nobody acts while it keeps rising. That's too long to sit on it."
+  },
+  "worker_b": {
+   "for": "strong",
+   "say": "Start the emergency procedure and sound the alarm, then investigate. A false alarm costs less than a late one.",
+   "against": "weak",
+   "why": "Leaving it for the day shift is the worst outcome. If it's real, people nearby get no warning."
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "We can't be sure it isn't an instrument fault, and a full alarm is costly and public. A quick check first seems sensible.",
+   "against": "strong",
+   "why": "Sounding the community alarm on incomplete evidence could be an expensive false alarm, and the reputation damage would be real."
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "I live next to that plant. If something is wrong, I would much rather be woken up for nothing than left asleep.",
+   "against": "weak",
+   "why": "Waiting for morning means those of us nearby are left in the dark while it gets worse."
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "Readings are rising steadily and I can't rule out a real event. Protect people first, then work out the cause.",
+   "against": "weak",
+   "why": "Treating it as a faulty instrument with nothing checked is not something I could defend afterwards."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "Both readings rise together and steadily. A single faulty instrument rarely does that, so acting now fits the evidence better.",
+   "against": "weak",
+   "why": "Waiting for day shift rests on an assumption nobody has tested, and the trend points the other way."
+  }
+ },
+ "f6": {
+  "kavya": {
+   "for": "strong",
+   "say": "My team was there that night. If we're open about what happened, we can all learn from it and fix the real causes.",
+   "against": "weak",
+   "why": "Blaming operator error pins it on people on shift, when no one has looked at the whole picture yet."
+  },
+  "worker": {
+   "for": "strong",
+   "say": "If equipment or procedures played a part, workers need to hear it. An independent review would show what really happened.",
+   "against": "weak",
+   "why": "Blaming operators before the facts are in would be unfair and would hide any maintenance problems."
+  },
+  "worker_d": {
+   "for": null,
+   "say": "Legal and comms want us to say less, and I get why. But workers and neighbours want answers. I'd like to know what the investigation finds. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "Telling the regulator is the safe minimum. As a contractor, I'd be nervous about everything going public before it's understood.",
+   "against": "weak",
+   "why": "Blaming operators feels like looking for someone to pin it on, and contractors tend to get the blame next."
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "Report to the regulator as required, but legal and communications advise caution. Publishing an unfinished review risks liability and headlines.",
+   "against": "strong",
+   "why": "Publishing everything could expose the company legally and financially before we know the full facts."
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "Report everything and publish the review. That is how we, the neighbours, learn to trust you.",
+   "against": "weak",
+   "why": "Blaming operator error and saying only what the regulator knows would feel like a cover-up to the neighbours."
+  },
+  "raghav": {
+   "for": "mixed",
+   "say": "Reporting to the regulator is the minimum. Keeping the review private means nobody else learns from it.",
+   "against": "weak",
+   "why": "Limiting the report and blaming operators would damage trust, and I'd be the one answering for it."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "The record is clearer when someone independent examines it and shares the findings. That is how other plants can learn too.",
+   "against": "weak",
+   "why": "Staying within what the regulator already knows and blaming operators skips the causes the record may show."
+  }
+ },
+ "cw1": {
+  "kavya": {
+   "for": "strong",
+   "say": "Use the sheet, read each plan back and ask the night team what worried them. A checklist will not tell you that.",
+   "against": "weak",
+   "why": "Skimming the list loses exactly what a tired nurse could not put into words."
+  },
+  "isha": {
+   "for": "mixed",
+   "say": "Notes on the two sickest patients are a start, but I would ask about the others too.",
+   "against": "weak",
+   "why": "Skimming and heading off means I'd start the round without knowing what worried the night team."
+  },
+  "raghav": {
+   "for": null,
+   "say": "A structured sheet takes time, and the team is tired. Missing a worry from the night could matter too. I'd want to know what's most useful. Your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "Taking notes on the sickest patients keeps things moving. The ward is short of time and the full sheet takes longer.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": null,
+   "say": "I just want my mother's nurse to know everything about her. I don't know how handovers work, and I can see nurses are tired. You decide.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": null,
+   "say": "I see how tired the night staff are, and the ward is busy. I'd hate for something important to get lost, though. I'll leave it to you.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": "weak",
+   "say": "I'm only on the phone about supplies. Handover looks like a quick job to me; the list should do, and the ward is busy.",
+   "against": null,
+   "why": null
+  }
+ },
+ "cw2": {
+  "kavya": {
+   "for": "mixed",
+   "say": "Presenting yourself and explaining aloud works, but she will not get to try.",
+   "against": "weak",
+   "why": "Running it quickly with her just watching teaches her nothing, and she'll stay nervous."
+  },
+  "isha": {
+   "for": "strong",
+   "say": "Let me present and lead the plans. Step in to teach and tell me why, that is how I learn.",
+   "against": "weak",
+   "why": "If I just watch, I'll be no more confident next week, and I'm already afraid of getting things wrong."
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "A first-year learns by doing it with someone beside them. I'll review the harder cases at noon, so the round can be hers.",
+   "against": "weak",
+   "why": "Having her only watch wastes the round. Residents don't grow by standing behind someone."
+  },
+  "worker_c": {
+   "for": "weak",
+   "say": "Seven patients, mostly routine. Running it quickly keeps the ward on schedule, and the resident can learn by watching.",
+   "against": "strong",
+   "why": "Letting a nervous first-year lead each plan will slow the round, and delays cost the ward time and money."
+  },
+  "nisha": {
+   "for": "mixed",
+   "say": "I want the person in charge to explain things clearly to us. Hearing the reasoning helps me understand my mother's care.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": "mixed",
+   "say": "I'm just the porter, but I've seen young doctors freeze up. Someone explaining as they go seems kind and clear.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": "weak",
+   "say": "I'm on the phone, not on the ward, but quick sounds efficient. She can watch and pick things up as she goes.",
+   "against": null,
+   "why": null
+  }
+ },
+ "cw3": {
+  "kavya": {
+   "for": "mixed",
+   "say": "Asking for more next week helps later, but nobody knows how low we are now.",
+   "against": "weak",
+   "why": "Leaving it for someone else is how it got like this. Nobody owns it, and nobody's counted."
+  },
+  "isha": {
+   "for": "strong",
+   "say": "If masks and oxygen are low, patients are affected first. I'd rather know the real numbers than guess.",
+   "against": "weak",
+   "why": "Mentioning it later to someone means it could slip again, and nine days is a long time."
+  },
+  "raghav": {
+   "for": null,
+   "say": "Nobody clearly owns this, and that worries me. A delivery is nine days away. Checking now takes time from other work. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": null,
+   "say": "Supplies, nursing and admin each think someone else has it. I'd want to know the real numbers before we decide anything. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "If I were a patient's family, I'd want someone to just go and look. Oxygen is not something to leave to chance.",
+   "against": "weak",
+   "why": "Telling someone later doesn't help my family if the store runs short before anyone looks."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "Walk to the store and count it. Set minimum levels and a standing order, then it stops being a surprise.",
+   "against": "weak",
+   "why": "Leaving it for later is how it got missed. I raised it because nobody else was looking."
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "I can have more sent if someone asks. Tell me what you need, and I'll see what we can do.",
+   "against": null,
+   "why": null
+  }
+ },
+ "cw4": {
+  "nisha": {
+   "for": "strong",
+   "say": "Sit with me, tell me what you know and what you do not, and promise a time for the next update. Then keep it.",
+   "against": "weak",
+   "why": "Telling me results take as long as they take leaves me frightened and alone, with nothing to hold on to."
+  },
+  "kavya": {
+   "for": "mixed",
+   "say": "A nurse calling is kind, but give her a time. Waiting without one is what frightens people.",
+   "against": "weak",
+   "why": "Saying it takes as long as it takes dismisses her fear, and it will make the other families angrier too."
+  },
+  "isha": {
+   "for": null,
+   "say": "She's frightened and angry, and I understand why. Sitting down and being open might calm her, but a quick reassurance might also fit a busy corridor. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "Her father is stable, so I can say that plainly. Being honest about the delay and fixing a time costs us little and builds trust.",
+   "against": "weak",
+   "why": "Leaving her with no information when several families are already complaining only makes the corridor angrier."
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "A quick reassurance and a nurse call is realistic. Staff are stretched, and I can't promise a person will be free to sit down each time.",
+   "against": "weak",
+   "why": "Telling a worried family results take as long as they take will bring more complaints to my desk."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "I see families in the corridors all day. They cope better when someone sits with them and tells them straight, and gives a time.",
+   "against": "weak",
+   "why": "Brushing her off like that is how people end up shouting at the ward doors."
+  },
+  "worker_b": {
+   "for": "weak",
+   "say": "Delays happen everywhere, and I deal with them all the time. Being upfront that it takes time is honest enough, and nobody can speed up a backlog.",
+   "against": null,
+   "why": null
+  }
+ },
+ "cw5": {
+  "nisha": {
+   "for": null,
+   "say": "I'm only a daughter, but empty beds worry me if another bad winter comes. I also see Mr. Kapoor has a budget to balance. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "kavya": {
+   "for": "strong",
+   "say": "Bring the occupancy figures and a written plan. Empty most days is not empty always, and my nurses know how fast a ward can fill.",
+   "against": "weak",
+   "why": "Staying silent means the people who work those beds never get a say before they are gone."
+  },
+  "isha": {
+   "for": null,
+   "say": "Those beds were set up after a hard winter, so I'd want to know what happens if they're needed. Mr. Kapoor does have a budget to meet. Your call.",
+   "against": null,
+   "why": null
+  },
+  "raghav": {
+   "for": "mixed",
+   "say": "Accepting the cut with a six-month review is quick, but it leaves no plan if we need the beds sooner.",
+   "against": "weak",
+   "why": "Staying quiet when we know what a hard winter does is not responsible, whatever department it falls under."
+  },
+  "worker_c": {
+   "for": "strong",
+   "say": "Bring the occupancy numbers and propose closing a few beds, with a written plan to reopen the rest. I can work with that.",
+   "against": "weak",
+   "why": "A shrug gives me nothing to show the board, and I'd be making the call blind."
+  },
+  "arjun": {
+   "for": "weak",
+   "say": "I move patients, I don't balance budgets. Mr. Kapoor knows the figures better than me, so I'd leave it with the people who decide.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": null,
+   "say": "I'm just on the phone waiting on an order, so I don't know your beds. Budgets and safety both matter, I'd guess. Your call.",
+   "against": null,
+   "why": null
+  }
+ },
+ "cw6": {
+  "nisha": {
+   "for": "strong",
+   "say": "Tired nurses make mistakes, and my family has trusted that ward with someone we love. Please fix the rota properly, not with kind words.",
+   "against": "weak",
+   "why": "Carrying on as if nothing is wrong ignores a nurse who is clearly worn out."
+  },
+  "kavya": {
+   "for": "strong",
+   "say": "Fix the rota: swap rules, a floating nurse, and protected breaks. I need real hours, not kind words.",
+   "against": "weak",
+   "why": "Telling me everyone is stretched is true, but it changes nothing and I'll keep covering doubles."
+  },
+  "isha": {
+   "for": "mixed",
+   "say": "Thanks are welcome, but the night shifts do not change until the rota does.",
+   "against": "weak",
+   "why": "Saying carry on ignores that she's done three doubles, and she won't ask for help herself."
+  },
+  "raghav": {
+   "for": null,
+   "say": "Sister Anita is quiet but clearly overworked. Fixing the rota takes effort and the ward is already short. I can see both sides. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": null,
+   "say": "I do see the ward is short and holidays are coming. Changes cost money, but tired staff worry me too. I'll leave the decision to you.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "I see her skip her break most days and never say a word. A real rota change would be the first thing that helps her.",
+   "against": "weak",
+   "why": "Telling her to carry on when she never complains just means she keeps quietly doing too much."
+  },
+  "worker_b": {
+   "for": "weak",
+   "say": "Everybody is stretched these days, my business included. If she isn't complaining, perhaps she is coping, and the holidays will pass anyway.",
+   "against": null,
+   "why": null
+  }
+ },
+ "cw7": {
+  "raghav": {
+   "for": "strong",
+   "say": "Spend the hour and draft simple, fair criteria with the team. It is far easier to decide before the wards are full.",
+   "against": "weak",
+   "why": "Going home because it's unlikely means we'd be arguing about who is seen first in the middle of a crisis."
+  },
+  "kavya": {
+   "for": "mixed",
+   "say": "Leaving it with Dr. Hakim means it gets written, but the people who must use it have no say.",
+   "against": "weak",
+   "why": "Ignoring it altogether leaves nurses making these choices with nothing written down if the wards ever fill."
+  },
+  "isha": {
+   "for": null,
+   "say": "I'm happy to stay and help if you want. But nothing is written down, and it may never happen, and everyone is tired. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "Let Dr. Hakim write it up. It keeps the work with one person, and I can look it over afterwards without pulling everyone in late.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "If it were my father waiting, I'd want the rules fair and written down beforehand. Doing it together sounds much safer than guessing later.",
+   "against": "weak",
+   "why": "Going home because it probably won't happen is a poor reason, when a mistake would fall on patients."
+  },
+  "arjun": {
+   "for": "weak",
+   "say": "It's late and it's only a just in case. People are tired, so it can probably wait for another day.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "I'd let the senior doctor write it. He clearly has the thought already, and fewer people drafting usually means it gets finished.",
+   "against": null,
+   "why": null
+  }
+ },
+ "c1": {
+  "raghav": {
+   "for": "strong",
+   "say": "Set up triage with agreed criteria and name a lead per shift. It takes an hour, but then everyone follows the same rules.",
+   "against": "weak",
+   "why": "Arrival order puts a gasping patient behind someone with a mild cough, and that is dangerous."
+  },
+  "kavya": {
+   "for": "mixed",
+   "say": "A senior doctor deciding case by case is fast, but it all depends on one person being there.",
+   "against": "weak",
+   "why": "Seeing people in arrival order ignores who is struggling to breathe, and nurses watch the severe ones get worse."
+  },
+  "isha": {
+   "for": "strong",
+   "say": "I'm new, and this is frightening. Clear criteria and a named lead, plus being told what's known and unknown, would help me act with confidence.",
+   "against": "weak",
+   "why": "First come, first served would leave me watching severe patients wait with no way to speed them up."
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "Having the senior doctor decide is quick and needs no setup. With the numbers doubled, I'd rather not slow things with new procedures.",
+   "against": "weak",
+   "why": "Arrival order looks fair but invites serious complaints and risk if a severe patient waits behind mild ones."
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "Tell the team clearly what's known and unknown, and use proper criteria. If my father were there, I'd want the sickest seen first.",
+   "against": "weak",
+   "why": "Seeing people only by arrival is simple, but it ignores who is in danger right now."
+  },
+  "arjun": {
+   "for": null,
+   "say": "I just move patients and trolleys, but I see how many are waiting and how anxious everyone is. I'd want to know what helps the team most. Your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "From outside, one experienced doctor making the calls seems the quickest. Someone senior who sees everything can decide faster than a new system.",
+   "against": null,
+   "why": null
+  }
+ },
+ "c2": {
+  "kavya": {
+   "for": "mixed",
+   "say": "Pulling nurses from the wards fills the wing fast, but it leaves those wards thin.",
+   "against": "weak",
+   "why": "Stopping admissions leaves sick people with nowhere to go and doesn't fix anything."
+  },
+  "isha": {
+   "for": null,
+   "say": "We need beds, and the neighbouring hospital and the closed wing could both help. I worry about stable patients' safety and about nurse numbers on the wards. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "A monitored step-down area with clear criteria frees beds safely, and the neighbouring hospital's spare beds make good use of what the region has.",
+   "against": "mixed",
+   "why": "Taking nurses off existing wards just moves the shortage around and could harm patients who are still sick."
+  },
+  "worker_c": {
+   "for": "strong",
+   "say": "Reopen the wing as a step-down area with clear criteria and arrange transfers with the neighbouring hospital.",
+   "against": "weak",
+   "why": "Refusing admissions pushes the problem onto patients and the community, and the hospital would carry the blame."
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "If Mum needs a bed, I want her somewhere watched properly. A monitored area with clear rules sounds safe and honest.",
+   "against": "weak",
+   "why": "Stopping admissions is frightening. Families would be left outside with sick relatives and no answers."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "I move patients every day. If the wing is ready and the rules are clear, transfers can go smoothly and nobody gets lost.",
+   "against": "weak",
+   "why": "Closing the doors to new patients means more people waiting in corridors, and we porters see how bad that gets."
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "Reopening the wing sounds sensible to me, but I only see the supply side. Staffing it is your call.",
+   "against": "weak",
+   "why": "Stopping admissions entirely seems extreme. There are other beds nearby that could be used."
+  }
+ },
+ "c3": {
+  "kavya": {
+   "for": "strong",
+   "say": "Write a protection plan with infection control, give the best kit to the highest-risk areas and refuse anything uncertified.",
+   "against": "weak",
+   "why": "Uncertified kit could fail, and my nurses would be exposed while thinking they are covered."
+  },
+  "isha": {
+   "for": "strong",
+   "say": "Uncertified masks look like a fix, but nobody knows whether they protect us.",
+   "against": "weak",
+   "why": "If we get sick from poor kit, there are fewer of us to treat patients."
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "A written plan from infection control, with daily stock counts, gives everyone the same rules. Safe reuse should be agreed, not improvised ward by ward.",
+   "against": "mixed",
+   "why": "Each ward making its own rules gives uneven protection, and staff are already reusing items in ways nobody agreed."
+  },
+  "worker_c": {
+   "for": null,
+   "say": "I can see why wards want freedom, and why a written plan helps. Cheap uncertified kit worries me for safety. Daily stock counts would help me. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "The people caring for my father need to be protected too. A clear plan and proper equipment is what I would want.",
+   "against": "weak",
+   "why": "Cheap kit with no certification could spread illness to the very people looking after patients."
+  },
+  "arjun": {
+   "for": "mixed",
+   "say": "Wards know their own needs, but I get little say in what I wear. I'd like a clear rule that includes porters.",
+   "against": "weak",
+   "why": "Cheap kit with no safety checks worries me. I move between wards and would carry any risk with me."
+  },
+  "worker_b": {
+   "for": null,
+   "say": "I can supply the cheap items quickly, but I know they lack safety certification. Our certified delivery date is uncertain. I'd want to know what your infection team thinks. Your call.",
+   "against": null,
+   "why": null
+  }
+ },
+ "c4": {
+  "kavya": {
+   "for": null,
+   "say": "My nurses see oxygen running higher than needed, and reserve is dropping. Checking flow takes our time, though. I'd want to know what the team is told. Your call.",
+   "against": null,
+   "why": null
+  },
+  "isha": {
+   "for": "strong",
+   "say": "Checking who needs how much oxygen is something I can help with. The district office needs to hear about the shortage early.",
+   "against": "weak",
+   "why": "Limiting oxygen in secret means the team cannot watch the patients who are affected. That frightens me."
+  },
+  "raghav": {
+   "for": null,
+   "say": "I see waste when flow isn't checked, but I worry about patients who need every litre. Clear communication matters to me. How openly this is done is your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "Asking the supplier to hurry is a start, but we should also watch how much we use.",
+   "against": "weak",
+   "why": "Secret rationing would be a serious breach of trust if it came out, and I'd have to answer for it."
+  },
+  "nisha": {
+   "for": null,
+   "say": "I just want my mother to get the oxygen she needs. I understand supplies are tight, and I'd want to be told honestly what's happening. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": "mixed",
+   "say": "I carry the cylinders, so I see how fast they go. Chasing the supplier makes sense, but checking use on the wards would help too.",
+   "against": "weak",
+   "why": "Cutting oxygen quietly is dangerous. Nobody on the wards would know why a patient is getting less."
+  },
+  "worker_b": {
+   "for": "strong",
+   "say": "Audit how oxygen is used and escalate to the supplier and the district office. Use it where it is needed.",
+   "against": "weak",
+   "why": "Quiet rationing hides the real problem. If we are told how bad it is, we can push harder on deliveries."
+  }
+ },
+ "c5": {
+  "kavya": {
+   "for": "mixed",
+   "say": "Deciding alone is quick, but with no criteria and nobody to check it is a lot to carry.",
+   "against": "weak",
+   "why": "First come, first served ignores how sick people are. It is easy but it isn't a fair way to choose."
+  },
+  "isha": {
+   "for": "strong",
+   "say": "Apply the agreed criteria, ask the on-call senior colleague, write down the reasons and tell both families honestly.",
+   "against": "mixed",
+   "why": "Deciding alone puts a heavy choice on one person, and I am too new to carry that without checking."
+  },
+  "raghav": {
+   "for": null,
+   "say": "Both patients need this bed and I feel for both families. Policy gives us a shared basis, and I'm on call if you want my view. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": "strong",
+   "say": "The agreed policy protects patients and staff. Written reasons and honest conversations with families are what I would want to defend later.",
+   "against": "mixed",
+   "why": "A lone decision with no record leaves the hospital exposed and the doctor unsupported if it is challenged."
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "If it were my family, I'd want to know it was decided by fair rules and that someone explained it honestly to me.",
+   "against": "mixed",
+   "why": "One person deciding on a hunch feels unfair. Families would wonder if their relative was judged by age or job."
+  },
+  "arjun": {
+   "for": "weak",
+   "say": "Whoever came first seems simple and fair to me. Nobody can argue about who was in the queue first.",
+   "against": "mixed",
+   "why": "One person deciding alone worries me. If it goes wrong, it all lands on them."
+  },
+  "worker_b": {
+   "for": "weak",
+   "say": "I'm not medical, but first come, first served sounds fair and easy to explain to anybody who asks.",
+   "against": "mixed",
+   "why": "Leaving it to one person's feeling seems risky when there is a policy and a senior colleague to ask."
+  }
+ },
+ "c6": {
+  "kavya": {
+   "for": "mixed",
+   "say": "Updating when a doctor can spare the time is flexible, but some families hear often and some never.",
+   "against": "weak",
+   "why": "Stopping calls would leave frightened families with nobody to turn to, and they'd still turn up at the door."
+  },
+  "isha": {
+   "for": "strong",
+   "say": "I spend far too long on the phone between patients. A liaison with set update times would give me time back and families better answers.",
+   "against": "weak",
+   "why": "Sending families to a website feels cold. Many are frightened and need a real voice."
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "Scheduled updates from a dedicated person keep information accurate and consistent, and they protect my team's time for patient care.",
+   "against": "mixed",
+   "why": "Updating only when a doctor is free means some families hear nothing, and doctors get pulled from patients."
+  },
+  "worker_c": {
+   "for": "strong",
+   "say": "A liaison role and scheduled updates cut the call volume and keep the hospital's name steady. It's worth the small effort to set up.",
+   "against": "weak",
+   "why": "Cutting off calls would anger families and damage trust in the hospital, and complaints would follow."
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "A family liaison, set update times and video calls where possible. Just tell us plainly how he is.",
+   "against": "weak",
+   "why": "Telling us to read a website and not answering the phone would feel like being abandoned."
+  },
+  "arjun": {
+   "for": null,
+   "say": "I see frightened families at the door every day, and staff are stretched thin. Updates take time nobody has. I'd like families to feel heard. Your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": null,
+   "say": "I hear how many calls the ward gets. Families need answers, and staff need their hours back. I don't know what's workable for you. It's your call.",
+   "against": null,
+   "why": null
+  }
+ },
+ "c7": {
+  "kavya": {
+   "for": "strong",
+   "say": "Mandatory rest rotation, extra staff and peer support. We are tired, and a thank-you will not fix that.",
+   "against": "weak",
+   "why": "Threatening people over absence when they are already worn out will only drive more of us away."
+  },
+  "isha": {
+   "for": "mixed",
+   "say": "A public thank-you is kind, but asking us to push through changes nothing about the hours.",
+   "against": "weak",
+   "why": "Treating absence as a performance problem punishes exhausted people. I'm a junior and I'd be afraid to admit I'm struggling."
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "Exhausted clinicians make mistakes. Rest rotation and extra staff, after a short orientation, protect patients and the team. Peer support helps people who are struggling.",
+   "against": "weak",
+   "why": "Blaming absence ignores the cause. Tired doctors and nurses err more, and this would push good people out."
+  },
+  "worker_c": {
+   "for": "mixed",
+   "say": "Money and staff are tight, and absences worry me. A public thank-you is cheap and quick, and might keep morale up for now.",
+   "against": "strong",
+   "why": "Bringing in extra staff means orientation time and cost I'm not sure we can manage right now."
+  },
+  "nisha": {
+   "for": null,
+   "say": "I've watched these nurses work through the nights, and seeing one in tears hurts. I know staff are short and mistakes worry me too. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "I see the nurses stumbling around after double shifts. Giving them proper rest and bringing in extra hands is only fair.",
+   "against": "weak",
+   "why": "Threatening people over absence is cruel. We're all doing our best and it will make everyone resent the hospital."
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "I just supply what's needed. A thank-you and pushing on sounds like the quickest way to keep deliveries and wards running without fuss.",
+   "against": "weak",
+   "why": "Treating absence as a performance problem sounds harsh, and it could cause even more disruption to the wards."
+  }
+ },
+ "c8": {
+  "kavya": {
+   "for": "mixed",
+   "say": "A thank-you meeting is warm, but if nothing is written down the next surge starts from zero.",
+   "against": "weak",
+   "why": "Avoiding the hard weeks leaves everyone carrying it alone, and we'd repeat the same mistakes next time."
+  },
+  "isha": {
+   "for": null,
+   "say": "I'm tired, but I keep thinking about what we learned. Some people want normal back fast, and I get that. How we use this time is your call.",
+   "against": null,
+   "why": null
+  },
+  "raghav": {
+   "for": "strong",
+   "say": "Hold a structured debrief, update the protocols and share what we learned with the neighbouring hospitals.",
+   "against": "weak",
+   "why": "Staying silent wastes what we learned, and the next wave would catch us unprepared again."
+  },
+  "worker_c": {
+   "for": null,
+   "say": "Operations want to return to normal, and I understand the pressure. The team is tired, yet there's energy to improve. I'd like to know the costs. Your call.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": "strong",
+   "say": "If my family needs this hospital again, I want to know it learned from this. Fixing what failed matters to us.",
+   "against": "weak",
+   "why": "Not talking about the hard weeks feels like hiding problems, and that would make me trust the hospital less."
+  },
+  "arjun": {
+   "for": null,
+   "say": "We've all been through a lot, and some folks would rather not dwell on it. Others want to learn from it. I'll go with whatever you decide.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": "mixed",
+   "say": "A short thank-you and back to normal sounds simple to me. Normal orders and deliveries are easier for me to plan around.",
+   "against": "weak",
+   "why": "Avoiding the subject altogether seems unwise. Supply problems will probably repeat if nobody talks them through."
+  }
+ },
+ "h2": {
+  "kavya": {
+   "for": "strong",
+   "say": "I run nights. When the cooling's off and the scrubber and flare are down, nothing's left to catch a leak. Every layer has to be kept working.",
+   "against": "weak",
+   "why": "Treating safeguards as extras to trim is how a bad night turns into a disaster. Quiet production doesn't make the gas any less dangerous."
+  },
+  "worker": {
+   "for": "mixed",
+   "say": "One strong barrier sounds enough, but when it fails nothing is left behind it.",
+   "against": "weak",
+   "why": "Skipping safeguards to save money is the worst idea. I'd be the one trying to fix things after they've failed."
+  },
+  "worker_d": {
+   "for": null,
+   "say": "I run these systems night after night. Several layers only help if they're working. I can see why people debate it, but how you weigh it is your call.",
+   "against": null,
+   "why": null
+  },
+  "worker_b": {
+   "for": null,
+   "say": "I'd want to know which layers were actually working that night. Maintenance, testing and shutdowns all seem to matter here. I'll leave the choice to you.",
+   "against": null,
+   "why": null
+  },
+  "worker_c": {
+   "for": null,
+   "say": "Money matters to me, but so does knowing what a layer costs against what it protects. I'd want the details first. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "nisha": {
+   "for": null,
+   "say": "I live next to those tanks. I'd worry about layers being switched off or untested, but I don't know the plant's costs. It's your call.",
+   "against": null,
+   "why": null
+  },
+  "raghav": {
+   "for": null,
+   "say": "I'm answerable for every layer on this site. I see good points in more than one view, and I'd want to know what was running. It's your decision.",
+   "against": null,
+   "why": null
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "Layers only work if they are kept working, tested and not switched off together.",
+   "against": "weak",
+   "why": "Calling safeguards optional extras ignores how the plant was meant to stay safe. Several were out of service at the same time."
+  }
+ },
+ "f2": {
+  "kavya": {
+   "for": "strong",
+   "say": "Night supervision is my job. Without it, nobody catches problems early on a quiet shift. Keep the safety-critical roles and review the rest properly.",
+   "against": "weak",
+   "why": "Taking the full cut leaves nights with nobody watching. I wouldn't want to be on that shift."
+  },
+  "worker": {
+   "for": "strong",
+   "say": "Maintenance keeps those safeguards working. Cut those roles and things get skipped. Protect them, and check the other roles by skill.",
+   "against": "weak",
+   "why": "Accepting the full cut means jobs go undone, and the first thing that slips is the maintenance that keeps everyone safe."
+  },
+  "worker_d": {
+   "for": "mixed",
+   "say": "I'm already stretched. Cross-training and a night supervisor would help me, and it feels like a fair deal if the cuts are coming anyway.",
+   "against": "weak",
+   "why": "A full cut leaves too few of us to watch the plant. I couldn't cover everything on my own."
+  },
+  "worker_b": {
+   "for": "weak",
+   "say": "I'm a contractor, so I'm not in a position to argue. Head office set targets, and pushing back might cost me my place.",
+   "against": "strong",
+   "why": "Refusing cuts outright will annoy head office. I don't want to be caught in a fight that I can't win."
+  },
+  "worker_c": {
+   "for": "strong",
+   "say": "Protect the safety-critical roles and review the rest. Head office will push back, so bring the competency review.",
+   "against": "weak",
+   "why": "Taking the full cut just to hit targets is a risk I can't defend, and I'd be the one explaining it later."
+  },
+  "nisha": {
+   "for": null,
+   "say": "I live nearby and worry about fewer people watching at night. I also know companies must manage costs. I don't know the details, so it's your call.",
+   "against": null,
+   "why": null
+  },
+  "raghav": {
+   "for": "mixed",
+   "say": "Cross-training and a night supervisor make cuts safer, but they are a weaker answer than keeping the key roles.",
+   "against": "weak",
+   "why": "Accepting the whole cut just to hit targets is reckless. I'd be signing off on something I can't stand behind."
+  },
+  "arjun": {
+   "for": "strong",
+   "say": "Safety-critical roles shouldn't be cut. Reviewing the others for competence lets the savings happen without removing the people who keep the plant safe.",
+   "against": "weak",
+   "why": "Confirming safety is unaffected after a full cut isn't something the facts support. Night supervision and maintenance are exactly what protects the plant."
+  }
+ }
+}

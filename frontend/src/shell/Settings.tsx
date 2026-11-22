@@ -42,6 +42,9 @@ export function Settings({ api, profile, onChange }: { api: SimsApi; profile: Pr
             <label>Your name (shown on the home screen)<input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} /></label>
             <button type="submit" className="hub-btn hub-btn--primary">Save name</button>
             {saved && <span role="status" className="hub-ok"> Saved</span>}
+            <h3>Certificates</h3>
+            <p className="set-hint">You earn a certificate for each simulation by making the best choice at every step. Want to know what one looks like?</p>
+            <button type="button" className="hub-btn" onClick={() => { window.location.hash = "#/certificate/preview"; }}>See a sample certificate</button>
           </form>)}
 
         {tab === "access" && (<>

@@ -1,7 +1,7 @@
 /* the comic reader: a page is a 16:9 picture that fits the window, with the controls underneath */
 .ck { display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 0; width: 100%; height: 100%; padding: 4px 0; }
 .ck-stage { flex: 1 1 0; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; animation: ck-in .45s ease both; container-type: size; }
-.ck-page, .cm-sheet { width: min(100cqw, 177.78cqh); height: auto; aspect-ratio: 16 / 9; border-radius: 6px; box-shadow: 9px 9px 0 #7a3dff; background: #f1e8cf; }
+.ck-page, .cm-sheet { width: min(100cqw, 177.78cqh); height: auto; aspect-ratio: 16 / 9; border-radius: 6px; box-shadow: 9px 9px 0 #141414; background: #f1e8cf; }
 .ck-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; width: min(100%, 1100px); flex: 0 0 auto; }
 .ck-dots { list-style: none; margin: 0; padding: 0; display: flex; gap: 8px; }
 .ck-dots button { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; background: transparent; cursor: pointer; padding: 0; opacity: .55; }
@@ -18,13 +18,13 @@
 @keyframes cm-pop { from { opacity: 0; transform: scale(.92) rotate(-1deg); } to { opacity: 1; transform: none; } }
 @keyframes cm-drift { from { transform: scale(1.02); } to { transform: scale(1.08) translateX(-1%); } }
 .cm-bubble { position: absolute; z-index: 3; background: #fff; color: #14121a; border: 3px solid #000; border-radius: 16px; padding: .45em .8em .55em; box-shadow: 3px 3px 0 #000; font-family: var(--font-body, system-ui); font-weight: 600; font-size: clamp(.62rem, 2.5cqw, 1.2rem); line-height: 1.28; animation: cm-line .35s cubic-bezier(.2, 1.6, .4, 1) calc(.5s + var(--k) * .7s) both; }
-.cm-bubble b { display: block; font: 400 .74em/1.1 var(--font-head, inherit); letter-spacing: .06em; color: #5b2fd6; text-transform: uppercase; margin-bottom: .15em; }
+.cm-bubble b { display: block; font: 400 .74em/1.1 var(--font-head, inherit); letter-spacing: .06em; color: #b8460c; text-transform: uppercase; margin-bottom: .15em; }
 .cm-bubble::after { content: ""; position: absolute; bottom: -.62em; width: .95em; height: .95em; background: #fff; border-right: 3px solid #000; border-bottom: 3px solid #000; transform: rotate(45deg); }
 .cm-bubble--l::after { left: 14%; } .cm-bubble--c::after { left: 46%; } .cm-bubble--r::after { right: 14%; }
 @keyframes cm-line { from { opacity: 0; transform: translateY(8px) scale(.8); } to { opacity: 1; transform: none; } }
 .cm-caption { position: absolute; z-index: 3; display: flex; flex-direction: column; background: #ffe45c; color: #14121a; border: 3px solid #000; box-shadow: 3px 3px 0 #000; padding: .4em .8em; font-weight: 700; font-size: clamp(.62rem, 2.4cqw, 1.1rem); line-height: 1.3; animation: cm-line .35s ease .3s both; }
 .cm-sfx { position: absolute; z-index: 4; transform: rotate(var(--rot, -6deg)); pointer-events: none; animation: cm-slam .5s cubic-bezier(.2, 1.8, .4, 1) .9s both; }
-.cm-sfx span { font-family: var(--font-head, Impact, sans-serif); font-size: clamp(1.2rem, 9cqw, 3.4rem); color: inherit; -webkit-text-stroke: 4px #000; paint-order: stroke fill; text-shadow: 4px 4px 0 #7a3dff; white-space: nowrap; }
+.cm-sfx span { font-family: var(--font-head, Impact, sans-serif); font-size: clamp(1.2rem, 9cqw, 3.4rem); color: inherit; -webkit-text-stroke: 4px #000; paint-order: stroke fill; text-shadow: 4px 4px 0 #141414; white-space: nowrap; }
 @keyframes cm-slam { from { opacity: 0; transform: rotate(var(--rot, -6deg)) scale(2.4); } to { opacity: 1; transform: rotate(var(--rot, -6deg)) scale(1); } }
 /* the waiting board over the dark screen in panel c1 */
 .cm-board { position: absolute; left: 6%; top: 5%; width: 27%; height: 34%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: "Rubik", system-ui, sans-serif; color: #5bf0a8; text-shadow: 0 0 10px rgba(91, 240, 168, .8); pointer-events: none; transform: perspective(500px) rotateY(-8deg); }
@@ -32,3 +32,48 @@
 @media (prefers-reduced-motion: reduce) { .cm-panel, .cm-panel > img, .cm-bubble, .cm-caption, .cm-sfx { animation: none !important; } }
 [data-reduce-motion="true"] .cm-panel, [data-reduce-motion="true"] .cm-bubble, [data-reduce-motion="true"] .cm-caption, [data-reduce-motion="true"] .cm-sfx { opacity: 1 !important; transform: none !important; }
 [data-reduce-motion="true"] .cm-sfx { transform: rotate(var(--rot, -6deg)) !important; }
+
+/* ===== the workday comic: a room, the people in it, a caption and a speech bubble ===== */
+.wd { position: relative; width: 100%; height: 100%; overflow: hidden; container-type: size; background: #fbf3e0; }
+.wd__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; user-select: none; }
+.wd-page.ck-page { position: relative; border: 4px solid #000; overflow: hidden; }
+.wd-cap { position: absolute; z-index: 6; left: 2.5%; top: 4%; max-width: 54%; display: flex; flex-direction: column; gap: .25em; background: #ffe45c; color: #14121a; border: 3px solid #000; box-shadow: 4px 4px 0 #000; padding: .45em .85em; font-weight: 500; font-size: clamp(.7rem, 2.1cqw, 1.15rem); line-height: 1.3; animation: wd-pop .4s cubic-bezier(.2, 1.4, .4, 1) .3s both; }
+.wd-cap b { font: 400 .78em/1.1 var(--font-head, inherit); letter-spacing: .06em; text-transform: uppercase; color: #b8460c; }
+.wd-cap--facts { gap: .5em; } .wd-cap--facts span + span { border-top: 2px dashed rgba(0, 0, 0, .35); padding-top: .4em; }
+.wd-say { position: absolute; z-index: 6; top: 6%; left: var(--cx, 70%); transform: translateX(-50%); width: 32%; background: #fff; color: #14121a; border: 3px solid #000; border-radius: 18px; box-shadow: 4px 4px 0 #000; padding: .5em .85em .6em; font-weight: 600; font-size: clamp(.7rem, 2.1cqw, 1.15rem); line-height: 1.3; animation: wd-pop .4s cubic-bezier(.2, 1.4, .4, 1) .9s both; }
+.wd-say b { display: block; font: 400 .72em/1.1 var(--font-head, inherit); letter-spacing: .06em; text-transform: uppercase; color: #b8460c; margin-bottom: .15em; }
+.wd-say::after { content: ""; position: absolute; bottom: -.8em; left: var(--tail, 50%); margin-left: -.5em; width: 1em; height: 1em; background: #fff; border-right: 3px solid #000; border-bottom: 3px solid #000; transform: rotate(45deg); }
+@keyframes wd-pop { from { opacity: 0; transform: translateY(8px) scale(.85); } to { opacity: 1; transform: none; } }
+.wd-say { animation-name: wd-say-pop !important; } @keyframes wd-say-pop { from { opacity: 0; transform: translateX(-50%) translateY(8px) scale(.85); } to { opacity: 1; transform: translateX(-50%); } }
+.wd-cap--r { left: auto; right: 2.5%; }
+.wd-fig { margin: 0; } .wd--small { aspect-ratio: 16 / 9; height: auto; border: 3px solid #000; border-radius: 10px; }
+[data-reduce-motion="true"] .wd-cap, [data-reduce-motion="true"] .wd-say { animation: none; }
+
+/* the reaction scene on the workday plays over the whole page */
+.wd-cutwrap { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; background: rgba(5, 5, 10, .78); padding: 3vmin; }
+.wd-cutbox { position: relative; width: min(94vw, 168vh); aspect-ratio: 16 / 9; }
+
+/* the workday stage uses the crisis layout (bo-scene); its comic is one room that the camera moves around */
+.wd__world { position: absolute; inset: 0; transition: transform .9s cubic-bezier(.4, 0, .2, 1), transform-origin .9s cubic-bezier(.4, 0, .2, 1); }
+.wd-box { position: relative; width: min(100cqw, 177.78cqh); aspect-ratio: 16 / 9; border: 3px solid #000; border-radius: 4px; overflow: hidden; box-shadow: 9px 9px 0 #141414; background: #fbf3e0; }
+.wd-box .wd { position: absolute; inset: 0; }
+.wd-cap, .wd-say { animation-duration: .35s; animation-delay: .1s; }
+.wd-team { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; } .wd-team li { display: flex; gap: 10px; align-items: center; padding: 6px 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); }
+.wd-team .wd-ava { flex: none; width: 46px; height: 46px; border-radius: 50%; overflow: hidden; background: #fff; border: 2px solid #000; } .wd-team .wd-ava img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 8%; transform: scale(1.5); transform-origin: 50% 20%; }
+.wd-team b { display: block; color: var(--text); } .wd-team small { color: var(--muted); }
+.wd-changes { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 4px; } .wd-changes li { font-size: .86rem; padding: 3px 9px; border-radius: 999px; width: fit-content; }
+.wd-changes li.up { background: rgba(91, 240, 168, .14); color: var(--good); } .wd-changes li.down { background: rgba(255, 90, 95, .14); color: var(--bad); }
+.wd-rate { display: inline-block; margin: 0 0 6px; padding: 2px 12px; border-radius: 999px; font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border: 2px solid currentColor; }
+.wd-rate--strong { color: var(--good); } .wd-rate--mixed { color: var(--warn); } .wd-rate--weak { color: var(--bad); }
+.wd-lesson { margin: 8px 0; padding: 8px 12px; border-left: 4px solid var(--lime); background: var(--panel-2); border-radius: 0 10px 10px 0; }
+
+/* the words sit in a strip above the picture, so they never cover a person; the picture below fills what is left */
+.wd-box { display: grid; grid-template-rows: auto minmax(0, 1fr); container-type: inline-size; }
+.wd-box .wd { position: relative; inset: auto; width: 100%; height: 100%; min-height: 0; }
+.wd-band { position: relative; z-index: 6; display: flex; align-items: flex-start; gap: 2%; padding: 1.2% 2.2% 2.8%; background: var(--paper-2, #fbf3e0); border-bottom: 4px solid #141414; }
+.wd-band .wd-cap { position: relative; left: auto; right: auto; top: auto; flex: 0 1 auto; margin: 0; font-size: clamp(.7rem, 1.9cqw, 1.05rem); }
+.wd-band .wd-say { position: relative; left: auto; top: auto; transform: none; flex: 0 0 32%; width: 32%; margin-top: 0; font-size: clamp(.7rem, 1.9cqw, 1.05rem); animation-name: wd-pop !important; }
+.wd-band .wd-cap:only-child { margin-right: auto; }
+.wd__bg { object-position: 50% 100%; }
+.wd__world { transition: transform .9s cubic-bezier(.4, 0, .2, 1); }
+.cut__fig { transition: height .5s ease, width .5s ease, bottom .5s ease; }

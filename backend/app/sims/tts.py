@@ -31,6 +31,8 @@ HUMAN: dict[str, dict] = {
     # the comic's narrator: a tired, deadpan man who has explained this sort of thing too many times
     "narrator": dict(ids=[OG_VEE, DANIEL], model=_QUALITY, stab=0.85, style=0.0, speed=0.9, piper="male"),
     # the Archivist: an old librarian and storyteller
+    # the Archivist in Hinglish (Hindi and English mixed, in Roman letters): Hindi/Hinglish narrators first, then the English librarian voices
+    "hinglish": dict(ids=["KgnO7XaC644NBfmLZmwn", "K0JkRcnnqtJOP749opMo", "jRWLUp9nbPFOcuaYJuTI", ARKADIUS, KEITH, GEORGE], model=_QUALITY, stab=0.5, style=0.3, speed=0.95, piper="hindi"),
     "librarian": dict(ids=[ARKADIUS, KEITH, GEORGE], model=_QUALITY, stab=0.5, style=0.35, speed=0.92, piper="heroic"),
     "char_director": dict(ids=[GEORGE, DANIEL], model=_FAST, stab=0.5, style=0.2, speed=1.0, piper="male"),
     "char_arjun": dict(ids=[DANIEL, GEORGE], model=_FAST, stab=0.45, style=0.2, speed=1.05, piper="male"),
@@ -38,6 +40,11 @@ HUMAN: dict[str, dict] = {
     "char_kavya": dict(ids=[MATILDA, ALICE], model=_FAST, stab=0.45, style=0.25, speed=1.05, piper="female"),
     "char_nisha": dict(ids=[LILY, ALICE], model=_FAST, stab=0.5, style=0.2, speed=1.0, piper="female"),
     "char_isha": dict(ids=[BELLA, MATILDA], model=_FAST, stab=0.5, style=0.2, speed=1.0, piper="female"),
+    # the people of the other two professions who are not one of the BLACKOUT team (plant staff, hospital staff, neighbours, a supplier on the phone)
+    "char_worker": dict(ids=[GEORGE, DANIEL], model=_FAST, stab=0.55, style=0.15, speed=0.97, piper="male"),
+    "char_worker_b": dict(ids=[DANIEL, GEORGE], model=_FAST, stab=0.4, style=0.3, speed=1.08, piper="male"),
+    "char_worker_c": dict(ids=[DR_PARR, DANIEL], model=_FAST, stab=0.5, style=0.2, speed=1.02, piper="male"),
+    "char_worker_d": dict(ids=[BELLA, ALICE], model=_FAST, stab=0.45, style=0.25, speed=1.0, piper="female"),
 }
 ALIASES = {"female": "reader_female", "male": "reader_male"}      # the original two read-aloud voices become human ones when a key is present
 ROLE_PATTERN = "^(" + "|".join(["female", "male", "heroic", "hindi", *HUMAN]) + ")$"
@@ -158,6 +165,9 @@ def synthesize_audio(text: str, voice: str = "female", rate: float = 1.0) -> tup
         except (LookupError, RuntimeError):
             pass                                                         # fall through to the offline voice
     piper = role["piper"] if role else voice
+    if voice == "hinglish":                                              # no human voice: the offline Hindi voice (an Indian voice), reading the sentence in Devanagari
+        from .translit import to_devanagari
+        text = to_devanagari(text)
     return synthesize(text, piper, rate), "audio/wav"
 
 

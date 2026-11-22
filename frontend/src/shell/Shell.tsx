@@ -4,6 +4,8 @@ import { simsApi, type Journey, type LibraryItem, type Profile, type SimsApi } f
 import { PathPage } from "../sims/Phases";
 import { SimPlayer } from "../sims/Player";
 import { CareerCompare } from "./CareerCompare";
+import { Labs } from "./Labs";
+import { CertificatePreview, CertificateView, Certificates } from "./Certificates";
 import { Welcome, WELCOME_KEY } from "./Welcome";
 import { Settings } from "./Settings";
 import { applyA11y, listenForDesktopZoom } from "../a11y/a11y";
@@ -15,6 +17,7 @@ import { achievements, upNext } from "./achievements";
 import { Preview } from "../sims/Previews";
 import { Radar } from "../sims/Radar";
 import { ReportView } from "../sims/Report";
+import { PastBlackoutReport } from "./PastBlackoutReport";
 import "./shell.css";
 import "./bo.css";
 
@@ -35,6 +38,9 @@ export function applyProfile(p: Profile) {
 const ICONS: Record<string, ReactNode> = {
   home: <path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z" />,
   journey: <path d="M5 19V9m7 10V5m7 14v-7" strokeLinecap="round" />,
+  labs: <path d="M4 20 14 10m0 0 2-5 4 4-5 2m-1 0 4 4M5 5l3 3" strokeLinecap="round" strokeLinejoin="round" />,
+  gen: <path d="M12 3v4m0 10v4M3 12h4m10 0h4M6 6l2.5 2.5m7 7L18 18m0-12-2.5 2.5m-7 7L6 18" strokeLinecap="round" />,
+  certs: <><circle cx="12" cy="9" r="5" /><path d="m9 13-1.5 7L12 18l4.5 2L15 13" strokeLinecap="round" strokeLinejoin="round" /></>,
   compare: <path d="M4 6h7M4 12h7M4 18h7M15 6l5 6-5 6" strokeLinecap="round" strokeLinejoin="round" />,
   settings: <><circle cx="12" cy="12" r="3" /><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1M7.7 16.3l-2.1 2.1" strokeLinecap="round" /></>,
 };
@@ -68,7 +74,7 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
   const [toast, setToast] = useState<string | null>(null);
   useEffect(() => {
     let t: ReturnType<typeof setTimeout>;
-    const on = (e: Event) => { setToast((e as CustomEvent<string>).detail); clearTimeout(t); t = setTimeout(() => setToast(null), 3200); };
+    const on = (e: Event) => { setToast((e as CustomEvent<string>).detail); clearTimeout(t); t = setTimeout(() => setToast(null), 7000); };
     window.addEventListener("rl:toast", on);
     return () => { window.removeEventListener("rl:toast", on); clearTimeout(t); };
   }, []);
@@ -100,23 +106,26 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
   if (blackout) return (
     <div className="bo-root">
       {toastEl}
-      <nav className="back-bar" aria-label="Application"><button type="button" onClick={() => go("#/sim/blackout")}>← Your path</button><span className="back-right"><SoundToggle className="snd-toggle--dark" />RealityLab AI</span></nav>
+      <nav className="back-bar" aria-label="Application"><button type="button" onClick={() => go("#/sim/blackout")}>← Your path</button><span className="back-right"><SoundToggle className="snd-toggle--dark" /></span></nav>
       <BlackoutGate api={api}><App /></BlackoutGate>
     </div>);
   const prof = (["blackout", "bhopal", "covid"] as const).find((x) => x === parts[1]);
   if (parts[0] === "sim" && prof) return <>{toastEl}<PathPage key={prof} api={api} profession={prof} onHome={() => go("#/")} /></>;
+  if (parts[0] === "certificate" && parts[1]) return <div className="hub">{toastEl}<aside className="hub-side no-print"><div className="hub-brand"><span className="hub-mark" aria-hidden="true">R</span><div><strong>RealityLab AI</strong><small>Career simulations</small></div></div><nav aria-label="Main" className="hub-nav"><a href="#/certificates" className={parts[1] === "preview" ? "" : "on"}><Icon name="certs" />Certificates</a><a href="#/"><Icon name="home" />Simulations</a></nav></aside><div className="hub-body">{parts[1] === "preview" ? <CertificatePreview api={api} /> : <CertificateView key={parts[1]} api={api} id={parts[1]} />}</div></div>;
+  if (parts[0] === "lab" && (parts[1] === "circuit" || parts[1] === "surgery")) return <>{toastEl}<SimPlayer key={parts[1]} api={api} simId={parts[1]} onHome={() => go("#/labs")} onReport={(id) => go(`#/report/${id}`)} /></>;
   if (parts[0] === "workday" && prof) return <>{toastEl}<SimPlayer key={`${prof}_workday`} api={api} simId={`${prof}_workday`} onHome={() => go("#/")} onReport={(id) => go(`#/report/${id}`)} /></>;
   if (parts[0] === "crisis" && (prof === "bhopal" || prof === "covid")) return <>{toastEl}<SimPlayer key={prof} api={api} simId={prof} onHome={() => go("#/")} onReport={(id) => go(`#/report/${id}`)} /></>;
-  if (parts[0] === "report" && parts[1]) return <>{toastEl}<ReportView api={api} runId={parts[1]} onHome={() => go("#/")} onOpen={(sim, to) => go(to === "crisis" ? (sim === "blackout" ? "#/play/blackout" : `#/crisis/${sim}`) : `#/sim/${sim}`)} /></>;
+  if (parts[0] === "blackout-report" && parts[1] && parts[2]) return <>{toastEl}<PastBlackoutReport key={parts[2]} simId={parts[1]} runId={parts[2]} /></>;
+  if (parts[0] === "report" && parts[1]) return <>{toastEl}<ReportView api={api} runId={parts[1]} onHome={() => go("#/")} onOpen={(sim, to) => go(sim.startsWith("gen_") ? `#/gen/${sim}` : sim === "circuit" || sim === "surgery" ? `#/lab/${sim}` : to === "crisis" ? (sim === "blackout" ? "#/play/blackout" : `#/crisis/${sim}`) : `#/sim/${sim}`)} /></>;
 
-  const tab = parts[0] === "journey" ? "journey" : parts[0] === "compare" ? "compare" : parts[0] === "settings" ? "settings" : "home";
+  const tab = parts[0] === "certificates" ? "certs" : parts[0] === "labs" ? "labs" : parts[0] === "journey" ? "journey" : parts[0] === "compare" ? "compare" : parts[0] === "settings" ? "settings" : "home";
   return (
     <div className="hub">
       {toastEl}
       <aside className="hub-side">
         <div className="hub-brand"><span className="hub-mark" aria-hidden="true">R</span><div><strong>RealityLab AI</strong><small>Career simulations</small></div></div>
         <nav aria-label="Main" className="hub-nav">
-          {([["home", "Simulations", "#/"], ["compare", "Compare careers", "#/compare"], ["journey", "My journey", "#/journey"], ["settings", "Settings", "#/settings"]] as const).map(([k, label, h]) => (
+          {([["home", "Simulations", "#/"], ["labs", "Technical labs", "#/labs"], ["certs", "Certificates", "#/certificates"], ["compare", "Compare careers", "#/compare"], ["journey", "My journey", "#/journey"], ["settings", "Settings", "#/settings"]] as const).map(([k, label, h]) => (
             <a key={k} href={h} aria-current={tab === k ? "page" : undefined} className={tab === k ? "on" : ""}><Icon name={k} />{label}</a>))}
         </nav>
         <div className="hub-foot"><span className="hub-avatar" aria-hidden="true">{(profile?.name || "You").slice(0, 1).toUpperCase()}</span>
@@ -125,6 +134,8 @@ export function Shell({ api = simsApi }: { api?: SimsApi }) {
       {welcome && tab === "home" && <Welcome onDone={finishWelcome} />}
       <div className="hub-body">
         {tab === "home" && <Library api={api} name={profile?.name ?? ""} />}
+        {tab === "labs" && <Labs api={api} />}
+        {tab === "certs" && <Certificates api={api} />}
         {tab === "compare" && <CareerCompare api={api} />}
         {tab === "journey" && <JourneyView api={api} />}
         {tab === "settings" && profile && <Settings api={api} profile={profile} onChange={(p) => { setProfile(p); applyProfile(p); }} />}
@@ -159,8 +170,11 @@ function Library({ api, name }: { api: SimsApi; name: string }) {
           <p className="hub-lede">Real moments from demanding professions. Decide, see the consequences, and review what your choices showed.</p></div>
         <div className="hub-stats" aria-label="Your progress"><div><strong>{done}/3</strong><span>completed</span></div><div><strong>{data.filter((s) => s.status === "active").length}</strong><span>in progress</span></div>{car && <div><strong>{badges.filter((b) => b.earned).length}/{badges.length}</strong><span>milestones</span></div>}</div>
       </header>
-      {last && <button type="button" className="hub-next hub-last" onClick={() => go(last.kind === "report" ? `#/report/${last.run_id}` : "#/play/blackout")}><span className="hub-next-tag">Last report</span><span className="hub-next-text"><b>{last.title}: {last.outcome}</b>Attempt {last.attempt}{last.completed_at ? ` · ${new Date(last.completed_at).toLocaleDateString()}` : ""}. Read it or hear the Archivist again.</span><span aria-hidden="true">→</span></button>}
-      {next && <button type="button" className="hub-next" onClick={() => { if (/^Continue/.test(next.label)) setIntent("continue"); go(next.to); }}><span className="hub-next-tag">Up next</span><span className="hub-next-text"><b>{next.label}</b>{next.text}</span><span aria-hidden="true">→</span></button>}
+      {(last || next) && (
+        <div className="hub-strip">
+          {next && <button type="button" className="hub-next" onClick={() => { if (/^Continue/.test(next.label)) setIntent("continue"); go(next.to); }}><span className="hub-next-tag">Up next</span><span className="hub-next-text"><b>{next.label}</b>{next.text}</span><span aria-hidden="true">→</span></button>}
+          {last && <button type="button" className="hub-btn hub-last" title={`${last.title}: ${last.outcome}`} onClick={() => go(last.kind === "report" ? `#/report/${last.run_id}` : last.simulation_id ? `#/blackout-report/${last.simulation_id}/${last.run_id}` : "#/play/blackout")}>Last report →</button>}
+        </div>)}
       <div className="hub-grid">{data.map((s, i) => <SimCard key={s.id} s={s} i={i} />)}</div>
     </main>
   );
@@ -206,7 +220,7 @@ function JourneyView({ api }: { api: SimsApi }) {
   const badges = car && lib ? achievements(car.careers, lib, car.choice) : [];
   return (
     <main id="main" tabIndex={-1} className="hub-main">
-      <header className="hub-head"><div><p className="hub-eyebrow">Your progress</p><h1>My journey</h1></div><button type="button" className="hub-btn hub-btn--primary" onClick={() => go("#/compare")}>Compare careers</button></header>
+      <header className="hub-head"><div><p className="hub-eyebrow">Your progress</p><h1>My journey</h1></div></header>
       {badges.length > 0 && (
         <details className="hub-badges-wrap"><summary>Milestones <b>{badges.filter((b) => b.earned).length} of {badges.length}</b></summary>
         <section className="hub-badges" aria-label="Milestones">
@@ -223,7 +237,7 @@ function JourneyView({ api }: { api: SimsApi }) {
           <section className="hub-panel hub-listpanel" aria-labelledby="done-h"><h2 id="done-h">Completed simulations and their reports</h2>
             <ul className="hub-list">{data.completed.map((c) => (
               <li key={`${c.kind}-${c.run_id}`}><div><b>{c.title}</b><span>Attempt {c.attempt} · {c.outcome} · {c.decisions} decisions{c.completed_at ? ` · ${new Date(c.completed_at).toLocaleDateString()}` : ""}</span></div>
-                <button type="button" className="hub-btn" onClick={() => go(c.kind === "report" ? `#/report/${c.run_id}` : "#/play/blackout")}>View report</button></li>))}</ul></section>
+                <button type="button" className="hub-btn" onClick={() => go(c.kind === "report" ? `#/report/${c.run_id}` : c.simulation_id ? `#/blackout-report/${c.simulation_id}/${c.run_id}` : "#/play/blackout")}>View report</button></li>))}</ul></section>
         </div>)}
     </main>
   );

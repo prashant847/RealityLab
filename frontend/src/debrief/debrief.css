@@ -78,8 +78,8 @@
 .deb-lang button { border: 0; background: transparent; color: var(--cream); padding: 6px 16px; font: inherit; font-weight: 600; cursor: pointer; }
 .deb-lang button.on { background: var(--gold); color: #1a1008; }
 .deb-lang--bar { margin: 0; }
-.deb [lang="hi"] .deb-caption, .deb[lang="hi"] .deb-caption, .deb[lang="hi"] .deb-card, .deb[lang="hi"] .deb-open, .deb[lang="hi"] .deb-transcript { font-family: "Nirmala UI", "Noto Sans Devanagari", "Mangal", system-ui, sans-serif; }
-.deb[lang="hi"] .deb-caption { line-height: 1.6; }
+.deb-caption[lang="hi"], .deb-card[lang="hi"], .deb-transcript[lang="hi"] { font-family: "Nirmala UI", "Noto Sans Devanagari", "Mangal", system-ui, sans-serif; }
+.deb-caption[lang="hi"] { line-height: 1.6; }
 
 .deb-pickers { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 0 0 12px; } .deb-pickers .deb-lang { margin: 0; }
 
